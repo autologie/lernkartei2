@@ -20,7 +20,7 @@ export default function QuestionTemplate({
         {choices.map((c, index) => (
           <li key={index}>
             <button
-              className={`w-full transition-colors text-xl rounded-xl py-2 px-4 text-left ${
+              className={`flex items-start w-full transition-colors text-xl rounded-xl py-2 px-4 text-left ${
                 response === undefined || index !== response
                   ? `bg-gray-200 ${isCorrect ? "" : "hover:bg-gray-300"}`
                   : isCorrect
@@ -29,6 +29,7 @@ export default function QuestionTemplate({
               }`}
               onClick={isCorrect ? undefined : () => onResponse(index)}
             >
+              <div className="mr-4">{index + 1}</div>
               {c}
             </button>
           </li>

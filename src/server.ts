@@ -9,92 +9,123 @@ import path from "path";
 const WORDS_FILE = path.join(__dirname, "../words.ndjson");
 const app = express();
 const port = 8080;
-const words = fs
-  .readFileSync(WORDS_FILE, "utf8")
-  .split("\n")
-  .flatMap<Word>((line) => {
-    try {
-      return [JSON.parse(line)];
-    } catch (e) {
-      return [];
-    }
-  });
 
-console.log(`Loaded ${words.length} words from file`);
+function findIndex(text: string | null): number {
+  return Number.parseInt(text?.match(/^\[(\d+)\]/)?.[1] ?? "", 10) - 1;
+}
+
+function extractWiktionaryContent(
+  entry: string,
+  html: string
+): Word | undefined {
+  const dom = new jsdom.JSDOM(html);
+  const englishMap: Map<number, string[]> = (
+    dom.window.document.querySelector("[title='Englisch']")?.parentNode
+      ?.textContent ?? ""
+  )
+    .replace(/Englisch:\s*/, "")
+    .split(/\s*;\s*/)
+    .map((t) => t.split(/\s*→\s*/)[0].split(/\s+/))
+    .reduce((passed, [num, w]) => {
+      const index = findIndex(num);
+
+      if (index !== undefined && w !== undefined) {
+        passed.set(
+          index,
+          (passed.get(index) ?? []).concat([w.replace(/\[\d+\]/g, "")])
+        );
+      }
+
+      return passed;
+    }, new Map<number, string[]>());
+  const exampleMap: Map<number, string[]> = [
+    ...(dom.window.document
+      .querySelector("[title='Verwendungsbeispielsätze'] ~ dl")
+      ?.querySelectorAll("dd") ?? []),
+  ].reduce((passed, e) => {
+    const index = findIndex(e.textContent);
+
+    passed.set(
+      index,
+      (passed.get(index) ?? []).concat([
+        [...e.childNodes]
+          .map((n) =>
+            n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
+          )
+          .join("")
+          .replace(/\[\d+\]/g, ""),
+      ])
+    );
+    return passed;
+  }, new Map<number, string[]>());
+  const word: Word = {
+    german: entry,
+    definitions: [
+      ...(dom.window.document
+        .querySelector("[title='Sinn und Bezeichnetes (Semantik)'] ~ dl")
+        ?.querySelectorAll("dd") ?? []),
+    ].flatMap((e) => {
+      const index = findIndex(e.textContent);
+
+      return Number.isNaN(index)
+        ? []
+        : [
+            {
+              definition:
+                e.textContent
+                  ?.replace(/^\[\d+\]\s*(Hilfsverb [\w]+(,|:)\s*)?/, "")
+                  .replace(/\[\d+\]/g, "") ?? "",
+              examples: exampleMap.get(index) ?? [],
+              english: englishMap.get(index) ?? [],
+            },
+          ];
+    }),
+  };
+
+  console.log(word);
+
+  if (word.definitions.length === 0) {
+    return undefined;
+  }
+
+  return word;
+}
 
 app.use(cors());
 
 app.get("/words", (req, res) => {
+  const words = fs
+    .readFileSync(WORDS_FILE, "utf8")
+    .split("\n")
+    .flatMap<Word>((line) => {
+      try {
+        return [JSON.parse(line)];
+      } catch (e) {
+        return [];
+      }
+    });
+
   res.json(words);
 });
 
 app.get("/words/:word", async (req, res) => {
-  if (words.some((word) => word.german === req.params.word)) {
-    return res.status(400).end();
-  }
-
   const wiktionaryRes = await fetch(
-    `https://de.wiktionary.org/wiki/${req.params.word}`
+    `https://de.wiktionary.org/wiki/${encodeURIComponent(req.params.word)}`
   );
 
   if (wiktionaryRes.status !== 200) {
+    console.log(wiktionaryRes.status);
     return res.status(wiktionaryRes.status).end();
   }
 
   const wiktionaryBody = await wiktionaryRes.text();
-  const dom = new jsdom.JSDOM(wiktionaryBody);
-  const englishTranslations = dom.window.document
-    .querySelector("[title='Englisch']")
-    ?.parentNode?.querySelectorAll("[lang=en]");
-  const examples = dom.window.document
-    .querySelector("[title='Verwendungsbeispielsätze'] ~ dl")
-    ?.querySelectorAll("dd");
-  const definitions = dom.window.document
-    .querySelector("[title='Sinn und Bezeichnetes (Semantik)'] ~ dl")
-    ?.querySelectorAll("dd");
-  const word: Word = {
-    german: req.params.word,
-    english:
-      englishTranslations === undefined
-        ? []
-        : [...englishTranslations].map((e) => e.textContent ?? ""),
-    examples:
-      examples === undefined
-        ? []
-        : [...examples].map((e) =>
-            [...e.childNodes]
-              .map((e) =>
-                e.nodeName === "I" ? `[[${e.textContent}]]` : e.textContent
-              )
-              .join(" ")
-              .replace(/^\[\w+\]\s*/, "")
-              .replace(/\[\d+\]$/, "")
-          ),
-    definitions:
-      definitions === undefined
-        ? []
-        : [...definitions].map(
-            (e) =>
-              e.textContent?.replace(
-                /^\[\d+\]\s*(Hilfsverb [\w]+(,|:)\s*)?/,
-                ""
-              ) ?? ""
-          ),
-    level: "A1",
-  };
+  const word = extractWiktionaryContent(req.params.word, wiktionaryBody);
 
-  if (
-    word.english.length === 0 ||
-    word.examples.length === 0 ||
-    word.definitions.length === 0
-  ) {
-    console.log(word);
+  if (word === undefined) {
     return res.status(400).end();
   }
 
-  fs.appendFileSync(WORDS_FILE, JSON.stringify(word) + "\n", {
-    encoding: "utf8",
-  });
+  fs.appendFileSync(WORDS_FILE, JSON.stringify(word) + "\n", "utf8");
   res.json(word);
 });
 

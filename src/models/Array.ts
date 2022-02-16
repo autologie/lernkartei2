@@ -16,10 +16,20 @@ export function shuffle<T>(arr: T[]): T[] {
   return res;
 }
 
-export function getRandomElement<T>(arr: T[]): T | undefined {
+export function getRandomIndex(arr: unknown[]): number | undefined {
   if (arr.length === 0) {
     return undefined;
   }
 
-  return arr[Math.floor(Math.random() * arr.length)];
+  return Math.floor(Math.random() * arr.length);
+}
+
+export function getRandomElement<T>(arr: T[]): T | undefined {
+  const index = getRandomIndex(arr);
+
+  if (index === undefined) {
+    return undefined;
+  }
+
+  return arr[index];
 }

@@ -17,7 +17,8 @@ export default function Question({
         <QuestionTemplate
           question={
             <>
-              Was bedeutet <i>{question.word.german}</i>?
+              Was bedeutet{" "}
+              <i className="font-semibold">{question.word.german}</i>?
             </>
           }
           choices={question.choices}
@@ -31,7 +32,14 @@ export default function Question({
         <QuestionTemplate
           question={
             <>
-              Wie heißt <i>{question.word.english[question.englishIndex]}</i>{" "}
+              Wie heißt{" "}
+              <i className="font-semibold">
+                {
+                  question.word.definitions[question.definitionIndex].english[
+                    question.englishIndex
+                  ]
+                }
+              </i>{" "}
               auf Deutsch?
             </>
           }
@@ -46,7 +54,8 @@ export default function Question({
         <QuestionTemplate
           question={
             <>
-              Wie heißt <i>{question.word.german}</i> auf Englisch?
+              Wie heißt <i className="font-semibold">{question.word.german}</i>{" "}
+              auf Englisch?
             </>
           }
           choices={question.choices}
@@ -58,7 +67,15 @@ export default function Question({
     case "fill-blank":
       return (
         <QuestionTemplate
-          question={<>{mask(question.word.examples[question.exampleIndex])}</>}
+          question={
+            <>
+              {mask(
+                question.word.definitions[question.definitionIndex].examples[
+                  question.exampleIndex
+                ]
+              )}
+            </>
+          }
           choices={question.choices}
           response={response}
           isCorrect={response === question.answerIndex}

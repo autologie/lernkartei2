@@ -1,9 +1,10 @@
 import { Word } from "./Word";
-import { getRandomElement, shuffle } from "./Array";
+import { getRandomElement, getRandomIndex, shuffle } from "./Array";
 
 export interface FillBlank {
   type: "fill-blank";
   word: Word;
+  definitionIndex: number;
   exampleIndex: number;
   choices: string[];
   answerIndex: number;
@@ -26,6 +27,7 @@ export interface TranslateTo {
 export interface TranslateFrom {
   type: "translate-from";
   word: Word;
+  definitionIndex: number;
   englishIndex: number;
   choices: string[];
   answerIndex: number;
@@ -54,7 +56,7 @@ function createDefineQuestion(words: Word[]): Question | undefined {
     type: "define",
     word,
     choices: [word, ...shuffle(words.filter((w) => w !== word)).slice(0, 2)]
-      .map((w) => getRandomElement(w.definitions))
+      .map((w) => getRandomElement(w.definitions)?.definition)
       .filter((v): v is string => v !== undefined),
     answerIndex: 0,
   };
@@ -64,18 +66,29 @@ function createDefineQuestion(words: Word[]): Question | undefined {
 
 function createFillBlankQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
+  const definitionIndex =
+    word === undefined ? undefined : getRandomIndex(word.definitions);
+  const exampleIndex =
+    word === undefined || definitionIndex === undefined
+      ? undefined
+      : getRandomIndex(word.definitions[definitionIndex].examples);
 
-  if (word === undefined) {
+  if (
+    word === undefined ||
+    definitionIndex === undefined ||
+    exampleIndex === undefined
+  ) {
     return;
   }
 
   const question: Question = {
     type: "fill-blank",
     word,
-    exampleIndex: Math.floor(Math.random() * word.examples.length),
+    definitionIndex,
+    exampleIndex,
     choices: [
       word,
-      ...shuffle(words.filter((w) => w !== word)).slice(0, 2),
+      ...shuffle(words.filter((w) => w !== word)).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
   };
@@ -85,19 +98,29 @@ function createFillBlankQuestion(words: Word[]): Question | undefined {
 
 function createTranslateFromQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
+  const definitionIndex =
+    word === undefined ? undefined : getRandomIndex(word.definitions);
+  const englishIndex =
+    word === undefined || definitionIndex === undefined
+      ? undefined
+      : getRandomIndex(word.definitions[definitionIndex].english);
 
-  if (word === undefined) {
+  if (
+    word === undefined ||
+    definitionIndex === undefined ||
+    englishIndex === undefined
+  ) {
     return;
   }
 
-  const englishIndex = Math.floor(Math.random() * word.english.length);
   const question: Question = {
     type: "translate-from",
     word,
+    definitionIndex,
     englishIndex,
     choices: [
       word,
-      ...shuffle(words.filter((w) => w !== word)).slice(0, 2),
+      ...shuffle(words.filter((w) => w !== word)).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
   };
@@ -107,15 +130,27 @@ function createTranslateFromQuestion(words: Word[]): Question | undefined {
 
 function createTranslateToQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
+  const definition =
+    word === undefined ? undefined : getRandomElement(word.definitions);
 
-  if (word === undefined) {
+  if (
+    word === undefined ||
+    definition === undefined ||
+    definition.english.length === 0
+  ) {
     return;
   }
 
   const question: Question = {
     type: "translate-to",
     word,
-    choices: [word, ...shuffle(words.filter((w) => w !== word)).slice(0, 2)]
+    choices: [
+      definition,
+      ...shuffle(words.flatMap((w) => (w === word ? [] : w.definitions))).slice(
+        0,
+        4
+      ),
+    ]
       .map((w) => getRandomElement(w.english))
       .filter((v): v is string => v !== undefined),
     answerIndex: 0,
@@ -124,7 +159,7 @@ function createTranslateToQuestion(words: Word[]): Question | undefined {
   return shuffleChoices(question);
 }
 
-export function createQuestion(words: Word[]): Question {
+export function createQuestion(words: Word[]): Question | undefined {
   const types: Question["type"][] = [
     "define",
     "fill-blank",
@@ -145,7 +180,7 @@ export function createQuestion(words: Word[]): Question {
     }
   }
 
-  while (true) {
+  for (let i = 0; i < 10; i++) {
     const maybeCreated = tryCreate();
 
     if (maybeCreated !== undefined) {

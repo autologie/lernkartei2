@@ -1,5 +1,6 @@
 import { Dispatch, useCallback, useEffect, useReducer } from "react";
 import Question from "./components/Question";
+import { Question as QuestionModel } from "./models/Question";
 import { Action, applyAction, getInitialState, State } from "./models/State";
 
 function useNextAutomatically(
@@ -42,6 +43,43 @@ function useRemoteWords(dispatch: Dispatch<Action>) {
   }, [dispatch]);
 }
 
+function useKeyEventListener(
+  question: QuestionModel | undefined,
+  dispatch: Dispatch<Action>
+) {
+  const choiceCount = question?.choices.length;
+
+  useEffect(() => {
+    if (choiceCount === undefined) {
+      return;
+    }
+
+    const choices = Array.from({ length: choiceCount }).map((_, i) =>
+      String(i + 1)
+    );
+
+    function handleEvent(e: KeyboardEvent) {
+      if (
+        e.altKey ||
+        e.shiftKey ||
+        e.metaKey ||
+        e.ctrlKey ||
+        !choices.includes(e.key)
+      ) {
+        return;
+      }
+
+      dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
+    }
+
+    window.addEventListener("keydown", handleEvent);
+
+    return () => {
+      window.removeEventListener("keydown", handleEvent);
+    };
+  }, [choiceCount, dispatch]);
+}
+
 function App() {
   const [state, dispatch] = useReducer(applyAction, undefined, getInitialState);
   const handleResponse = useCallback(
@@ -51,14 +89,18 @@ function App() {
 
   useRemoteWords(dispatch);
   useNextAutomatically(1000, state, dispatch);
+  useKeyEventListener(state.question, dispatch);
 
   return (
     <div className="p-4 max-w-prose mx-auto">
       <h1>Lernkartei v2</h1>
-      {state.question === undefined ? (
+      {state.words?.length === 0 ? (
+        <p>Add a few words to get started!</p>
+      ) : state.question === undefined ? (
         <p>Loading...</p>
       ) : (
         <Question
+          key={state.question.word.german}
           question={state.question}
           response={state.response}
           onResponse={handleResponse}
