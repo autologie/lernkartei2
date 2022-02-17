@@ -35,7 +35,7 @@ export default function QuestionTemplate({
                 }`}
                 onClick={done ? undefined : () => onResponse(index)}
               >
-                <div className="w-8">
+                <div className="w-8 flex-grow-0 flex-shrink-0">
                   {isMiss ? "×" : isHit ? "️✓︎" : index + 1}
                 </div>
                 {c}

@@ -32,9 +32,11 @@ function extractWiktionaryContent(
       if (index !== undefined && phrase.length > 0) {
         passed.set(
           index,
-          (passed.get(index) ?? []).concat([
-            phrase.join(" ").replace(/\[\d+\]/g, ""),
-          ])
+          (passed.get(index) ?? []).concat(
+            [phrase.join(" ").replace(/\[\d+\]/g, "")].filter(
+              (e) => e.trim() !== ""
+            )
+          )
         );
       }
 
@@ -49,14 +51,16 @@ function extractWiktionaryContent(
 
     passed.set(
       index,
-      (passed.get(index) ?? []).concat([
-        [...e.childNodes]
-          .map((n) =>
-            n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
-          )
-          .join("")
-          .replace(/\[\d+\]/g, ""),
-      ])
+      (passed.get(index) ?? []).concat(
+        [
+          [...e.childNodes]
+            .map((n) =>
+              n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
+            )
+            .join("")
+            .replace(/\[\d+\]/g, ""),
+        ].filter((e) => e.trim() !== "")
+      )
     );
     return passed;
   }, new Map<number, string[]>());

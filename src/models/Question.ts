@@ -13,6 +13,7 @@ export interface FillBlank {
 export interface Define {
   type: "define";
   word: Word;
+  definitionIndex: number;
   choices: string[];
   answerIndex: number;
 }
@@ -20,6 +21,7 @@ export interface Define {
 export interface TranslateTo {
   type: "translate-to";
   word: Word;
+  definitionIndex: number;
   choices: string[];
   answerIndex: number;
 }
@@ -47,18 +49,19 @@ function shuffleChoices(question: Question) {
 
 function createDefineQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
-  const definition =
-    word === undefined ? undefined : getRandomElement(word.definitions);
+  const definitionIndex =
+    word === undefined ? undefined : getRandomIndex(word.definitions);
 
-  if (word === undefined || definition === undefined) {
+  if (word === undefined || definitionIndex === undefined) {
     return;
   }
 
   const question: Question = {
     type: "define",
     word,
+    definitionIndex,
     choices: [
-      definition,
+      word.definitions[definitionIndex],
       ...shuffle(words.flatMap((w) => (w === word ? [] : w.definitions))).slice(
         0,
         4
@@ -138,18 +141,25 @@ function createTranslateFromQuestion(words: Word[]): Question | undefined {
 
 function createTranslateToQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
-  const definition =
-    word === undefined ? undefined : getRandomElement(word.definitions);
+  const definitionIndex =
+    word === undefined ? undefined : getRandomIndex(word.definitions);
   const english =
-    definition === undefined ? undefined : getRandomElement(definition.english);
+    word === undefined || definitionIndex === undefined
+      ? undefined
+      : getRandomElement(word.definitions[definitionIndex].english);
 
-  if (word === undefined || english === undefined) {
+  if (
+    word === undefined ||
+    english === undefined ||
+    definitionIndex === undefined
+  ) {
     return;
   }
 
   const question: Question = {
     type: "translate-to",
     word,
+    definitionIndex,
     choices: [
       english,
       ...shuffle(

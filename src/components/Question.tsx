@@ -1,5 +1,5 @@
 import { Question as Model } from "../models/Question";
-import { mask } from "../models/String";
+import ExampleText from "./ExampleText";
 import QuestionTemplate from "./QuestionTemplate";
 
 export default function Question({
@@ -75,13 +75,13 @@ export default function Question({
       return (
         <QuestionTemplate
           question={
-            <>
-              {mask(
+            <ExampleText mode="mask">
+              {
                 question.word.definitions[question.definitionIndex].examples[
                   question.exampleIndex
                 ]
-              )}
-            </>
+              }
+            </ExampleText>
           }
           choices={question.choices}
           missedResponses={missedResponses}

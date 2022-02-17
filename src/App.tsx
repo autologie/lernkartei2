@@ -112,7 +112,11 @@ function App() {
         state.question !== undefined &&
         state.done && (
           <div>
-            <Word word={state.question.word} className="mt-4" />
+            <Word
+              word={state.question.word}
+              className="mt-4"
+              highlightedIndex={state.question.definitionIndex}
+            />
             <button
               className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-8 text-xl"
               onClick={() => dispatch({ type: "next" })}
