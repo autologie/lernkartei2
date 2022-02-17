@@ -93,8 +93,8 @@ function extractWiktionaryContent(
 
 app.use(cors());
 
-app.get("/words", (req, res) => {
-  const words = fs
+function loadWords(): Word[] {
+  return fs
     .readFileSync(WORDS_FILE, "utf8")
     .split("\n")
     .flatMap<Word>((line) => {
@@ -104,22 +104,33 @@ app.get("/words", (req, res) => {
         return [];
       }
     });
+}
 
-  res.json(words);
-});
-
-app.get("/words/:word", async (req, res) => {
+async function fetchFromWiktionary(word: string): Promise<Word | undefined> {
   const wiktionaryRes = await fetch(
-    `https://de.wiktionary.org/wiki/${encodeURIComponent(req.params.word)}`
+    `https://de.wiktionary.org/wiki/${encodeURIComponent(word)}`
   );
 
   if (wiktionaryRes.status !== 200) {
     console.log(wiktionaryRes.status);
-    return res.status(wiktionaryRes.status).end();
+    return undefined;
   }
 
   const wiktionaryBody = await wiktionaryRes.text();
-  const word = extractWiktionaryContent(req.params.word, wiktionaryBody);
+
+  return extractWiktionaryContent(word, wiktionaryBody);
+}
+
+app.get("/words", (req, res) => {
+  res.json(loadWords());
+});
+
+app.get("/words/:word", async (req, res) => {
+  if (loadWords().some((w) => w.german === req.params.word)) {
+    return res.status(400).end();
+  }
+
+  const word = await fetchFromWiktionary(req.params.word);
 
   if (word === undefined) {
     return res.status(400).end();

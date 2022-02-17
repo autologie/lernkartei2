@@ -8,7 +8,8 @@ function useNextAutomatically(
   state: State,
   dispatch: Dispatch<Action>
 ) {
-  const shouldTrigger = state.response === state.question?.answerIndex;
+  const shouldTrigger =
+    !state.respondedWrongly && state.response === state.question?.answerIndex;
 
   useEffect(() => {
     if (!shouldTrigger) {
@@ -106,16 +107,18 @@ function App() {
           onResponse={handleResponse}
         />
       )}
-      {state.response !== undefined && (
-        <button
-          className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-4 text-xl"
-          onClick={() => dispatch({ type: "next" })}
-        >
-          Next
-        </button>
-      )}
+      {state.respondedWrongly &&
+        state.response !== undefined &&
+        state.response === state.question?.answerIndex && (
+          <button
+            className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-4 text-xl"
+            onClick={() => dispatch({ type: "next" })}
+          >
+            Next
+          </button>
+        )}
       <button
-        className="absolute right-0 bottom-0 m-4 flex items-center justify-center bg-blue-500 rounded-full w-16 h-16 text-4xl text-white"
+        className="fixed right-0 bottom-0 m-4 flex items-center justify-center bg-blue-500 rounded-full w-16 h-16 text-4xl text-white"
         onClick={async () => {
           const word = window.prompt("Word");
 

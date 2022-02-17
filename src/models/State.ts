@@ -5,6 +5,7 @@ export interface State {
   words?: Word[];
   question?: Question;
   response?: number;
+  respondedWrongly: boolean;
 }
 
 export type Action =
@@ -16,7 +17,15 @@ export type Action =
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
     case "respond":
-      return { ...state, response: action.payload };
+      return state.question === undefined
+        ? state
+        : {
+            ...state,
+            response: action.payload,
+            respondedWrongly:
+              state.respondedWrongly ||
+              state.question.answerIndex !== action.payload,
+          };
     case "next":
       return state.words === undefined
         ? state
@@ -24,6 +33,7 @@ export function applyAction(state: State, action: Action): State {
             ...state,
             question: createQuestion(state.words),
             response: undefined,
+            respondedWrongly: false,
           };
     case "add":
       return state.words === undefined
@@ -39,5 +49,5 @@ export function applyAction(state: State, action: Action): State {
 }
 
 export function getInitialState(): State {
-  return {};
+  return { respondedWrongly: false };
 }
