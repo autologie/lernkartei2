@@ -1,92 +1,12 @@
-import { Dispatch, useCallback, useEffect, useReducer } from "react";
+import { useCallback, useReducer } from "react";
 import Question from "./components/Question";
-import { Question as QuestionModel } from "./models/Question";
-import { Action, applyAction, getInitialState, State } from "./models/State";
+import useAddNewWord from "./hooks/useAddNewWord";
+import useKeyEventListener from "./hooks/useKeyEventListener";
+import useNextAutomatically from "./hooks/useNextAutomatically";
+import useRemoteWords from "./hooks/useRemoteWords";
+import { applyAction, getInitialState } from "./models/State";
 
 function noop() {}
-
-function useNextAutomatically(
-  afterMillis: number,
-  state: State,
-  dispatch: Dispatch<Action>
-) {
-  const shouldTrigger = state.missResponses.length === 0 && state.done;
-
-  useEffect(() => {
-    if (!shouldTrigger) {
-      return;
-    }
-
-    const timeout = window.setTimeout(
-      () => dispatch({ type: "next" }),
-      afterMillis
-    );
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [afterMillis, dispatch, shouldTrigger]);
-}
-
-function useRemoteWords(dispatch: Dispatch<Action>) {
-  useEffect(() => {
-    (async () => {
-      const res = await fetch("http://localhost:8080/words");
-
-      if (res.status !== 200) {
-        window.alert("Could not load data");
-        return;
-      }
-
-      const data = await res.json();
-
-      dispatch({ type: "loaded", payload: data });
-    })();
-  }, [dispatch]);
-}
-
-function useKeyEventListener(
-  question: QuestionModel | undefined,
-  dispatch: Dispatch<Action>
-) {
-  const choiceCount = question?.choices.length;
-
-  useEffect(() => {
-    if (choiceCount === undefined) {
-      return;
-    }
-
-    const choices = Array.from({ length: choiceCount }).map((_, i) =>
-      String(i + 1)
-    );
-
-    function handleEvent(e: KeyboardEvent) {
-      if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
-        return;
-      }
-
-      if (e.key === "ArrowLeft") {
-        dispatch({ type: "back" });
-        return;
-      }
-
-      if (e.key === " " || e.key === "ArrowRight") {
-        dispatch({ type: "next" });
-        return;
-      }
-
-      if (choices.includes(e.key)) {
-        dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
-      }
-    }
-
-    window.addEventListener("keydown", handleEvent);
-
-    return () => {
-      window.removeEventListener("keydown", handleEvent);
-    };
-  }, [choiceCount, dispatch]);
-}
 
 function App() {
   const [state, dispatch] = useReducer(applyAction, undefined, getInitialState);
@@ -98,6 +18,7 @@ function App() {
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
   );
+  const handleAdd = useAddNewWord(dispatch);
 
   useRemoteWords(dispatch);
   useNextAutomatically(1000, state, dispatch);
@@ -173,24 +94,7 @@ function App() {
         )}
       <button
         className="fixed right-0 bottom-0 m-4 flex items-center justify-center bg-blue-500 rounded-full w-16 h-16 text-4xl text-white"
-        onClick={async () => {
-          const word = window.prompt("Word");
-
-          if (word !== null) {
-            try {
-              const res = await fetch(`http://localhost:8080/words/${word}`);
-
-              if (res.status === 200) {
-                dispatch({ type: "add", payload: await res.json() });
-                window.alert("Added!");
-              } else {
-                window.alert(`Failed (status: ${res.status})`);
-              }
-            } catch (e) {
-              window.alert(`Failed (${(e as any).message})`);
-            }
-          }
-        }}
+        onClick={handleAdd}
       >
         +
       </button>
