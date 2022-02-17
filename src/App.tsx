@@ -1,4 +1,7 @@
 import { useCallback, useReducer } from "react";
+import AddButton from "./components/AddButton";
+import NextButton from "./components/NextButton";
+import PrevButton from "./components/PrevButton";
 import Question from "./components/Question";
 import useAddNewWord from "./hooks/useAddNewWord";
 import useKeyEventListener from "./hooks/useKeyEventListener";
@@ -59,22 +62,16 @@ function App() {
           {state.history.length > 0 &&
             (state.historyCursor === undefined ||
               state.history.length > state.historyCursor + 1) && (
-              <button
-                title="Prev"
-                className="mt-4 absolute left-0 top-0 block w-8 h-8 text-gray-500 rounded-full transition-colors hover:bg-gray-100 -ml-10 flex items-center justify-center"
+              <PrevButton
+                className="mt-4 absolute left-0 top-0 -ml-10"
                 onClick={() => dispatch({ type: "back" })}
-              >
-                &lt;
-              </button>
+              />
             )}
           {state.historyCursor !== undefined && (
-            <button
-              title="Next"
-              className="mt-4 absolute right-0 top-0 block w-8 h-8 text-gray-500 rounded-full transition-colors hover:bg-gray-100 -mr-10 flex items-center justify-center"
+            <NextButton
+              className="mt-4 absolute right-0 top-0 -mr-10"
               onClick={() => dispatch({ type: "next" })}
-            >
-              &gt;
-            </button>
+            />
           )}
         </div>
       )}
@@ -92,12 +89,7 @@ function App() {
             </button>
           </div>
         )}
-      <button
-        className="fixed right-0 bottom-0 m-4 flex items-center justify-center bg-blue-500 rounded-full w-16 h-16 text-4xl text-white"
-        onClick={handleAdd}
-      >
-        +
-      </button>
+      <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
     </div>
   );
 }
