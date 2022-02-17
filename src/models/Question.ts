@@ -47,16 +47,24 @@ function shuffleChoices(question: Question) {
 
 function createDefineQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
+  const definition =
+    word === undefined ? undefined : getRandomElement(word.definitions);
 
-  if (word === undefined) {
+  if (word === undefined || definition === undefined) {
     return;
   }
 
   const question: Question = {
     type: "define",
     word,
-    choices: [word, ...shuffle(words.filter((w) => w !== word)).slice(0, 2)]
-      .map((w) => getRandomElement(w.definitions)?.definition)
+    choices: [
+      definition,
+      ...shuffle(words.flatMap((w) => (w === word ? [] : w.definitions))).slice(
+        0,
+        4
+      ),
+    ]
+      .map((w) => w.definition)
       .filter((v): v is string => v !== undefined),
     answerIndex: 0,
   };
@@ -132,12 +140,10 @@ function createTranslateToQuestion(words: Word[]): Question | undefined {
   const word = getRandomElement(words);
   const definition =
     word === undefined ? undefined : getRandomElement(word.definitions);
+  const english =
+    definition === undefined ? undefined : getRandomElement(definition.english);
 
-  if (
-    word === undefined ||
-    definition === undefined ||
-    definition.english.length === 0
-  ) {
+  if (word === undefined || english === undefined) {
     return;
   }
 
@@ -145,14 +151,13 @@ function createTranslateToQuestion(words: Word[]): Question | undefined {
     type: "translate-to",
     word,
     choices: [
-      definition,
-      ...shuffle(words.flatMap((w) => (w === word ? [] : w.definitions))).slice(
-        0,
-        4
-      ),
-    ]
-      .map((w) => getRandomElement(w.english))
-      .filter((v): v is string => v !== undefined),
+      english,
+      ...shuffle(
+        words.flatMap((w) =>
+          w === word ? [] : w.definitions.flatMap((d) => d.english)
+        )
+      ).slice(0, 4),
+    ].filter((v): v is string => v !== undefined),
     answerIndex: 0,
   };
 

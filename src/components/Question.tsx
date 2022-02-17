@@ -21,7 +21,9 @@ export default function Question({
               <i className="font-semibold">{question.word.german}</i>?
             </>
           }
-          choices={question.choices}
+          choices={question.choices.map((c) =>
+            c.replace(question.word.german, "———")
+          )}
           response={response}
           isCorrect={response === question.answerIndex}
           onResponse={onResponse}
