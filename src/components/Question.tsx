@@ -4,12 +4,14 @@ import QuestionTemplate from "./QuestionTemplate";
 
 export default function Question({
   question,
-  response,
+  missedResponses,
+  done,
   onResponse,
 }: {
   question: Model;
-  response?: number;
-  onResponse: (response: number) => void;
+  done: boolean;
+  missedResponses: number[];
+  onResponse: (responses: number) => void;
 }) {
   switch (question.type) {
     case "define":
@@ -24,8 +26,9 @@ export default function Question({
           choices={question.choices.map((c) =>
             c.replace(question.word.german, "———")
           )}
-          response={response}
-          isCorrect={response === question.answerIndex}
+          missedResponses={missedResponses}
+          done={done}
+          answerIndex={question.answerIndex}
           onResponse={onResponse}
         />
       );
@@ -46,8 +49,9 @@ export default function Question({
             </>
           }
           choices={question.choices}
-          response={response}
-          isCorrect={response === question.answerIndex}
+          missedResponses={missedResponses}
+          done={done}
+          answerIndex={question.answerIndex}
           onResponse={onResponse}
         />
       );
@@ -61,8 +65,9 @@ export default function Question({
             </>
           }
           choices={question.choices}
-          response={response}
-          isCorrect={response === question.answerIndex}
+          missedResponses={missedResponses}
+          done={done}
+          answerIndex={question.answerIndex}
           onResponse={onResponse}
         />
       );
@@ -79,8 +84,9 @@ export default function Question({
             </>
           }
           choices={question.choices}
-          response={response}
-          isCorrect={response === question.answerIndex}
+          missedResponses={missedResponses}
+          done={done}
+          answerIndex={question.answerIndex}
           onResponse={onResponse}
         />
       );

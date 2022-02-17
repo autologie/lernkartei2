@@ -9,8 +9,7 @@ function useNextAutomatically(
   state: State,
   dispatch: Dispatch<Action>
 ) {
-  const shouldTrigger =
-    !state.respondedWrongly && state.response === state.question?.answerIndex;
+  const shouldTrigger = state.missResponses.length === 0 && state.done;
 
   useEffect(() => {
     if (!shouldTrigger) {
@@ -61,17 +60,17 @@ function useKeyEventListener(
     );
 
     function handleEvent(e: KeyboardEvent) {
-      if (
-        e.altKey ||
-        e.shiftKey ||
-        e.metaKey ||
-        e.ctrlKey ||
-        !choices.includes(e.key)
-      ) {
+      if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
         return;
       }
 
-      dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
+      if (e.key === " ") {
+        dispatch({ type: "next" });
+      }
+
+      if (choices.includes(e.key)) {
+        dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
+      }
     }
 
     window.addEventListener("keydown", handleEvent);
@@ -104,13 +103,14 @@ function App() {
         <Question
           key={state.question.word.german}
           question={state.question}
-          response={state.response}
+          missedResponses={state.missResponses}
+          done={state.done}
           onResponse={handleResponse}
         />
       )}
-      {state.respondedWrongly &&
-        state.response !== undefined &&
-        state.response === state.question?.answerIndex && (
+      {state.missResponses.length > 0 &&
+        state.question !== undefined &&
+        state.done && (
           <div>
             <Word word={state.question.word} className="mt-4" />
             <button

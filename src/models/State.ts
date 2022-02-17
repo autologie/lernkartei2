@@ -4,8 +4,8 @@ import { Word } from "./Word";
 export interface State {
   words?: Word[];
   question?: Question;
-  response?: number;
-  respondedWrongly: boolean;
+  done: boolean;
+  missResponses: number[];
 }
 
 export type Action =
@@ -19,21 +19,20 @@ export function applyAction(state: State, action: Action): State {
     case "respond":
       return state.question === undefined
         ? state
+        : state.question.answerIndex === action.payload
+        ? { ...state, done: true }
         : {
             ...state,
-            response: action.payload,
-            respondedWrongly:
-              state.respondedWrongly ||
-              state.question.answerIndex !== action.payload,
+            missResponses: state.missResponses.concat([action.payload]),
           };
     case "next":
-      return state.words === undefined
+      return state.words === undefined || !state.done
         ? state
         : {
             ...state,
             question: createQuestion(state.words),
-            response: undefined,
-            respondedWrongly: false,
+            done: false,
+            missResponses: [],
           };
     case "add":
       return state.words === undefined
@@ -49,5 +48,5 @@ export function applyAction(state: State, action: Action): State {
 }
 
 export function getInitialState(): State {
-  return { respondedWrongly: false };
+  return { done: false, missResponses: [] };
 }
