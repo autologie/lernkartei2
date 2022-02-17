@@ -1,5 +1,6 @@
 import { Dispatch, useCallback, useEffect, useReducer } from "react";
 import Question from "./components/Question";
+import Word from "./components/Word";
 import { Question as QuestionModel } from "./models/Question";
 import { Action, applyAction, getInitialState, State } from "./models/State";
 
@@ -110,12 +111,15 @@ function App() {
       {state.respondedWrongly &&
         state.response !== undefined &&
         state.response === state.question?.answerIndex && (
-          <button
-            className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-4 text-xl"
-            onClick={() => dispatch({ type: "next" })}
-          >
-            Next
-          </button>
+          <div>
+            <Word word={state.question.word} className="mt-4" />
+            <button
+              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-8 text-xl"
+              onClick={() => dispatch({ type: "next" })}
+            >
+              Next
+            </button>
+          </div>
         )}
       <button
         className="fixed right-0 bottom-0 m-4 flex items-center justify-center bg-blue-500 rounded-full w-16 h-16 text-4xl text-white"
