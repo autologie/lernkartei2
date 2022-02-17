@@ -26,13 +26,15 @@ function extractWiktionaryContent(
     .replace(/Englisch:\s*/, "")
     .split(/\s*;\s*/)
     .map((t) => t.split(/\s*→\s*/)[0].split(/\s+/))
-    .reduce((passed, [num, w]) => {
+    .reduce((passed, [num, ...phrase]) => {
       const index = findIndex(num);
 
-      if (index !== undefined && w !== undefined) {
+      if (index !== undefined && phrase.length > 0) {
         passed.set(
           index,
-          (passed.get(index) ?? []).concat([w.replace(/\[\d+\]/g, "")])
+          (passed.get(index) ?? []).concat([
+            phrase.join(" ").replace(/\[\d+\]/g, ""),
+          ])
         );
       }
 
