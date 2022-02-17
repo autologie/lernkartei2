@@ -1,5 +1,5 @@
-import { HistoryItem } from "./HistoryItem";
-import { createQuestion, Question } from "./Question";
+import { HistoryItem, createQuestion } from "./HistoryItem";
+import { Question } from "./Question";
 import { Word } from "./Word";
 
 export interface State {
@@ -38,23 +38,26 @@ export function applyAction(state: State, action: Action): State {
         ? { ...state, historyCursor: state.historyCursor + 1 }
         : state;
     case "next":
+      const history = (
+        state.question === undefined
+          ? []
+          : [
+              {
+                question: state.question,
+                missResponses: state.missResponses,
+              },
+            ]
+      ).concat(state.history);
+
       return state.historyCursor === undefined
         ? state.words === undefined || !state.done
           ? state
           : {
               ...state,
-              question: createQuestion(state.words),
+              question: createQuestion(history, state.words),
               done: false,
               missResponses: [],
-              history: (state.question === undefined
-                ? []
-                : [
-                    {
-                      question: state.question,
-                      missResponses: state.missResponses,
-                    },
-                  ]
-              ).concat(state.history),
+              history: history,
             }
         : {
             ...state,
@@ -69,7 +72,7 @@ export function applyAction(state: State, action: Action): State {
       return {
         ...state,
         words: action.payload,
-        question: createQuestion(action.payload),
+        question: createQuestion(state.history, action.payload),
       };
   }
 }

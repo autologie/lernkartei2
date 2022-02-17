@@ -37,7 +37,7 @@ export interface TranslateFrom {
 
 export type Question = FillBlank | Define | TranslateTo | TranslateFrom;
 
-function shuffleChoices(question: Question) {
+export function shuffleChoices(question: Question) {
   const choices = shuffle(question.choices);
 
   return {
@@ -47,15 +47,8 @@ function shuffleChoices(question: Question) {
   };
 }
 
-function createDefineQuestion(words: Word[]): Question | undefined {
-  const word = getRandomElement(words);
-  const definitionIndex =
-    word === undefined ? undefined : getRandomIndex(word.definitions);
-
-  if (word === undefined || definitionIndex === undefined) {
-    return;
-  }
-
+export function createDefineQuestion(word: Word, words: Word[]): Question {
+  const definitionIndex = getRandomIndex(word.definitions);
   const question: Question = {
     type: "define",
     word,
@@ -75,23 +68,11 @@ function createDefineQuestion(words: Word[]): Question | undefined {
   return shuffleChoices(question);
 }
 
-function createFillBlankQuestion(words: Word[]): Question | undefined {
-  const word = getRandomElement(words);
-  const definitionIndex =
-    word === undefined ? undefined : getRandomIndex(word.definitions);
-  const exampleIndex =
-    word === undefined || definitionIndex === undefined
-      ? undefined
-      : getRandomIndex(word.definitions[definitionIndex].examples);
-
-  if (
-    word === undefined ||
-    definitionIndex === undefined ||
-    exampleIndex === undefined
-  ) {
-    return;
-  }
-
+export function createFillBlankQuestion(word: Word, words: Word[]): Question {
+  const definitionIndex = getRandomIndex(word.definitions);
+  const exampleIndex = getRandomIndex(
+    word.definitions[definitionIndex].examples
+  );
   const question: Question = {
     type: "fill-blank",
     word,
@@ -107,23 +88,14 @@ function createFillBlankQuestion(words: Word[]): Question | undefined {
   return shuffleChoices(question);
 }
 
-function createTranslateFromQuestion(words: Word[]): Question | undefined {
-  const word = getRandomElement(words);
-  const definitionIndex =
-    word === undefined ? undefined : getRandomIndex(word.definitions);
-  const englishIndex =
-    word === undefined || definitionIndex === undefined
-      ? undefined
-      : getRandomIndex(word.definitions[definitionIndex].english);
-
-  if (
-    word === undefined ||
-    definitionIndex === undefined ||
-    englishIndex === undefined
-  ) {
-    return;
-  }
-
+export function createTranslateFromQuestion(
+  word: Word,
+  words: Word[]
+): Question {
+  const definitionIndex = getRandomIndex(word.definitions);
+  const englishIndex = getRandomIndex(
+    word.definitions[definitionIndex].english
+  );
   const question: Question = {
     type: "translate-from",
     word,
@@ -139,23 +111,9 @@ function createTranslateFromQuestion(words: Word[]): Question | undefined {
   return shuffleChoices(question);
 }
 
-function createTranslateToQuestion(words: Word[]): Question | undefined {
-  const word = getRandomElement(words);
-  const definitionIndex =
-    word === undefined ? undefined : getRandomIndex(word.definitions);
-  const english =
-    word === undefined || definitionIndex === undefined
-      ? undefined
-      : getRandomElement(word.definitions[definitionIndex].english);
-
-  if (
-    word === undefined ||
-    english === undefined ||
-    definitionIndex === undefined
-  ) {
-    return;
-  }
-
+export function createTranslateToQuestion(word: Word, words: Word[]): Question {
+  const definitionIndex = getRandomIndex(word.definitions);
+  const english = getRandomElement(word.definitions[definitionIndex].english);
   const question: Question = {
     type: "translate-to",
     word,
@@ -172,34 +130,4 @@ function createTranslateToQuestion(words: Word[]): Question | undefined {
   };
 
   return shuffleChoices(question);
-}
-
-export function createQuestion(words: Word[]): Question | undefined {
-  const types: Question["type"][] = [
-    "define",
-    "fill-blank",
-    "translate-from",
-    "translate-to",
-  ];
-
-  function tryCreate(): Question | undefined {
-    switch (getRandomElement(types)) {
-      case "define":
-        return createDefineQuestion(words);
-      case "fill-blank":
-        return createFillBlankQuestion(words);
-      case "translate-from":
-        return createTranslateFromQuestion(words);
-      case "translate-to":
-        return createTranslateToQuestion(words);
-    }
-  }
-
-  for (let i = 0; i < 10; i++) {
-    const maybeCreated = tryCreate();
-
-    if (maybeCreated !== undefined) {
-      return maybeCreated;
-    }
-  }
 }

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 
 export default function ExampleText({
   children,
@@ -26,15 +26,24 @@ export default function ExampleText({
     const matched = regex.exec(children);
 
     if (matched === null) {
-      segments.push(children.slice(index, children.length));
+      segments.push(
+        <Fragment key={index * 2}>
+          {children.slice(index, children.length)}
+        </Fragment>
+      );
       break;
     }
 
     const nextIndex = matched.index + matched[0].length;
 
     segments.push(
-      children.slice(index, matched.index),
-      <i className={mode === "italic-green" ? "text-green-600" : ""}>
+      <Fragment key={index * 2}>
+        {children.slice(index, matched.index)}
+      </Fragment>,
+      <i
+        key={index * 2 + 1}
+        className={mode === "italic-green" ? "text-green-600" : ""}
+      >
         {children.slice(matched.index + 2, nextIndex - 2)}
       </i>
     );
