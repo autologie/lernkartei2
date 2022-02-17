@@ -6,17 +6,30 @@ export default function Question({
   question,
   missedResponses,
   done,
+  showExplanation,
   onResponse,
 }: {
   question: Model;
   done: boolean;
   missedResponses: number[];
+  showExplanation: boolean;
   onResponse: (responses: number) => void;
 }) {
+  const commonProps = {
+    word: question.word,
+    missedResponses,
+    done,
+    answerIndex: question.answerIndex,
+    definitionIndex: question.definitionIndex,
+    showExplanation,
+    onResponse,
+  };
+
   switch (question.type) {
     case "define":
       return (
         <QuestionTemplate
+          {...commonProps}
           question={
             <>
               Was bedeutet{" "}
@@ -26,15 +39,12 @@ export default function Question({
           choices={question.choices.map((c) =>
             c.replace(question.word.german, "———")
           )}
-          missedResponses={missedResponses}
-          done={done}
-          answerIndex={question.answerIndex}
-          onResponse={onResponse}
         />
       );
     case "translate-from":
       return (
         <QuestionTemplate
+          {...commonProps}
           question={
             <>
               Wie heißt{" "}
@@ -49,15 +59,12 @@ export default function Question({
             </>
           }
           choices={question.choices}
-          missedResponses={missedResponses}
-          done={done}
-          answerIndex={question.answerIndex}
-          onResponse={onResponse}
         />
       );
     case "translate-to":
       return (
         <QuestionTemplate
+          {...commonProps}
           question={
             <>
               Wie heißt <i className="font-semibold">{question.word.german}</i>{" "}
@@ -65,17 +72,14 @@ export default function Question({
             </>
           }
           choices={question.choices}
-          missedResponses={missedResponses}
-          done={done}
-          answerIndex={question.answerIndex}
-          onResponse={onResponse}
         />
       );
     case "fill-blank":
       return (
         <QuestionTemplate
+          {...commonProps}
           question={
-            <ExampleText mode="mask">
+            <ExampleText mode={done ? "italic-green" : "mask"}>
               {
                 question.word.definitions[question.definitionIndex].examples[
                   question.exampleIndex
@@ -84,10 +88,6 @@ export default function Question({
             </ExampleText>
           }
           choices={question.choices}
-          missedResponses={missedResponses}
-          done={done}
-          answerIndex={question.answerIndex}
-          onResponse={onResponse}
         />
       );
     default:

@@ -1,18 +1,26 @@
 import { ReactNode } from "react";
+import Word from "./Word";
+import { Word as WordModel } from "../models/Word";
 
 export default function QuestionTemplate({
   question,
   choices,
   answerIndex,
+  definitionIndex,
   missedResponses,
   done,
+  word,
+  showExplanation,
   onResponse,
 }: {
   question: ReactNode;
   answerIndex: number;
+  definitionIndex: number;
   choices: string[];
   missedResponses: number[];
   done: boolean;
+  word: WordModel;
+  showExplanation: boolean;
   onResponse: (response: number) => void;
 }) {
   return (
@@ -44,6 +52,9 @@ export default function QuestionTemplate({
           );
         })}
       </ol>
+      {showExplanation && (
+        <Word word={word} className="mt-4" highlightedIndex={definitionIndex} />
+      )}
     </div>
   );
 }

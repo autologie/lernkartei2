@@ -5,7 +5,7 @@ export default function ExampleText({
   mode,
 }: {
   children: string;
-  mode: "mask" | "italic";
+  mode: "mask" | "italic" | "italic-green";
 }) {
   const regex = /\[\[[^\].,?]+(,|\?|.)?\]\]/g;
 
@@ -34,7 +34,9 @@ export default function ExampleText({
 
     segments.push(
       children.slice(index, matched.index),
-      <i>{children.slice(matched.index + 2, nextIndex - 2)}</i>
+      <i className={mode === "italic-green" ? "text-green-600" : ""}>
+        {children.slice(matched.index + 2, nextIndex - 2)}
+      </i>
     );
 
     index = nextIndex;

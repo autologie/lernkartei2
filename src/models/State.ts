@@ -1,3 +1,4 @@
+import { HistoryItem } from "./HistoryItem";
 import { createQuestion, Question } from "./Question";
 import { Word } from "./Word";
 
@@ -6,10 +7,13 @@ export interface State {
   question?: Question;
   done: boolean;
   missResponses: number[];
+  history: HistoryItem[];
+  historyCursor?: number;
 }
 
 export type Action =
   | { type: "respond"; payload: number }
+  | { type: "back" }
   | { type: "next" }
   | { type: "add"; payload: Word }
   | { type: "loaded"; payload: Word[] };
@@ -25,14 +29,37 @@ export function applyAction(state: State, action: Action): State {
             ...state,
             missResponses: state.missResponses.concat([action.payload]),
           };
+    case "back":
+      return state.historyCursor === undefined
+        ? state.history.length > 0
+          ? { ...state, historyCursor: 0 }
+          : state
+        : state.historyCursor < state.history.length - 1
+        ? { ...state, historyCursor: state.historyCursor + 1 }
+        : state;
     case "next":
-      return state.words === undefined || !state.done
-        ? state
+      return state.historyCursor === undefined
+        ? state.words === undefined || !state.done
+          ? state
+          : {
+              ...state,
+              question: createQuestion(state.words),
+              done: false,
+              missResponses: [],
+              history: (state.question === undefined
+                ? []
+                : [
+                    {
+                      question: state.question,
+                      missResponses: state.missResponses,
+                    },
+                  ]
+              ).concat(state.history),
+            }
         : {
             ...state,
-            question: createQuestion(state.words),
-            done: false,
-            missResponses: [],
+            historyCursor:
+              state.historyCursor === 0 ? undefined : state.historyCursor - 1,
           };
     case "add":
       return state.words === undefined
@@ -48,5 +75,5 @@ export function applyAction(state: State, action: Action): State {
 }
 
 export function getInitialState(): State {
-  return { done: false, missResponses: [] };
+  return { done: false, missResponses: [], history: [] };
 }

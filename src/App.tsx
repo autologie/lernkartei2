@@ -1,8 +1,9 @@
 import { Dispatch, useCallback, useEffect, useReducer } from "react";
 import Question from "./components/Question";
-import Word from "./components/Word";
 import { Question as QuestionModel } from "./models/Question";
 import { Action, applyAction, getInitialState, State } from "./models/State";
+
+function noop() {}
 
 function useNextAutomatically(
   afterMillis: number,
@@ -64,8 +65,14 @@ function useKeyEventListener(
         return;
       }
 
-      if (e.key === " ") {
+      if (e.key === "ArrowLeft") {
+        dispatch({ type: "back" });
+        return;
+      }
+
+      if (e.key === " " || e.key === "ArrowRight") {
         dispatch({ type: "next" });
+        return;
       }
 
       if (choices.includes(e.key)) {
@@ -83,6 +90,10 @@ function useKeyEventListener(
 
 function App() {
   const [state, dispatch] = useReducer(applyAction, undefined, getInitialState);
+  const historyToShow =
+    state.historyCursor === undefined
+      ? undefined
+      : state.history[state.historyCursor];
   const handleResponse = useCallback(
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
@@ -100,25 +111,60 @@ function App() {
       ) : state.question === undefined ? (
         <p>Loading...</p>
       ) : (
-        <Question
-          key={state.question.word.german}
-          question={state.question}
-          missedResponses={state.missResponses}
-          done={state.done}
-          onResponse={handleResponse}
-        />
+        <div className="relative">
+          {historyToShow === undefined ? (
+            <Question
+              key={state.question.word.german}
+              question={state.question}
+              missedResponses={state.missResponses}
+              done={state.done}
+              showExplanation={
+                state.missResponses.length > 0 &&
+                state.question !== undefined &&
+                state.done
+              }
+              onResponse={handleResponse}
+            />
+          ) : (
+            <Question
+              key={historyToShow.question.word.german}
+              question={historyToShow.question}
+              missedResponses={historyToShow.missResponses}
+              showExplanation={true}
+              done={true}
+              onResponse={noop}
+            />
+          )}
+          {state.history.length > 0 &&
+            (state.historyCursor === undefined ||
+              state.history.length > state.historyCursor + 1) && (
+              <button
+                title="Prev"
+                className="mt-4 absolute left-0 top-0 block w-8 h-8 text-gray-500 rounded-full transition-colors hover:bg-gray-100 -ml-10 flex items-center justify-center"
+                onClick={() => dispatch({ type: "back" })}
+              >
+                &lt;
+              </button>
+            )}
+          {state.historyCursor !== undefined && (
+            <button
+              title="Next"
+              className="mt-4 absolute right-0 top-0 block w-8 h-8 text-gray-500 rounded-full transition-colors hover:bg-gray-100 -mr-10 flex items-center justify-center"
+              onClick={() => dispatch({ type: "next" })}
+            >
+              &gt;
+            </button>
+          )}
+        </div>
       )}
+
       {state.missResponses.length > 0 &&
         state.question !== undefined &&
-        state.done && (
+        state.done &&
+        state.historyCursor === undefined && (
           <div>
-            <Word
-              word={state.question.word}
-              className="mt-4"
-              highlightedIndex={state.question.definitionIndex}
-            />
             <button
-              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-8 text-xl"
+              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-12 text-xl"
               onClick={() => dispatch({ type: "next" })}
             >
               Next
