@@ -1,4 +1,4 @@
-import { useCallback, useReducer } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import AddButton from "./components/AddButton";
 import Debugger from "./components/Debugger";
 import NextButton from "./components/NextButton";
@@ -14,17 +14,33 @@ import { applyAction, getInitialState } from "./models/State";
 function noop() {}
 
 const size = new URLSearchParams(window.location.search).get("size");
+const partOfSpeech = new URLSearchParams(window.location.search).get(
+  "partOfSpeech"
+);
 
 function App() {
   const [state, dispatch] = useReducer(
     applyAction,
-    size === null ? undefined : Number.parseInt(size, 10),
+    {
+      size: size === null ? undefined : Number.parseInt(size, 10),
+      partOfSpeech: partOfSpeech ?? undefined,
+    },
     getInitialState
   );
   const historyToShow =
     state.historyCursor === undefined
       ? undefined
       : state.history[state.historyCursor];
+  const word = useMemo(() => {
+    const german =
+      historyToShow === undefined
+        ? state.question?.word
+        : historyToShow?.question.word;
+
+    return german === undefined
+      ? undefined
+      : state.words?.find((w) => w.german === german);
+  }, [historyToShow, state.question, state.words]);
   const handleResponse = useCallback(
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
@@ -43,11 +59,22 @@ function App() {
         <p>Add a few words to get started!</p>
       ) : state.question === undefined ? (
         <p>Loading...</p>
+      ) : word === undefined ? (
+        <div className="mt-4 flex items-center flex-col gap-4 p-4 bg-red-100 rounded-lg">
+          <p className="text-2xl font-semibold text-red-700">Word not found</p>
+          <button
+            className="block mx-auto mt-4 bg-white rounded-xl py-2 px-24 text-xl"
+            onClick={() => dispatch({ type: "skip" })}
+          >
+            Skip
+          </button>
+        </div>
       ) : (
         <div className="relative">
           {historyToShow === undefined ? (
             <Question
-              key={state.question.word.german}
+              key={state.question.word}
+              word={word}
               question={state.question}
               missedResponses={state.missResponses}
               done={state.done}
@@ -60,7 +87,8 @@ function App() {
             />
           ) : (
             <Question
-              key={historyToShow.question.word.german}
+              key={historyToShow.question.word}
+              word={word}
               question={historyToShow.question}
               missedResponses={historyToShow.missResponses}
               showExplanation={true}

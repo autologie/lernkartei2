@@ -1,4 +1,5 @@
 export interface Word {
+  partOfSpeech: string;
   german: string;
   definitions: WordMeaning[];
 }

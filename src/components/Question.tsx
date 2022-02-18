@@ -1,22 +1,25 @@
 import { Question as Model } from "../models/Question";
+import { Word } from "../models/Word";
 import ExampleText from "./ExampleText";
 import QuestionTemplate from "./QuestionTemplate";
 
 export default function Question({
   question,
+  word,
   missedResponses,
   done,
   showExplanation,
   onResponse,
 }: {
   question: Model;
+  word: Word;
   done: boolean;
   missedResponses: number[];
   showExplanation: boolean;
   onResponse: (responses: number) => void;
 }) {
   const commonProps = {
-    word: question.word,
+    word,
     missedResponses,
     done,
     answerIndex: question.answerIndex,
@@ -32,13 +35,10 @@ export default function Question({
           {...commonProps}
           question={
             <>
-              Was bedeutet{" "}
-              <i className="font-semibold">{question.word.german}</i>?
+              Was bedeutet <i className="font-semibold">{word.german}</i>?
             </>
           }
-          choices={question.choices.map((c) =>
-            c.replace(question.word.german, "———")
-          )}
+          choices={question.choices.map((c) => c.replace(word.german, "———"))}
         />
       );
     case "translate-from":
@@ -47,10 +47,10 @@ export default function Question({
           {...commonProps}
           question={
             <>
-              Wie heißt{" "}
+              Wie heißt das englische Wort{" "}
               <i className="font-semibold">
                 {
-                  question.word.definitions[question.definitionIndex].english[
+                  word.definitions[question.definitionIndex].english[
                     question.englishIndex
                   ]
                 }
@@ -67,8 +67,8 @@ export default function Question({
           {...commonProps}
           question={
             <>
-              Wie heißt <i className="font-semibold">{question.word.german}</i>{" "}
-              auf Englisch?
+              Wie heißt <i className="font-semibold">{word.german}</i> auf
+              Englisch?
             </>
           }
           choices={question.choices}
@@ -81,7 +81,7 @@ export default function Question({
           question={
             <ExampleText mode={done ? "italic-green" : "mask"}>
               {
-                question.word.definitions[question.definitionIndex].examples[
+                word.definitions[question.definitionIndex].examples[
                   question.exampleIndex
                 ]
               }

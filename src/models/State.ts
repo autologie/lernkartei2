@@ -1,6 +1,7 @@
 import { HistoryItem } from "./HistoryItem";
 import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
+import { Settings } from "./Settings";
 import { createQuestion, createWeights, Weights } from "./Weights";
 import { modify, Word } from "./Word";
 
@@ -13,12 +14,13 @@ export interface State {
   progress: LearningProgress;
   weights: Weights;
   historyCursor?: number;
-  size?: number;
+  settings: Settings;
   allDone: boolean;
 }
 
 export type Action =
   | { type: "respond"; payload: number }
+  | { type: "skip" }
   | { type: "back" }
   | { type: "next" }
   | { type: "add"; payload: Word }
@@ -89,7 +91,7 @@ export function applyAction(state: State, action: Action): State {
           question: nextQuestion,
           done: false,
           missResponses: [],
-          history: history,
+          history,
         };
       }
 
@@ -98,12 +100,49 @@ export function applyAction(state: State, action: Action): State {
         historyCursor:
           state.historyCursor === 0 ? undefined : state.historyCursor - 1,
       };
+    case "skip":
+      if (state.words === undefined) {
+        return state;
+      }
+
+      const nextQuestion = createQuestion(state.weights, state.words);
+
+      if (nextQuestion === undefined) {
+        return {
+          ...state,
+          allDone: true,
+        };
+      }
+
+      return {
+        ...state,
+        question: nextQuestion,
+        done: false,
+        missResponses: [],
+      };
+
     case "add":
-      return state.words === undefined
+      return state.words === undefined ||
+        (state.settings.partOfSpeech !== undefined &&
+          state.settings.partOfSpeech !== action.payload.partOfSpeech)
         ? state
-        : { ...state, words: state.words.concat([modify(action.payload)]) };
+        : {
+            ...state,
+            words: state.words
+              .concat([modify(action.payload)])
+              .sort((a, b) => a.german.localeCompare(b.german)),
+          };
     case "loaded":
-      const words = action.payload.slice(0, state.size).map(modify);
+      const words = (
+        state.settings.partOfSpeech === undefined
+          ? action.payload
+          : action.payload.filter(
+              (word) => word.partOfSpeech === state.settings.partOfSpeech
+            )
+      )
+        .slice(0, state.settings?.size)
+        .map(modify)
+        .sort((a, b) => a.german.localeCompare(b.german));
       const weights = createWeights(words, state.progress);
 
       return {
@@ -115,12 +154,12 @@ export function applyAction(state: State, action: Action): State {
   }
 }
 
-export function getInitialState(size?: number): State {
+export function getInitialState(settings: Settings): State {
   return {
     done: false,
     missResponses: [],
     history: [],
-    size,
+    settings,
     allDone: false,
     progress: { table: {}, tick: 0 },
     weights: {},

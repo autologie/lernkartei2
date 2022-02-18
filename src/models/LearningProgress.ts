@@ -17,7 +17,7 @@ export function addResult(
   question: Question,
   ok: boolean
 ): LearningProgress {
-  const entry = progress.table[question.word.german] ?? {
+  const entry = progress.table[question.word] ?? {
     define: { miss: false },
     "fill-blank": { miss: false },
     "translate-from": { miss: false },
@@ -31,7 +31,7 @@ export function addResult(
     tick: tick,
     table: {
       ...progress.table,
-      [question.word.german]: {
+      [question.word]: {
         ...entry,
         [question.type]: {
           miss: subEntry.miss || !ok,

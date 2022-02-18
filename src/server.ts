@@ -19,6 +19,9 @@ function extractWiktionaryContent(
   html: string
 ): Word | undefined {
   const dom = new jsdom.JSDOM(html);
+  const partOfSpeech = dom.window.document
+    .querySelector("[title='Hilfe:Wortart']")
+    ?.textContent?.trim();
   const englishMap: Map<number, string[]> = (
     dom.window.document.querySelector("[title='Englisch']")?.parentNode
       ?.textContent ?? ""
@@ -64,7 +67,13 @@ function extractWiktionaryContent(
     );
     return passed;
   }, new Map<number, string[]>());
+
+  if (partOfSpeech === undefined) {
+    return undefined;
+  }
+
   const word: Word = {
+    partOfSpeech,
     german: entry,
     definitions: [
       ...(dom.window.document

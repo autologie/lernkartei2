@@ -1,6 +1,7 @@
 import { questionTypes } from "../models/Question";
 import { Word } from "../models/Word";
 import { Weights } from "../models/Weights";
+import React from "react";
 
 export default function Debugger({
   words,
@@ -29,25 +30,23 @@ export default function Debugger({
           </tr>
         </thead>
         <tbody>
-          {[...words]
-            .sort((a, b) => a.german.localeCompare(b.german))
-            .map((w) => (
-              <tr key={w.german}>
-                <td className="pr-2 text-right">{w.german}</td>
-                {questionTypes.map((t) => (
-                  <td key={t} className="p-0">
-                    <Tile weight={(weights[w.german]?.[t] ?? 0) / maxWeight} />
-                  </td>
-                ))}
-              </tr>
-            ))}
+          {words.map((w) => (
+            <tr key={w.german}>
+              <td className="pr-2 text-right">{w.german}</td>
+              {questionTypes.map((t) => (
+                <td key={t} className="p-0">
+                  <Tile weight={(weights[w.german]?.[t] ?? 0) / maxWeight} />
+                </td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-function Tile({ weight }: { weight: number }) {
+const Tile = React.memo(({ weight }: { weight: number }) => {
   return (
     <div
       className={`w-5 h-5 m-0.5 cursor-default rounded text-transparent hover:text-black flex items-center justify-center`}
@@ -59,4 +58,4 @@ function Tile({ weight }: { weight: number }) {
       {weight.toFixed(3)}
     </div>
   );
-}
+});

@@ -1,12 +1,13 @@
 import { Fragment, ReactNode } from "react";
 
 export default function ExampleText({
-  children,
+  children: children_,
   mode,
 }: {
   children: string;
   mode: "mask" | "italic" | "italic-green";
 }) {
+  const children = children_.replace(/{[^}]*}/, "").trim(); // remove math equation notation
   const regex = /\[\[[^\].,?]+(,|\?|.)?\]\]/g;
 
   if (mode === "mask") {

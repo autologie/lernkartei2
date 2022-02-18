@@ -3,7 +3,7 @@ import { getRandomElement, getRandomIndex, shuffle } from "./Array";
 
 export interface FillBlank {
   type: "fill-blank";
-  word: Word;
+  word: string;
   definitionIndex: number;
   exampleIndex: number;
   choices: string[];
@@ -12,7 +12,7 @@ export interface FillBlank {
 
 export interface Define {
   type: "define";
-  word: Word;
+  word: string;
   definitionIndex: number;
   choices: string[];
   answerIndex: number;
@@ -20,7 +20,7 @@ export interface Define {
 
 export interface TranslateTo {
   type: "translate-to";
-  word: Word;
+  word: string;
   definitionIndex: number;
   choices: string[];
   answerIndex: number;
@@ -28,7 +28,7 @@ export interface TranslateTo {
 
 export interface TranslateFrom {
   type: "translate-from";
-  word: Word;
+  word: string;
   definitionIndex: number;
   englishIndex: number;
   choices: string[];
@@ -66,14 +66,17 @@ export function createDefineQuestion(word: Word, words: Word[]): Question {
   const definitionIndex = getRandomIndex(word.definitions);
   const question: Question = {
     type: "define",
-    word,
+    word: word.german,
     definitionIndex,
     choices: [
       word.definitions[definitionIndex],
-      ...shuffle(words.flatMap((w) => (w === word ? [] : w.definitions))).slice(
-        0,
-        4
-      ),
+      ...shuffle(
+        words.flatMap((w) =>
+          w === word || w.partOfSpeech !== word.partOfSpeech
+            ? []
+            : w.definitions
+        )
+      ).slice(0, 4),
     ]
       .map((w) => w.definition)
       .filter((v): v is string => v !== undefined),
@@ -90,12 +93,14 @@ export function createFillBlankQuestion(word: Word, words: Word[]): Question {
   );
   const question: Question = {
     type: "fill-blank",
-    word,
+    word: word.german,
     definitionIndex,
     exampleIndex,
     choices: [
       word,
-      ...shuffle(words.filter((w) => w !== word)).slice(0, 4),
+      ...shuffle(
+        words.filter((w) => w !== word && w.partOfSpeech === word.partOfSpeech)
+      ).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
   };
@@ -113,12 +118,14 @@ export function createTranslateFromQuestion(
   );
   const question: Question = {
     type: "translate-from",
-    word,
+    word: word.german,
     definitionIndex,
     englishIndex,
     choices: [
       word,
-      ...shuffle(words.filter((w) => w !== word)).slice(0, 4),
+      ...shuffle(
+        words.filter((w) => w !== word && w.partOfSpeech === word.partOfSpeech)
+      ).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
   };
@@ -131,13 +138,15 @@ export function createTranslateToQuestion(word: Word, words: Word[]): Question {
   const english = getRandomElement(word.definitions[definitionIndex].english);
   const question: Question = {
     type: "translate-to",
-    word,
+    word: word.german,
     definitionIndex,
     choices: [
       english,
       ...shuffle(
         words.flatMap((w) =>
-          w === word ? [] : w.definitions.flatMap((d) => d.english)
+          w === word || w.partOfSpeech !== word.partOfSpeech
+            ? []
+            : w.definitions.flatMap((d) => d.english)
         )
       ).slice(0, 4),
     ].filter((v): v is string => v !== undefined),
