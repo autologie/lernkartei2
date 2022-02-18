@@ -27,17 +27,21 @@ export default function Word({
         {word.definitions.map((def, i) => (
           <li
             key={i}
-            className={`transition-colors cursor-pointer px-4 flex items-start gap-2 hover:bg-white ${
-              highlightedIndex === i ? "py-2" : "hover:py-2 hover:-my-2"
-            } ${
-              openIndex === i ? "hover:bg-opacity-0" : "hover:bg-opacity-50"
+            className={`transition-colors px-4 flex items-start gap-2 hover:bg-white hover:py-2 hover:-my-2 ${
+              openIndex === i
+                ? "hover:bg-opacity-0"
+                : "cursor-pointer hover:bg-opacity-50"
             }`}
-            onClick={() => dispatch(i)}
+            onClick={openIndex === i ? undefined : () => dispatch(i)}
           >
             <span className="flex-shrink-0 text-center block text-xs text-black text-opacity-70 bg-blue-200 rounded-lg py-1 w-6">
               {"abcdefghijklmnopqrstuvwxyz"[i]}
             </span>
-            <div className="flex-grow flex-shrink">
+            <div
+              className={`flex-grow flex-shrink ${
+                openIndex === i ? "" : "truncate"
+              }`}
+            >
               <span className={highlightedIndex === i ? "font-semibold" : ""}>
                 {def.definition}
               </span>
@@ -68,12 +72,6 @@ export default function Word({
                 </>
               )}
             </div>
-            <button
-              className="text-lg flex items-center justify-center w-6 h-6 font-bold flex-shrink-0 flex-grow-0 text-gray-500 rounded-full transition-colors bg-white bg-opacity-0 hover:bg-opacity-50"
-              onClick={() => dispatch(i)}
-            >
-              ⋮
-            </button>
           </li>
         ))}
       </ul>

@@ -37,6 +37,14 @@ export interface TranslateFrom {
 
 export type Question = FillBlank | Define | TranslateTo | TranslateFrom;
 
+export interface QuestionTable<T> {
+  [word: string]:
+    | {
+        [key in Question["type"]]: T;
+      }
+    | undefined;
+}
+
 export const questionTypes: Question["type"][] = [
   "define",
   "fill-blank",

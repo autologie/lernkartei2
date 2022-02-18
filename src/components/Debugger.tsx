@@ -1,40 +1,16 @@
-import { useMemo } from "react";
-import { HistoryItem } from "../models/HistoryItem";
-import { Question, questionTypes } from "../models/Question";
+import { questionTypes } from "../models/Question";
 import { Word } from "../models/Word";
+import { Weights } from "../models/Weights";
 
 export default function Debugger({
   words,
-  history,
+  weights,
 }: {
   words: Word[];
-  history: HistoryItem[];
+  weights: Weights;
 }) {
-  const counts = useMemo(
-    () =>
-      history.reduce<{
-        [word: string]: {
-          [key in Question["type"]]: { miss: number; hit: number };
-        };
-      }>((passed, h) => {
-        if (passed[h.question.word.german] === undefined) {
-          passed[h.question.word.german] = {
-            define: { miss: 0, hit: 0 },
-            "fill-blank": { miss: 0, hit: 0 },
-            "translate-from": { miss: 0, hit: 0 },
-            "translate-to": { miss: 0, hit: 0 },
-          };
-        }
-
-        if (h.missResponses.length > 0) {
-          passed[h.question.word.german][h.question.type].miss += 1;
-        } else {
-          passed[h.question.word.german][h.question.type].hit += 1;
-        }
-
-        return passed;
-      }, {}),
-    [history]
+  const maxWeight = Math.max(
+    ...Object.values(weights).flatMap((b) => Object.values(b ?? {}))
   );
 
   return (
@@ -43,11 +19,6 @@ export default function Debugger({
         <thead>
           <tr>
             <th></th>
-            <th className="p-0 relative">
-              <div className="absolute right-0 bottom-0 h-4 w-32 transform rotate-45 origin-right text-right mb-2 mr-2">
-                Total
-              </div>
-            </th>
             {questionTypes.map((t) => (
               <th key={t} className="p-0 relative">
                 <div className="absolute right-0 bottom-0 h-4 w-32 transform rotate-45 origin-right text-right mb-2 mr-2">
@@ -58,51 +29,34 @@ export default function Debugger({
           </tr>
         </thead>
         <tbody>
-          {words.map((w) => (
-            <tr key={w.german}>
-              <td className="pr-2 text-right">{w.german}</td>
-              <td className="p-0">
-                <Tile
-                  miss={Object.values(counts[w.german] ?? {}).reduce(
-                    (c, s) => c + s.miss,
-                    0
-                  )}
-                  hit={Object.values(counts[w.german] ?? {}).reduce(
-                    (c, s) => c + s.hit,
-                    0
-                  )}
-                />
-              </td>
-              {questionTypes.map((t) => (
-                <td key={t} className="p-0">
-                  <Tile
-                    miss={counts[w.german]?.[t]?.miss ?? 0}
-                    hit={counts[w.german]?.[t]?.hit ?? 0}
-                  />
-                </td>
-              ))}
-            </tr>
-          ))}
+          {[...words]
+            .sort((a, b) => a.german.localeCompare(b.german))
+            .map((w) => (
+              <tr key={w.german}>
+                <td className="pr-2 text-right">{w.german}</td>
+                {questionTypes.map((t) => (
+                  <td key={t} className="p-0">
+                    <Tile weight={(weights[w.german]?.[t] ?? 0) / maxWeight} />
+                  </td>
+                ))}
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-function Tile({ miss, hit }: { miss: number; hit: number }) {
+function Tile({ weight }: { weight: number }) {
   return (
     <div
-      className={`w-5 h-5 m-0.5 rounded text-white flex items-center justify-center ${
-        miss === 0 && hit === 0
-          ? "bg-gray-200"
-          : hit > miss
-          ? "bg-green-500"
-          : hit === miss
-          ? "bg-yellow-500"
-          : "bg-red-500"
-      }`}
+      className={`w-5 h-5 m-0.5 cursor-default rounded text-transparent hover:text-black flex items-center justify-center`}
+      style={{
+        backgroundColor: `hsla(0, 50%, 50%, ${Math.log2(1 + weight)})`,
+        fontSize: "0.5rem",
+      }}
     >
-      {miss === 0 && hit === 0 ? "" : miss + hit}
+      {weight.toFixed(3)}
     </div>
   );
 }

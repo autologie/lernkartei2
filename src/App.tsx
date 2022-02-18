@@ -7,13 +7,20 @@ import Question from "./components/Question";
 import useAddNewWord from "./hooks/useAddNewWord";
 import useKeyEventListener from "./hooks/useKeyEventListener";
 import useNextAutomatically from "./hooks/useNextAutomatically";
+import useNotifier from "./hooks/useNotifier";
 import useRemoteWords from "./hooks/useRemoteWords";
 import { applyAction, getInitialState } from "./models/State";
 
 function noop() {}
 
+const size = new URLSearchParams(window.location.search).get("size");
+
 function App() {
-  const [state, dispatch] = useReducer(applyAction, undefined, getInitialState);
+  const [state, dispatch] = useReducer(
+    applyAction,
+    size === null ? undefined : Number.parseInt(size, 10),
+    getInitialState
+  );
   const historyToShow =
     state.historyCursor === undefined
       ? undefined
@@ -27,10 +34,11 @@ function App() {
   useRemoteWords(dispatch);
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
+  useNotifier(state);
 
   return (
-    <div className="p-4 max-w-prose mx-auto">
-      <h1>Lernkartei v2</h1>
+    <div className="p-4 pb-24 max-w-prose mx-auto">
+      <h1 className="text-center">Lernkartei v2</h1>
       {state.words?.length === 0 ? (
         <p>Add a few words to get started!</p>
       ) : state.question === undefined ? (
@@ -64,13 +72,13 @@ function App() {
             (state.historyCursor === undefined ||
               state.history.length > state.historyCursor + 1) && (
               <PrevButton
-                className="mt-4 absolute left-0 top-0 -ml-10"
+                className="mt-6 absolute left-0 top-0 -ml-10"
                 onClick={() => dispatch({ type: "back" })}
               />
             )}
           {state.historyCursor !== undefined && (
             <NextButton
-              className="mt-4 absolute right-0 top-0 -mr-10"
+              className="mt-6 absolute right-0 top-0 -mr-10"
               onClick={() => dispatch({ type: "next" })}
             />
           )}
@@ -80,9 +88,9 @@ function App() {
         state.question !== undefined &&
         state.done &&
         state.historyCursor === undefined && (
-          <div>
+          <div className="fixed left-0 bottom-0 m-4 w-full mx-auto">
             <button
-              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-12 text-xl"
+              className="block mx-auto mt-4 bg-blue-500 text-white rounded-xl py-2 px-24 text-xl"
               onClick={() => dispatch({ type: "next" })}
             >
               Next
@@ -90,7 +98,7 @@ function App() {
           </div>
         )}
       <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
-      <Debugger words={state.words ?? []} history={state.history} />
+      <Debugger words={state.words ?? []} weights={state.weights} />
     </div>
   );
 }

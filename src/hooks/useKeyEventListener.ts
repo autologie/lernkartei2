@@ -48,5 +48,5 @@ export default function useKeyEventListener(
     return () => {
       window.removeEventListener("keydown", handleEvent);
     };
-  }, [choiceCount, dispatch]);
+  }, [choiceCount, dispatch, onAddNew]);
 }

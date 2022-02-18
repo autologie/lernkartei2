@@ -25,7 +25,7 @@ export default function QuestionTemplate({
 }) {
   return (
     <div>
-      <h2 className="text-2xl py-4">{question}</h2>
+      <h2 className="text-2xl py-6">{question}</h2>
       <ol className="flex items-stretch flex-col gap-2">
         {choices.map((c, index) => {
           const isMiss = missedResponses.includes(index);

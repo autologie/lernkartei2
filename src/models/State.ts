@@ -1,6 +1,8 @@
-import { HistoryItem, createQuestion } from "./HistoryItem";
+import { HistoryItem } from "./HistoryItem";
+import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
-import { Word } from "./Word";
+import { createQuestion, createWeights, Weights } from "./Weights";
+import { modify, Word } from "./Word";
 
 export interface State {
   words?: Word[];
@@ -8,7 +10,11 @@ export interface State {
   done: boolean;
   missResponses: number[];
   history: HistoryItem[];
+  progress: LearningProgress;
+  weights: Weights;
   historyCursor?: number;
+  size?: number;
+  allDone: boolean;
 }
 
 export type Action =
@@ -21,14 +27,29 @@ export type Action =
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
     case "respond":
-      return state.question === undefined
-        ? state
-        : state.question.answerIndex === action.payload
-        ? { ...state, done: true }
-        : {
-            ...state,
-            missResponses: state.missResponses.concat([action.payload]),
-          };
+      if (state.question === undefined) {
+        return state;
+      }
+
+      if (state.question.answerIndex === action.payload) {
+        const progress = addResult(
+          state.progress,
+          state.question,
+          state.missResponses.length === 0
+        );
+
+        return {
+          ...state,
+          done: true,
+          progress,
+          weights: createWeights(state.words ?? [], progress),
+        };
+      }
+
+      return {
+        ...state,
+        missResponses: state.missResponses.concat([action.payload]),
+      };
     case "back":
       return state.historyCursor === undefined
         ? state.history.length > 0
@@ -39,7 +60,7 @@ export function applyAction(state: State, action: Action): State {
         : state;
     case "next":
       if (state.historyCursor === undefined) {
-        if (state.words === undefined || !state.done) {
+        if (state.words === undefined || !state.done || state.allDone) {
           return state;
         }
 
@@ -53,12 +74,13 @@ export function applyAction(state: State, action: Action): State {
                 },
               ]
         ).concat(state.history);
-        const nextQuestion = createQuestion(history, state.words);
+        const nextQuestion = createQuestion(state.weights, state.words);
 
         if (nextQuestion === undefined) {
           return {
             ...state,
             history,
+            allDone: true,
           };
         }
 
@@ -79,18 +101,28 @@ export function applyAction(state: State, action: Action): State {
     case "add":
       return state.words === undefined
         ? state
-        : { ...state, words: state.words.concat([action.payload]) };
+        : { ...state, words: state.words.concat([modify(action.payload)]) };
     case "loaded":
-      const words = action.payload;
+      const words = action.payload.slice(0, state.size).map(modify);
+      const weights = createWeights(words, state.progress);
 
       return {
         ...state,
         words: words,
-        question: createQuestion(state.history, words),
+        weights,
+        question: createQuestion(weights, words),
       };
   }
 }
 
-export function getInitialState(): State {
-  return { done: false, missResponses: [], history: [] };
+export function getInitialState(size?: number): State {
+  return {
+    done: false,
+    missResponses: [],
+    history: [],
+    size,
+    allDone: false,
+    progress: { table: {}, tick: 0 },
+    weights: {},
+  };
 }
