@@ -37,6 +37,13 @@ export interface TranslateFrom {
 
 export type Question = FillBlank | Define | TranslateTo | TranslateFrom;
 
+export const questionTypes: Question["type"][] = [
+  "define",
+  "fill-blank",
+  "translate-from",
+  "translate-to",
+];
+
 export function shuffleChoices(question: Question) {
   const choices = shuffle(question.choices);
 

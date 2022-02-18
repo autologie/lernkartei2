@@ -4,7 +4,8 @@ import { Action } from "../models/State";
 
 export default function useKeyEventListener(
   question: Question | undefined,
-  dispatch: Dispatch<Action>
+  dispatch: Dispatch<Action>,
+  onAddNew: () => void
 ) {
   const choiceCount = question?.choices.length;
 
@@ -29,6 +30,11 @@ export default function useKeyEventListener(
 
       if (e.key === " " || e.key === "ArrowRight") {
         dispatch({ type: "next" });
+        return;
+      }
+
+      if (e.key === "n") {
+        onAddNew();
         return;
       }
 

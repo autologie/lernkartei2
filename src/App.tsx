@@ -1,5 +1,6 @@
 import { useCallback, useReducer } from "react";
 import AddButton from "./components/AddButton";
+import Debugger from "./components/Debugger";
 import NextButton from "./components/NextButton";
 import PrevButton from "./components/PrevButton";
 import Question from "./components/Question";
@@ -25,7 +26,7 @@ function App() {
 
   useRemoteWords(dispatch);
   useNextAutomatically(1000, state, dispatch);
-  useKeyEventListener(state.question, dispatch);
+  useKeyEventListener(state.question, dispatch, handleAdd);
 
   return (
     <div className="p-4 max-w-prose mx-auto">
@@ -75,7 +76,6 @@ function App() {
           )}
         </div>
       )}
-
       {state.missResponses.length > 0 &&
         state.question !== undefined &&
         state.done &&
@@ -90,6 +90,7 @@ function App() {
           </div>
         )}
       <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
+      <Debugger words={state.words ?? []} history={state.history} />
     </div>
   );
 }

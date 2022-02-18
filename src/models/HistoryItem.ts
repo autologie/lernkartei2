@@ -4,6 +4,8 @@ import {
   createTranslateFromQuestion,
   createTranslateToQuestion,
   Question,
+  questionTypes,
+  shuffleChoices,
 } from "./Question";
 import { Word } from "./Word";
 import { getRandomElement } from "./Array";
@@ -18,45 +20,39 @@ function createQuestionImpl(
   words: Word[],
   retries: number
 ): Question | undefined {
-  if (retries > 10) {
-    return undefined;
-  }
-
-  const INVISIBLE_PERIOD = 2;
-  const [missedQuestions] = history.reduce<
-    [Question[], { [word: string]: true }]
-  >(
-    ([misses, hits], h, i) => {
-      const word = h.question.word.german;
-
-      if (h.missResponses.length === 0) {
-        hits[word] = true;
-      } else if (!hits[word] && i >= INVISIBLE_PERIOD) {
-        misses.push(h.question);
-      }
-
-      return [misses, hits];
-    },
-    [[], {}]
-  );
-
-  if (missedQuestions.length > 0) {
-    return getRandomElement(missedQuestions);
-  }
-
-  const types: Question["type"][] = [
-    "define",
-    "fill-blank",
-    "translate-from",
-    "translate-to",
-  ];
-  const practicedWords = history.map((h) => h.question.word.german);
-  const word = getRandomElement(
-    words.filter((w) => !practicedWords.includes(w.german))
-  );
-
   try {
-    switch (getRandomElement(types)) {
+    if (retries > 10) {
+      return undefined;
+    }
+
+    const INVISIBLE_PERIOD = 2;
+    const [missedQuestions] = history.reduce<
+      [Question[], { [word: string]: number }]
+    >(
+      ([misses, hits], h, i) => {
+        const word = h.question.word.german;
+
+        if (h.missResponses.length === 0) {
+          hits[word] = (hits[word] ?? 0) + 1;
+        } else if ((hits[word] ?? 0) <= 2 && i >= INVISIBLE_PERIOD) {
+          misses.push(h.question);
+        }
+
+        return [misses, hits];
+      },
+      [[], {}]
+    );
+
+    if (missedQuestions.length > 0) {
+      return shuffleChoices(getRandomElement(missedQuestions));
+    }
+
+    const practicedWords = history.map((h) => h.question.word.german);
+    const word = getRandomElement(
+      words.filter((w) => !practicedWords.includes(w.german))
+    );
+
+    switch (getRandomElement(questionTypes)) {
       case "define":
         return createDefineQuestion(word, words);
       case "fill-blank":

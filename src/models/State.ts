@@ -38,41 +38,55 @@ export function applyAction(state: State, action: Action): State {
         ? { ...state, historyCursor: state.historyCursor + 1 }
         : state;
     case "next":
-      const history = (
-        state.question === undefined
-          ? []
-          : [
-              {
-                question: state.question,
-                missResponses: state.missResponses,
-              },
-            ]
-      ).concat(state.history);
+      if (state.historyCursor === undefined) {
+        if (state.words === undefined || !state.done) {
+          return state;
+        }
 
-      return state.historyCursor === undefined
-        ? state.words === undefined || !state.done
-          ? state
-          : {
-              ...state,
-              question: createQuestion(history, state.words),
-              done: false,
-              missResponses: [],
-              history: history,
-            }
-        : {
+        const history = (
+          state.question === undefined
+            ? []
+            : [
+                {
+                  question: state.question,
+                  missResponses: state.missResponses,
+                },
+              ]
+        ).concat(state.history);
+        const nextQuestion = createQuestion(history, state.words);
+
+        if (nextQuestion === undefined) {
+          return {
             ...state,
-            historyCursor:
-              state.historyCursor === 0 ? undefined : state.historyCursor - 1,
+            history,
           };
+        }
+
+        return {
+          ...state,
+          question: nextQuestion,
+          done: false,
+          missResponses: [],
+          history: history,
+        };
+      }
+
+      return {
+        ...state,
+        historyCursor:
+          state.historyCursor === 0 ? undefined : state.historyCursor - 1,
+      };
     case "add":
       return state.words === undefined
         ? state
         : { ...state, words: state.words.concat([action.payload]) };
     case "loaded":
+      const words = action.payload;
+
       return {
         ...state,
-        words: action.payload,
-        question: createQuestion(state.history, action.payload),
+        words: words,
+        question: createQuestion(state.history, words),
       };
   }
 }
