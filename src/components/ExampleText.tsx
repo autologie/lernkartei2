@@ -54,7 +54,7 @@ export default function ExampleText({
         )}
       </i>,
       <Fragment key={index * 3 + 2}>
-        {matched[1] === undefined ? "" : ` ${matched[1]}`}
+        {matched[1] === undefined ? "" : matched[1]}
       </Fragment>
     );
 

@@ -17,7 +17,7 @@ function getWeight(
   currentTick: number,
   totalWordCount: number,
   type: Question["type"],
-  entry?: { [key in Question["type"]]: LearningProgressEntry }
+  entry?: { [key in Question["type"]]?: LearningProgressEntry }
 ): number {
   const subEntry = entry?.[type];
   const INVISIBLE_DURATION = 1;
@@ -103,7 +103,7 @@ function findRandom(words: Word[], weights: Weights): [Word, Question["type"]] {
     }
 
     for (const t of questionTypes) {
-      current += entry[t];
+      current += entry[t] ?? 0;
 
       if (current >= cursor) {
         const word = words.find((w) => w.german === german);

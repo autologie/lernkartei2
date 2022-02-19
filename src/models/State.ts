@@ -25,6 +25,7 @@ export type Action =
   | { type: "back" }
   | { type: "next" }
   | { type: "close-modal" }
+  | { type: "load-learning-progress"; payload?: LearningProgress }
   | { type: "add"; payload: Word }
   | { type: "loaded"; payload: Word[] };
 
@@ -155,6 +156,8 @@ export function applyAction(state: State, action: Action): State {
       };
     case "close-modal":
       return { ...state, modal: undefined };
+    case "load-learning-progress":
+      return { ...state, progress: action.payload ?? state.progress };
   }
 }
 

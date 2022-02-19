@@ -17,13 +17,7 @@ export function addResult(
   question: Question,
   ok: boolean
 ): LearningProgress {
-  const entry = progress.table[question.word] ?? {
-    define: { miss: false },
-    "fill-blank": { miss: false },
-    "translate-from": { miss: false },
-    "translate-to": { miss: false },
-    photo: { miss: false },
-  };
+  const entry = progress.table[question.word] ?? {};
   const subEntry = entry[question.type];
   const tick = progress.tick + 1;
 
@@ -35,11 +29,11 @@ export function addResult(
       [question.word]: {
         ...entry,
         [question.type]: {
-          miss: subEntry.miss || !ok,
+          miss: (subEntry?.miss ?? false) || !ok,
           lastEncounteredTick: tick,
           certainty: ok
-            ? subEntry.miss
-              ? fromNumber((subEntry.certainty ?? 0) + 1)
+            ? subEntry?.miss ?? false
+              ? fromNumber((subEntry?.certainty ?? 0) + 1)
               : 3
             : 0,
         },

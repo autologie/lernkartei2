@@ -26,12 +26,16 @@ export default function QuestionTemplate({
   showExplanation: boolean;
   onResponse: (response: number) => void;
 }) {
+  const ChoiceElement = done ? "div" : "button";
+
   return (
     <div>
       <h2 className="text-2xl py-6">{question}</h2>
       <ol
         className={`gap-2 ${
-          layout === "grid" ? "grid grid-cols-2" : "flex flex-col items-stretch"
+          layout === "grid"
+            ? "grid grid-col-1 md:grid-cols-2"
+            : "flex flex-col items-stretch"
         }`}
       >
         {choices.map((c, index) => {
@@ -40,7 +44,7 @@ export default function QuestionTemplate({
 
           return (
             <li key={index}>
-              <button
+              <ChoiceElement
                 className={`${
                   !done && isMiss ? styles.wrong_choice : ""
                 } border-2 border-solid border-transparent flex items-center w-full transition-colors rounded-xl py-2 px-4 text-left ${
@@ -64,7 +68,7 @@ export default function QuestionTemplate({
                   {isMiss ? "×" : isHit ? "️✓︎" : index + 1}
                 </div>
                 {c}
-              </button>
+              </ChoiceElement>
             </li>
           );
         })}

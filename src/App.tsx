@@ -11,6 +11,7 @@ import useNextAutomatically from "./hooks/useNextAutomatically";
 import useNotifier from "./hooks/useNotifier";
 import useRemoteWords from "./hooks/useRemoteWords";
 import { applyAction, getInitialState } from "./models/State";
+import { useLearningProgressPersistence } from "./hooks/useLearningProgressPersistence";
 
 function noop() {}
 
@@ -52,6 +53,7 @@ function App() {
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
+  useLearningProgressPersistence(state.progress, dispatch);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative">
