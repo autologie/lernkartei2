@@ -1,0 +1,16 @@
+.next_button_ping {
+  animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  z-index: -1;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes ping {
+  25%, 100% {
+    margin: -8px;
+    opacity: 0;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
+  }
+}

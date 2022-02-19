@@ -4,6 +4,7 @@ export interface Settings {
   size?: number;
   partOfSpeech?: string;
   wordFilter?: string;
+  debug: boolean;
 }
 
 export function test(settings: Settings, word: Word): boolean {

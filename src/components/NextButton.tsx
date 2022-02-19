@@ -1,3 +1,5 @@
+import styles from "./NextButton.module.css";
+
 export default function NextButton({
   className,
   onClick,
@@ -7,13 +9,15 @@ export default function NextButton({
 }) {
   return (
     <button
-      title="Next"
-      className={`w-16 h-16 text-xl text-gray-500 rounded-full transition-colors hover:bg-gray-100 flex items-center justify-center ${
+      className={`relative block bg-blue-500 text-white rounded-xl py-2 px-24 text-base font-light ${
         className ?? ""
       }`}
       onClick={onClick}
     >
-      &gt;
+      <span
+        className={`absolute left-0 top-0 bg-blue-500 rounded-2xl ${styles.next_button_ping}`}
+      ></span>
+      Next
     </button>
   );
 }

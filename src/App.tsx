@@ -2,7 +2,7 @@ import { useCallback, useMemo, useReducer } from "react";
 import AddButton from "./components/AddButton";
 import Debugger from "./components/Debugger";
 import NextButton from "./components/NextButton";
-import PrevButton from "./components/PrevButton";
+import NavButton from "./components/NavButton";
 import Question from "./components/Question";
 import Word from "./components/Word";
 import useAddNewWord from "./hooks/useAddNewWord";
@@ -18,10 +18,12 @@ const search = new URLSearchParams(window.location.search);
 const size = search.get("size");
 const partOfSpeech = search.get("partOfSpeech");
 const filter = search.get("filter");
+const debug = search.has("debug");
 const settings = {
   size: size === null ? undefined : Number.parseInt(size, 10),
   partOfSpeech: partOfSpeech ?? undefined,
   wordFilter: filter ?? undefined,
+  debug,
 };
 
 function App() {
@@ -97,13 +99,15 @@ function App() {
           {state.history.length > 0 &&
             (state.historyCursor === undefined ||
               state.history.length > state.historyCursor + 1) && (
-              <PrevButton
+              <NavButton
+                direction="prev"
                 className="mt-20 absolute left-0 top-0 -ml-20"
                 onClick={() => dispatch({ type: "back" })}
               />
             )}
           {state.historyCursor !== undefined && (
-            <NextButton
+            <NavButton
+              direction="next"
               className="mt-20 absolute right-0 top-0 -mr-20"
               onClick={() => dispatch({ type: "next" })}
             />
@@ -114,13 +118,11 @@ function App() {
         state.question !== undefined &&
         state.done &&
         state.historyCursor === undefined && (
-          <div className="fixed left-0 bottom-0 m-4 w-full mx-auto">
-            <button
-              className="block mx-auto mt-4 bg-blue-500 text-white rounded-xl py-2 px-24 text-base font-light"
+          <div className="fixed left-0 bottom-0 m-4 w-full">
+            <NextButton
+              className="mx-auto mt-4"
               onClick={() => dispatch({ type: "next" })}
-            >
-              Next
-            </button>
+            />
           </div>
         )}
       <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
@@ -138,7 +140,9 @@ function App() {
           </div>
         </div>
       )}
-      <Debugger words={state.words ?? []} weights={state.weights} />
+      {state.settings.debug && (
+        <Debugger words={state.words ?? []} weights={state.weights} />
+      )}
     </div>
   );
 }
