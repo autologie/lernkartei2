@@ -3,7 +3,7 @@ import cors from "cors";
 import { loadWords, fetchFromWiktionary, addWord } from "./dictionary";
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT ?? 8080;
 
 app.use(cors());
 
