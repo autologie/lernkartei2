@@ -7,7 +7,10 @@ export default function ExampleText({
   children: string;
   mode: "mask" | "italic" | "italic-green";
 }) {
-  const children = children_.replace(/{[^}]*}/, "").trim(); // remove math equation notation
+  const children = children_
+    .replace(/{[^}]*}/, "")
+    .replace(/\[\[mit (Genitiv|Dativ|Akkusativ|Nominativ):\]\]/, "")
+    .trim(); // remove math equation notation
   const regex = /\[\[[^\].,?]+(,|\?|.)?\]\]/g;
 
   if (mode === "mask") {
@@ -28,7 +31,7 @@ export default function ExampleText({
 
     if (matched === null) {
       segments.push(
-        <Fragment key={index * 2}>
+        <Fragment key={index * 3}>
           {children.slice(index, children.length)}
         </Fragment>
       );
@@ -38,15 +41,21 @@ export default function ExampleText({
     const nextIndex = matched.index + matched[0].length;
 
     segments.push(
-      <Fragment key={index * 2}>
+      <Fragment key={index * 3}>
         {children.slice(index, matched.index)}
       </Fragment>,
       <i
-        key={index * 2 + 1}
+        key={index * 3 + 1}
         className={mode === "italic-green" ? "text-green-600" : ""}
       >
-        {children.slice(matched.index + 2, nextIndex - 2)}
-      </i>
+        {children.slice(
+          matched.index + 2,
+          nextIndex - 2 - (matched[1]?.length ?? 0)
+        )}
+      </i>,
+      <Fragment key={index * 3 + 2}>
+        {matched[1] === undefined ? "" : ` ${matched[1]}`}
+      </Fragment>
     );
 
     index = nextIndex;
