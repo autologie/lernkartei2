@@ -35,7 +35,14 @@ export default function Question({
           {...commonProps}
           question={
             <>
-              Was bedeutet <i className="font-semibold">{word.german}</i>?
+              <p>
+                Was bedeutet <i className="font-semibold">{word.german}</i>?
+              </p>
+              {question.definitionIndex > 0 && (
+                <p className="text-base mt-2 text-gray-500">
+                  Achtung: <i>{word.german}</i> ist mehrdeutig!
+                </p>
+              )}
             </>
           }
           choices={question.choices.map((c) => c.replace(word.german, "———"))}
@@ -67,8 +74,15 @@ export default function Question({
           {...commonProps}
           question={
             <>
-              Wie heißt <i className="font-semibold">{word.german}</i> auf
-              Englisch?
+              <p>
+                Wie heißt <i className="font-semibold">{word.german}</i> auf
+                Englisch?
+              </p>
+              {question.definitionIndex > 0 && (
+                <p className="text-base mt-2 text-gray-500">
+                  Achtung: <i>{word.german}</i> ist mehrdeutig!
+                </p>
+              )}
             </>
           }
           choices={question.choices}
@@ -79,18 +93,42 @@ export default function Question({
         <QuestionTemplate
           {...commonProps}
           question={
-            <ExampleText mode={done ? "italic-green" : "mask"}>
-              {
-                word.definitions[question.definitionIndex].examples[
-                  question.exampleIndex
-                ]
-              }
-            </ExampleText>
+            <>
+              <ExampleText mode={done ? "italic-green" : "mask"}>
+                {
+                  word.definitions[question.definitionIndex].examples[
+                    question.exampleIndex
+                  ]
+                }
+              </ExampleText>
+              <p className="text-base mt-2 text-gray-500">
+                Hinweiß: {word.definitions[question.definitionIndex].definition}
+              </p>
+            </>
           }
           choices={question.choices}
         />
       );
-    default:
-      return <div>TBD</div>;
+    case "photo":
+      const photo = (word.definitions[question.definitionIndex].photos ?? [])[
+        question.photoIndex
+      ];
+
+      return (
+        <QuestionTemplate
+          {...commonProps}
+          question={
+            <>
+              Welche Wort passt zum Bild an?
+              <img
+                src={photo.url}
+                alt={photo.caption}
+                className="block mx-auto mt-4"
+              />
+            </>
+          }
+          choices={question.choices}
+        />
+      );
   }
 }

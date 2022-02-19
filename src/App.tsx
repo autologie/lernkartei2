@@ -4,6 +4,7 @@ import Debugger from "./components/Debugger";
 import NextButton from "./components/NextButton";
 import PrevButton from "./components/PrevButton";
 import Question from "./components/Question";
+import Word from "./components/Word";
 import useAddNewWord from "./hooks/useAddNewWord";
 import useKeyEventListener from "./hooks/useKeyEventListener";
 import useNextAutomatically from "./hooks/useNextAutomatically";
@@ -13,20 +14,18 @@ import { applyAction, getInitialState } from "./models/State";
 
 function noop() {}
 
-const size = new URLSearchParams(window.location.search).get("size");
-const partOfSpeech = new URLSearchParams(window.location.search).get(
-  "partOfSpeech"
-);
+const search = new URLSearchParams(window.location.search);
+const size = search.get("size");
+const partOfSpeech = search.get("partOfSpeech");
+const filter = search.get("filter");
+const settings = {
+  size: size === null ? undefined : Number.parseInt(size, 10),
+  partOfSpeech: partOfSpeech ?? undefined,
+  wordFilter: filter ?? undefined,
+};
 
 function App() {
-  const [state, dispatch] = useReducer(
-    applyAction,
-    {
-      size: size === null ? undefined : Number.parseInt(size, 10),
-      partOfSpeech: partOfSpeech ?? undefined,
-    },
-    getInitialState
-  );
+  const [state, dispatch] = useReducer(applyAction, settings, getInitialState);
   const historyToShow =
     state.historyCursor === undefined
       ? undefined
@@ -53,7 +52,7 @@ function App() {
   useNotifier(state);
 
   return (
-    <div className="p-4 pb-24 max-w-prose mx-auto">
+    <div className="p-4 pb-24 max-w-prose mx-auto relative">
       <h1 className="text-center">Lernkartei v2</h1>
       {state.words?.length === 0 ? (
         <p>Add a few words to get started!</p>
@@ -126,6 +125,20 @@ function App() {
           </div>
         )}
       <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
+      {state.modal?.type === "word-added" && (
+        <div className="fixed left-0 top-0 w-full h-full flex flex-col items-center justify-start z-10 p-12 pt-36 overflow-auto">
+          <div className="w-full max-w-prose p-4 bg-white shadow-xl rounded-xl">
+            <h2 className="text-2xl font-semibold mb-4">Word added</h2>
+            <Word word={state.modal.word} />
+            <button
+              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-24 text-lg"
+              onClick={() => dispatch({ type: "close-modal" })}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <Debugger words={state.words ?? []} weights={state.weights} />
     </div>
   );

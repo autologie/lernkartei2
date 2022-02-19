@@ -35,7 +35,16 @@ export interface TranslateFrom {
   answerIndex: number;
 }
 
-export type Question = FillBlank | Define | TranslateTo | TranslateFrom;
+export interface Photo {
+  type: "photo";
+  word: string;
+  definitionIndex: number;
+  photoIndex: number;
+  choices: string[];
+  answerIndex: number;
+}
+
+export type Question = FillBlank | Define | TranslateTo | TranslateFrom | Photo;
 
 export interface QuestionTable<T> {
   [word: string]:
@@ -50,6 +59,7 @@ export const questionTypes: Question["type"][] = [
   "fill-blank",
   "translate-from",
   "translate-to",
+  "photo",
 ];
 
 export function shuffleChoices(question: Question) {
@@ -147,6 +157,30 @@ export function createTranslateToQuestion(word: Word, words: Word[]): Question {
           w === word || w.partOfSpeech !== word.partOfSpeech
             ? []
             : w.definitions.flatMap((d) => d.english)
+        )
+      ).slice(0, 4),
+    ].filter((v): v is string => v !== undefined),
+    answerIndex: 0,
+  };
+
+  return shuffleChoices(question);
+}
+
+export function createPhotoQuestion(word: Word, words: Word[]): Question {
+  const definitionIndex = getRandomIndex(word.definitions);
+  const photoIndex = getRandomIndex(
+    word.definitions[definitionIndex].photos ?? []
+  );
+  const question: Question = {
+    type: "photo",
+    word: word.german,
+    definitionIndex,
+    photoIndex,
+    choices: [
+      word.german,
+      ...shuffle(
+        words.flatMap((w) =>
+          w === word || w.partOfSpeech !== word.partOfSpeech ? [] : [w.german]
         )
       ).slice(0, 4),
     ].filter((v): v is string => v !== undefined),

@@ -4,17 +4,26 @@ export interface Word {
   definitions: WordMeaning[];
 }
 
+export interface Photo {
+  url: string;
+  caption: string;
+}
+
 export interface WordMeaning {
   definition: string;
   english: string[];
   examples: string[];
+  photos?: Photo[];
 }
 
 export function modify(word: Word): Word {
   return {
     ...word,
     definitions: word.definitions.filter(
-      (d) => !d.definition.includes("veraltete Bedeutung") // exclude less relevant definition; maybe nice to include in a "hard mode"
+      (d) =>
+        !d.definition.includes("veraltend:") &&
+        !d.definition.includes("veraltende Bedeutung:") &&
+        !d.definition.includes("veraltete Bedeutung:") // exclude less relevant definition; maybe nice to include in a "hard mode"
     ),
   };
 }

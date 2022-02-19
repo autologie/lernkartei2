@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 import jsdom from "jsdom";
-import { Word } from "./models/Word";
+import { Photo, Word } from "./models/Word";
 import fs from "fs";
 import path from "path";
 
@@ -67,6 +67,34 @@ function extractWiktionaryContent(
     );
     return passed;
   }, new Map<number, string[]>());
+  const photosMap = [...dom.window.document.querySelectorAll(".thumb")].reduce(
+    (passed, el) => {
+      const img = el.querySelector("img");
+      const captionEl = el.querySelector(".thumbcaption");
+
+      if (img !== null && captionEl !== null) {
+        const index = findIndex(captionEl.textContent ?? "");
+
+        passed.set(
+          index,
+          (passed.get(index) ?? []).concat([
+            {
+              url: img.src,
+              caption: [...captionEl.childNodes]
+                .map((n) =>
+                  n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
+                )
+                .join("")
+                .replace(/\[\d+\]/g, ""),
+            },
+          ])
+        );
+      }
+
+      return passed;
+    },
+    new Map<number, Photo[]>()
+  );
 
   if (partOfSpeech === undefined) {
     return undefined;
@@ -92,6 +120,7 @@ function extractWiktionaryContent(
                   .replace(/\[\d+\]/g, "") ?? "",
               examples: exampleMap.get(index) ?? [],
               english: englishMap.get(index) ?? [],
+              photos: photosMap.get(index) ?? [],
             },
           ];
     }),

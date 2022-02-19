@@ -22,6 +22,7 @@ export function addResult(
     "fill-blank": { miss: false },
     "translate-from": { miss: false },
     "translate-to": { miss: false },
+    photo: { miss: false },
   };
   const subEntry = entry[question.type];
   const tick = progress.tick + 1;

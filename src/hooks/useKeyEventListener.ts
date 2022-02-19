@@ -28,7 +28,12 @@ export default function useKeyEventListener(
         return;
       }
 
-      if (e.key === " " || e.key === "ArrowRight") {
+      if (e.key === "Escape") {
+        dispatch({ type: "close-modal" });
+        return;
+      }
+
+      if (e.key === "ArrowRight" || e.key === "Enter") {
         dispatch({ type: "next" });
         return;
       }

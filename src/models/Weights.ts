@@ -2,6 +2,7 @@ import { LearningProgress, LearningProgressEntry } from "./LearningProgress";
 import {
   createDefineQuestion,
   createFillBlankQuestion,
+  createPhotoQuestion,
   createTranslateFromQuestion,
   createTranslateToQuestion,
   Question,
@@ -26,17 +27,24 @@ function getWeight(
     return 8;
   }
 
+  const lastTick = Object.values(entry).reduce<number | undefined>(
+    (a, b) =>
+      a === undefined
+        ? b.lastEncounteredTick
+        : b.lastEncounteredTick === undefined
+        ? a
+        : Math.max(a, b.lastEncounteredTick),
+    undefined
+  );
+
+  if (lastTick !== undefined && currentTick < lastTick + INVISIBLE_DURATION) {
+    // word that is seen very recently
+    return 0;
+  }
+
   if (subEntry === undefined) {
     // word that is already seen, but not asked in this question type
     return 3;
-  }
-
-  if (
-    subEntry.lastEncounteredTick !== undefined &&
-    currentTick < subEntry.lastEncounteredTick + INVISIBLE_DURATION
-  ) {
-    // question that is seen very recently
-    return 0;
   }
 
   if (subEntry.certainty === 3) {
@@ -44,13 +52,9 @@ function getWeight(
     return 1;
   }
 
-  if (subEntry.miss) {
+  if (Object.values(entry).some((e) => e.miss)) {
     // question that is wrongly answered before
-    return (
-      Math.max(1, currentTick - (subEntry.lastEncounteredTick ?? 0)) *
-      Math.max(1, 3 - (subEntry.certainty ?? 0)) *
-      totalWordCount
-    );
+    return Math.max(1, currentTick - (lastTick ?? 0)) * totalWordCount;
   }
 
   return 5;
@@ -78,6 +82,7 @@ export function createWeights(
         "translate-to",
         entry
       ),
+      photo: getWeight(progress.tick, words.length, "photo", entry),
     };
 
     return passed;
@@ -136,6 +141,8 @@ export function createQuestion(
           return createTranslateFromQuestion(word, words);
         case "translate-to":
           return createTranslateToQuestion(word, words);
+        case "photo":
+          return createPhotoQuestion(word, words);
       }
     } catch (e) {
       return createQuestionImpl(retries + 1);

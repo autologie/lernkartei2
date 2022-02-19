@@ -1,7 +1,7 @@
 import { HistoryItem } from "./HistoryItem";
 import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
-import { Settings } from "./Settings";
+import { Settings, test } from "./Settings";
 import { createQuestion, createWeights, Weights } from "./Weights";
 import { modify, Word } from "./Word";
 
@@ -16,6 +16,7 @@ export interface State {
   historyCursor?: number;
   settings: Settings;
   allDone: boolean;
+  modal?: { type: "word-added"; word: Word };
 }
 
 export type Action =
@@ -23,6 +24,7 @@ export type Action =
   | { type: "skip" }
   | { type: "back" }
   | { type: "next" }
+  | { type: "close-modal" }
   | { type: "add"; payload: Word }
   | { type: "loaded"; payload: Word[] };
 
@@ -61,6 +63,10 @@ export function applyAction(state: State, action: Action): State {
         ? { ...state, historyCursor: state.historyCursor + 1 }
         : state;
     case "next":
+      if (state.modal !== undefined) {
+        return state;
+      }
+
       if (state.historyCursor === undefined) {
         if (state.words === undefined || !state.done || state.allDone) {
           return state;
@@ -122,24 +128,20 @@ export function applyAction(state: State, action: Action): State {
       };
 
     case "add":
-      return state.words === undefined ||
-        (state.settings.partOfSpeech !== undefined &&
-          state.settings.partOfSpeech !== action.payload.partOfSpeech)
+      const word = modify(action.payload);
+
+      return state.words === undefined || !test(state.settings, action.payload)
         ? state
         : {
             ...state,
             words: state.words
-              .concat([modify(action.payload)])
+              .concat([word])
               .sort((a, b) => a.german.localeCompare(b.german)),
+            modal: { type: "word-added", word },
           };
     case "loaded":
-      const words = (
-        state.settings.partOfSpeech === undefined
-          ? action.payload
-          : action.payload.filter(
-              (word) => word.partOfSpeech === state.settings.partOfSpeech
-            )
-      )
+      const words = action.payload
+        .filter((word) => test(state.settings, word))
         .slice(0, state.settings?.size)
         .map(modify)
         .sort((a, b) => a.german.localeCompare(b.german));
@@ -151,6 +153,8 @@ export function applyAction(state: State, action: Action): State {
         weights,
         question: createQuestion(weights, words),
       };
+    case "close-modal":
+      return { ...state, modal: undefined };
   }
 }
 

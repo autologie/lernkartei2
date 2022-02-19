@@ -22,7 +22,9 @@ export default function Word({
 
   return (
     <div className={`bg-blue-100 rounded-lg py-4 ${className ?? ""}`}>
-      <h3 className="mb-2 text-xl font-semibold px-4">{word.german}</h3>
+      <h3 className="mb-2 text-xl font-semibold px-4">
+        {word.german} <i className="text-base">({word.partOfSpeech})</i>
+      </h3>
       <ul className="flex flex-col gap-3">
         {word.definitions.map((def, i) => (
           <li

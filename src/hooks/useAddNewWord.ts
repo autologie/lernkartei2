@@ -11,7 +11,6 @@ export default function useAddNewWord(dispatch: Dispatch<Action>) {
 
         if (res.status === 200) {
           dispatch({ type: "add", payload: await res.json() });
-          window.alert("Added!");
         } else {
           window.alert(`Failed (status: ${res.status})`);
         }
