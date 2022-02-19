@@ -11,7 +11,7 @@ export default function ExampleText({
     .replace(/{[^}]*}/, "")
     .replace(/\[\[mit (Genitiv|Dativ|Akkusativ|Nominativ):\]\]/, "")
     .trim(); // remove math equation notation
-  const regex = /\[\[[^\].,?]+(,|\?|.)?\]\]/g;
+  const regex = /\[\[[^\].,?!]+(,|\?|.|!)?\]\]/g;
 
   if (mode === "mask") {
     return (

@@ -8,7 +8,7 @@ export default function PrevButton({
   return (
     <button
       title="Prev"
-      className={`w-8 h-8 text-gray-500 rounded-full transition-colors hover:bg-gray-100 flex items-center justify-center ${
+      className={`w-16 h-16 text-xl text-gray-500 rounded-full transition-colors hover:bg-gray-100 flex items-center justify-center ${
         className ?? ""
       }`}
       onClick={onClick}

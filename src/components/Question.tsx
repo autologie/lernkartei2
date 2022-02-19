@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
 import ExampleText from "./ExampleText";
@@ -18,6 +19,7 @@ export default function Question({
   showExplanation: boolean;
   onResponse: (responses: number) => void;
 }) {
+  const [showHint, setHint] = useState(false);
   const commonProps = {
     word,
     missedResponses,
@@ -33,6 +35,7 @@ export default function Question({
       return (
         <QuestionTemplate
           {...commonProps}
+          layout="list"
           question={
             <>
               <p>
@@ -40,7 +43,7 @@ export default function Question({
               </p>
               {question.definitionIndex > 0 && (
                 <p className="text-base mt-2 text-gray-500">
-                  Achtung: <i>{word.german}</i> ist mehrdeutig!
+                  Note: <i>{word.german}</i> has multiple meanings.
                 </p>
               )}
             </>
@@ -52,6 +55,7 @@ export default function Question({
       return (
         <QuestionTemplate
           {...commonProps}
+          layout="grid"
           question={
             <>
               Wie heißt das englische Wort{" "}
@@ -72,6 +76,7 @@ export default function Question({
       return (
         <QuestionTemplate
           {...commonProps}
+          layout="grid"
           question={
             <>
               <p>
@@ -80,7 +85,7 @@ export default function Question({
               </p>
               {question.definitionIndex > 0 && (
                 <p className="text-base mt-2 text-gray-500">
-                  Achtung: <i>{word.german}</i> ist mehrdeutig!
+                  Note: <i>{word.german}</i> has multiple meanings.
                 </p>
               )}
             </>
@@ -92,6 +97,7 @@ export default function Question({
       return (
         <QuestionTemplate
           {...commonProps}
+          layout="grid"
           question={
             <>
               <ExampleText mode={done ? "italic-green" : "mask"}>
@@ -101,9 +107,18 @@ export default function Question({
                   ]
                 }
               </ExampleText>
-              <p className="text-base mt-2 text-gray-500">
-                Hinweiß: {word.definitions[question.definitionIndex].definition}
-              </p>
+              {showHint || done ? (
+                <p className="text-base mt-2 text-gray-500">
+                  Hint: {word.definitions[question.definitionIndex].definition}
+                </p>
+              ) : (
+                <button
+                  className="block text-base mt-2 text-gray-500 underline"
+                  onClick={() => setHint(true)}
+                >
+                  Show hint
+                </button>
+              )}
             </>
           }
           choices={question.choices}
@@ -117,6 +132,7 @@ export default function Question({
       return (
         <QuestionTemplate
           {...commonProps}
+          layout="grid"
           question={
             <>
               Welche Wort passt zum Bild an?

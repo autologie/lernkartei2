@@ -53,7 +53,6 @@ function App() {
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative">
-      <h1 className="text-center">Lernkartei v2</h1>
       {state.words?.length === 0 ? (
         <p>Add a few words to get started!</p>
       ) : state.question === undefined ? (
@@ -99,13 +98,13 @@ function App() {
             (state.historyCursor === undefined ||
               state.history.length > state.historyCursor + 1) && (
               <PrevButton
-                className="mt-6 absolute left-0 top-0 -ml-10"
+                className="mt-20 absolute left-0 top-0 -ml-20"
                 onClick={() => dispatch({ type: "back" })}
               />
             )}
           {state.historyCursor !== undefined && (
             <NextButton
-              className="mt-6 absolute right-0 top-0 -mr-10"
+              className="mt-20 absolute right-0 top-0 -mr-20"
               onClick={() => dispatch({ type: "next" })}
             />
           )}
@@ -117,7 +116,7 @@ function App() {
         state.historyCursor === undefined && (
           <div className="fixed left-0 bottom-0 m-4 w-full mx-auto">
             <button
-              className="block mx-auto mt-4 bg-blue-500 text-white rounded-xl py-2 px-24 text-xl"
+              className="block mx-auto mt-4 bg-blue-500 text-white rounded-xl py-2 px-24 text-base font-light"
               onClick={() => dispatch({ type: "next" })}
             >
               Next
@@ -131,7 +130,7 @@ function App() {
             <h2 className="text-2xl font-semibold mb-4">Word added</h2>
             <Word word={state.modal.word} />
             <button
-              className="block mx-auto mt-4 bg-gray-200 rounded-xl py-2 px-24 text-lg"
+              className="block mx-auto mt-4 transition-colors bg-gray-200 hover:bg-gray-300 rounded-xl py-2 px-24 text-base font-light"
               onClick={() => dispatch({ type: "close-modal" })}
             >
               OK

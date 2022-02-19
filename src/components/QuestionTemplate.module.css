@@ -1,0 +1,12 @@
+@keyframes shake {
+  0% {
+    margin-left: 8px;
+  }
+  50% {
+    margin-left: -8px;
+  }
+}
+
+.wrong_choice {
+  animation: linear shake .15s 5;
+}
