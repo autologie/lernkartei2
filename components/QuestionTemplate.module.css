@@ -44,25 +44,21 @@
 @keyframes slide-from-left {
   0% {
     opacity: 0;
-    margin-left: -100px;
-    margin-right: 100px;
+    transform: translateX(-100px);
   }
   100% {
     opacity: 1;
-    margin-left: 0;
-    margin-right: 0;
+    transform: translate(0, 0);
   }
 }
 
 @keyframes slide-from-right {
   0% {
     opacity: 0;
-    margin-left: 100px;
-    margin-right: -100px;
+    transform: translateX(100px);
   }
   100% {
     opacity: 1;
-    margin-left: 0;
-    margin-right: 0;
+    transform: translate(0, 0);
   }
 }
