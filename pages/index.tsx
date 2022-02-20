@@ -134,9 +134,11 @@ export default function Index(props: IndexProps) {
         onClick={handleAdd}
       />
       {state.modal?.type === "word-added" && (
-        <div className="fixed left-0 top-0 w-full h-full flex flex-col items-center justify-start z-10 p-12 pt-36 overflow-auto">
-          <div className="w-full max-w-prose p-4 bg-white shadow-xl rounded-xl">
-            <h2 className="text-2xl font-semibold mb-4">Word added</h2>
+        <div className="bg-black bg-opacity-30 fixed left-0 bottom-0 w-full h-full flex flex-col items-center justify-end md:justify-start z-10 p-0 md:p-12 md:pt-36 overflow-auto">
+          <div className="h-2/3 md:h-auto w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto">
+            <h2 className="text-center text-2xl font-semibold mb-4">
+              Word added
+            </h2>
             <Word word={state.modal.word} />
             <button
               className="block mx-auto mt-4 transition-colors bg-gray-200 hover:bg-gray-300 rounded-xl py-2 px-24 text-base font-light"
