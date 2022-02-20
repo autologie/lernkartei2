@@ -13,28 +13,17 @@
     "@types/node-fetch": "^2.6.1",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
-    "cors": "^2.8.5",
-    "express": "^4.17.2",
     "jsdom": "^19.0.0",
+    "next": "12.1.0",
     "node-fetch": "2.6.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "5.0.0",
-    "ts-node": "^10.5.0",
-    "typescript": "^4.5.5",
-    "web-vitals": "^2.1.4"
+    "typescript": "^4.5.5"
   },
   "scripts": {
-    "start": "ts-node ./src/server.ts",
-    "dev": "run-p --print-label dev:*",
-    "dev:api": "nodemon ./src/server.ts",
-    "dev:cra": "react-scripts start",
-    "dev:css": "tailwindcss -i ./src/index.css -o ./src/__generated__/index.css --watch",
-    "build": "run-s build:css build:cra",
-    "build:css": "tailwindcss -i ./src/index.css -o ./src/__generated__/index.css",
-    "build:cra": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "next start",
+    "dev": "next dev",
+    "build": "next build"
   },
   "eslintConfig": {
     "extends": [
@@ -55,9 +44,7 @@
     ]
   },
   "devDependencies": {
-    "@types/express": "^4.17.13",
-    "nodemon": "^2.0.15",
-    "npm-run-all": "^4.1.5",
+    "autoprefixer": "^10.4.2",
     "tailwindcss": "^3.0.23"
   }
 }

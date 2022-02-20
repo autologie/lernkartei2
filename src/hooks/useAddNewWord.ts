@@ -7,9 +7,9 @@ export default function useAddNewWord(dispatch: Dispatch<Action>) {
 
     if (word !== null) {
       try {
-        const res = await fetch(
-          `${process.env.REACT_APP_API_ROOT}/words/${word}`
-        );
+        const res = await fetch(`${window.location.origin}/api/words/${word}`, {
+          method: "POST",
+        });
 
         if (res.status === 200) {
           dispatch({ type: "add", payload: await res.json() });

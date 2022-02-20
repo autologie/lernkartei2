@@ -1,10 +1,11 @@
+import { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 import jsdom from "jsdom";
-import { Photo, Word } from "./models/Word";
+import { Photo, Word } from "../../../src/models/Word";
 import fs from "fs";
 import path from "path";
 
-const WORDS_FILE = path.join(__dirname, "../words.ndjson");
+const WORDS_FILE = path.join(__dirname, "../../../words.ndjson");
 
 function findIndex(text: string | null): number {
   return Number.parseInt(text?.match(/^\[(\d+)\]/)?.[1] ?? "", 10) - 1;
@@ -163,4 +164,25 @@ export async function fetchFromWiktionary(
 
 export function addWord(word: Word) {
   fs.appendFileSync(WORDS_FILE, JSON.stringify(word) + "\n", "utf8");
+}
+
+export default async function handle(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (
+    Array.isArray(req.query.word) ||
+    loadWords().some((w) => w.german === req.query.word)
+  ) {
+    return res.status(400).end();
+  }
+
+  const word = await fetchFromWiktionary(req.query.word);
+
+  if (word === undefined) {
+    return res.status(400).end();
+  }
+
+  addWord(word);
+  res.json(word);
 }

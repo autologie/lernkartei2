@@ -16,18 +16,22 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "downlevelIteration":true,
+    "downlevelIteration": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "preserve",
+    "incremental": true
   },
   "include": [
-    "src"
+    "."
   ],
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS",
-      "isolatedModules": false,
+      "isolatedModules": false
     }
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

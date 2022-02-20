@@ -6,7 +6,7 @@ import { createQuestion, createWeights, Weights } from "./Weights";
 import { modify, Word } from "./Word";
 
 export interface State {
-  words?: Word[];
+  words: Word[];
   question?: Question;
   done: boolean;
   missResponses: number[];
@@ -26,8 +26,7 @@ export type Action =
   | { type: "next" }
   | { type: "close-modal" }
   | { type: "load-learning-progress"; payload?: LearningProgress }
-  | { type: "add"; payload: Word }
-  | { type: "loaded"; payload: Word[] };
+  | { type: "add"; payload: Word };
 
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
@@ -140,20 +139,6 @@ export function applyAction(state: State, action: Action): State {
               .sort((a, b) => a.german.localeCompare(b.german)),
             modal: { type: "word-added", word },
           };
-    case "loaded":
-      const words = action.payload
-        .filter((word) => test(state.settings, word))
-        .slice(0, state.settings?.size)
-        .map(modify)
-        .sort((a, b) => a.german.localeCompare(b.german));
-      const weights = createWeights(words, state.progress);
-
-      return {
-        ...state,
-        words: words,
-        weights,
-        question: createQuestion(weights, words),
-      };
     case "close-modal":
       return { ...state, modal: undefined };
     case "load-learning-progress":
@@ -161,7 +146,22 @@ export function applyAction(state: State, action: Action): State {
   }
 }
 
-export function getInitialState(settings: Settings): State {
+export function getInitialState({
+  settings,
+  words,
+  progress,
+}: {
+  settings: Settings;
+  words: Word[];
+  progress: LearningProgress;
+}): State {
+  const words_ = words
+    .filter((word) => test(settings, word))
+    .slice(0, settings?.size)
+    .map(modify)
+    .sort((a, b) => a.german.localeCompare(b.german));
+  const weights = createWeights(words_, progress);
+
   return {
     done: false,
     missResponses: [],
@@ -169,6 +169,8 @@ export function getInitialState(settings: Settings): State {
     settings,
     allDone: false,
     progress: { table: {}, tick: 0 },
-    weights: {},
+    weights,
+    words: words_,
+    question: createQuestion(weights, words_),
   };
 }

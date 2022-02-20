@@ -1,34 +1,32 @@
+import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { useCallback, useMemo, useReducer } from "react";
-import AddButton from "./components/AddButton";
-import Debugger from "./components/Debugger";
-import NextButton from "./components/NextButton";
-import NavButton from "./components/NavButton";
-import Question from "./components/Question";
-import Word from "./components/Word";
-import useAddNewWord from "./hooks/useAddNewWord";
-import useKeyEventListener from "./hooks/useKeyEventListener";
-import useNextAutomatically from "./hooks/useNextAutomatically";
-import useNotifier from "./hooks/useNotifier";
-import useRemoteWords from "./hooks/useRemoteWords";
-import { applyAction, getInitialState } from "./models/State";
-import { useLearningProgressPersistence } from "./hooks/useLearningProgressPersistence";
+import AddButton from "../src/components/AddButton";
+import Debugger from "../src/components/Debugger";
+import NavButton from "../src/components/NavButton";
+import NextButton from "../src/components/NextButton";
+import Question from "../src/components/Question";
+import Word from "../src/components/Word";
+import useAddNewWord from "../src/hooks/useAddNewWord";
+import useKeyEventListener from "../src/hooks/useKeyEventListener";
+import { useLearningProgressPersistence } from "../src/hooks/useLearningProgressPersistence";
+import useNextAutomatically from "../src/hooks/useNextAutomatically";
+import useNotifier from "../src/hooks/useNotifier";
+import { LearningProgress } from "../src/models/LearningProgress";
+import { Settings } from "../src/models/Settings";
+import { applyAction, getInitialState } from "../src/models/State";
+import { Word as WordModel } from "../src/models/Word";
+import { loadWords } from "./api/words/[word]";
 
 function noop() {}
 
-const search = new URLSearchParams(window.location.search);
-const size = search.get("size");
-const partOfSpeech = search.get("partOfSpeech");
-const filter = search.get("filter");
-const debug = search.has("debug");
-const settings = {
-  size: size === null ? undefined : Number.parseInt(size, 10),
-  partOfSpeech: partOfSpeech ?? undefined,
-  wordFilter: filter ?? undefined,
-  debug,
-};
+interface IndexProps {
+  settings: Settings;
+  words: WordModel[];
+  progress: LearningProgress;
+}
 
-function App() {
-  const [state, dispatch] = useReducer(applyAction, settings, getInitialState);
+export default function Index(props: IndexProps) {
+  const [state, dispatch] = useReducer(applyAction, props, getInitialState);
   const historyToShow =
     state.historyCursor === undefined
       ? undefined
@@ -49,7 +47,6 @@ function App() {
   );
   const handleAdd = useAddNewWord(dispatch);
 
-  useRemoteWords(dispatch);
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
@@ -149,4 +146,29 @@ function App() {
   );
 }
 
-export default App;
+export async function getStaticProps(
+  ctx: GetServerSidePropsContext
+): Promise<GetServerSidePropsResult<IndexProps>> {
+  const size = ctx.params?.["size"];
+  const partOfSpeech = ctx.params?.["partOfSpeech"];
+  const filter = ctx.params?.["filter"];
+  const debug = ctx.params?.["debug"];
+  const settings = {
+    ...(size === undefined || Array.isArray(size)
+      ? undefined
+      : { size: Number.parseInt(size, 10) }),
+    ...(partOfSpeech === undefined || Array.isArray(partOfSpeech)
+      ? undefined
+      : { partOfSpeech }),
+    ...(filter === undefined || Array.isArray(filter) ? undefined : { filter }),
+    debug: debug !== undefined,
+  };
+
+  return {
+    props: {
+      settings,
+      words: await loadWords(),
+      progress: { tick: 0, table: {} },
+    },
+  };
+}
