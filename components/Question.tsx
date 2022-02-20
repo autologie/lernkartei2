@@ -10,6 +10,7 @@ export default function Question({
   missedResponses,
   done,
   showExplanation,
+  isNewer,
   onResponse,
 }: {
   question: Model;
@@ -17,10 +18,12 @@ export default function Question({
   done: boolean;
   missedResponses: number[];
   showExplanation: boolean;
+  isNewer: boolean;
   onResponse: (responses: number) => void;
 }) {
   const [showHint, setHint] = useState(false);
   const commonProps = {
+    isNewer,
     word,
     missedResponses,
     done,

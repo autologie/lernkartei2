@@ -30,3 +30,39 @@
     height: calc(100% + 50px);
   }
 }
+
+.question_from_left {
+  animation: slide-from-left 0.25s ease-out 1;
+  opacity: 1;
+}
+
+.question_from_right {
+  animation: slide-from-right 0.25s ease-out 1;
+  opacity: 1;
+}
+
+@keyframes slide-from-left {
+  0% {
+    opacity: 0;
+    margin-left: -100px;
+    margin-right: 100px;
+  }
+  100% {
+    opacity: 1;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@keyframes slide-from-right {
+  0% {
+    opacity: 0;
+    margin-left: 100px;
+    margin-right: -100px;
+  }
+  100% {
+    opacity: 1;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

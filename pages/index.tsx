@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import AddButton from "../components/AddButton";
 import Debugger from "../components/Debugger";
 import NavButton from "../components/NavButton";
@@ -56,11 +56,16 @@ export default function Index(props: IndexProps) {
 
     dispatch({ type: direction === "e" ? "next" : "back" });
   }, []);
+  const prevHistoryCursor = useRef(state.historyCursor);
 
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
   useSwipe(handleSwipe);
+
+  useEffect(() => {
+    prevHistoryCursor.current = state.historyCursor;
+  }, [state.historyCursor]);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden">
@@ -83,6 +88,7 @@ export default function Index(props: IndexProps) {
           {historyToShow === undefined ? (
             <Question
               key={state.question.word}
+              isNewer={true}
               word={word}
               question={state.question}
               missedResponses={state.missResponses}
@@ -98,6 +104,10 @@ export default function Index(props: IndexProps) {
             <Question
               key={historyToShow.question.word}
               word={word}
+              isNewer={
+                prevHistoryCursor.current !== undefined &&
+                state.historyCursor < prevHistoryCursor.current
+              }
               question={historyToShow.question}
               missedResponses={historyToShow.missResponses}
               showExplanation={true}

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useRef } from "react";
 import Word from "./Word";
 import { Word as WordModel } from "../models/Word";
 import styles from "./QuestionTemplate.module.css";
@@ -13,6 +13,7 @@ export default function QuestionTemplate({
   word,
   layout,
   showExplanation,
+  isNewer,
   onResponse,
 }: {
   question: ReactNode;
@@ -23,6 +24,7 @@ export default function QuestionTemplate({
   missedResponses: number[];
   done: boolean;
   word: WordModel;
+  isNewer: boolean;
   showExplanation: boolean;
   onResponse: (response: number) => void;
 }) {
@@ -30,7 +32,11 @@ export default function QuestionTemplate({
   const wasDone = useRef(done);
 
   return (
-    <div>
+    <div
+      className={
+        isNewer ? styles.question_from_right : styles.question_from_left
+      }
+    >
       <h2 className="text-2xl py-6">{question}</h2>
       <ol
         className={`gap-2 ${
