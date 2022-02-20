@@ -25,7 +25,7 @@ interface IndexProps {
   settings: Settings;
   words: WordModel[];
   progress: LearningProgress;
-  question: QuestionModel;
+  question?: QuestionModel;
 }
 
 export default function Index(props: IndexProps) {

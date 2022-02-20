@@ -152,7 +152,7 @@ export function getInitialState({
   settings: Settings;
   words: Word[];
   progress: LearningProgress;
-  question: Question;
+  question?: Question;
 }): State {
   const weights = createWeights(words, progress);
 
