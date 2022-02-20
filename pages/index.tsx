@@ -154,7 +154,7 @@ export default function Index(props: IndexProps) {
   );
 }
 
-export async function getStaticProps(
+export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<IndexProps>> {
   const size = ctx.params?.["size"];
