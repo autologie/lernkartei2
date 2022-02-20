@@ -7,6 +7,7 @@ import NextButton from "../components/NextButton";
 import Question from "../components/Question";
 import Word from "../components/Word";
 import useAddNewWord from "../hooks/useAddNewWord";
+import { useSwipe } from "../hooks/useSwipe";
 import useKeyEventListener from "../hooks/useKeyEventListener";
 import useNextAutomatically from "../hooks/useNextAutomatically";
 import useNotifier from "../hooks/useNotifier";
@@ -48,13 +49,21 @@ export default function Index(props: IndexProps) {
     []
   );
   const handleAdd = useAddNewWord(dispatch);
+  const handleSwipe = useCallback((direction: "n" | "s" | "w" | "e") => {
+    if (direction === "n" || direction === "s") {
+      return;
+    }
+
+    dispatch({ type: direction === "e" ? "next" : "back" });
+  }, []);
 
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
+  useSwipe(handleSwipe);
 
   return (
-    <div className="p-4 pb-24 max-w-prose mx-auto relative">
+    <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden">
       {state.words?.length === 0 ? (
         <p>Add a few words to get started!</p>
       ) : state.question === undefined ? (
@@ -101,14 +110,14 @@ export default function Index(props: IndexProps) {
               state.history.length > state.historyCursor + 1) && (
               <NavButton
                 direction="prev"
-                className="mt-20 absolute left-0 top-0 -ml-20"
+                className="hidden md:block mt-20 absolute left-0 top-0 -ml-20"
                 onClick={() => dispatch({ type: "back" })}
               />
             )}
           {state.historyCursor !== undefined && (
             <NavButton
               direction="next"
-              className="mt-20 absolute right-0 top-0 -mr-20"
+              className="hidden md:block mt-20 absolute right-0 top-0 -mr-20"
               onClick={() => dispatch({ type: "next" })}
             />
           )}
@@ -118,14 +127,17 @@ export default function Index(props: IndexProps) {
         state.question !== undefined &&
         state.done &&
         state.historyCursor === undefined && (
-          <div className="fixed left-0 bottom-0 m-4 w-full">
+          <div className="fixed left-0 bottom-0 w-full">
             <NextButton
-              className="mx-auto mt-4"
+              className="mx-auto my-4"
               onClick={() => dispatch({ type: "next" })}
             />
           </div>
         )}
-      <AddButton className="fixed right-0 bottom-0 m-4" onClick={handleAdd} />
+      <AddButton
+        className="fixed right-0 bottom-0 m-3 md:m-4"
+        onClick={handleAdd}
+      />
       {state.modal?.type === "word-added" && (
         <div className="fixed left-0 top-0 w-full h-full flex flex-col items-center justify-start z-10 p-12 pt-36 overflow-auto">
           <div className="w-full max-w-prose p-4 bg-white shadow-xl rounded-xl">

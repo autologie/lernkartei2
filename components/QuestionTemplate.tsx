@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import Word from "./Word";
 import { Word as WordModel } from "../models/Word";
 import styles from "./QuestionTemplate.module.css";
@@ -26,7 +26,8 @@ export default function QuestionTemplate({
   showExplanation: boolean;
   onResponse: (response: number) => void;
 }) {
-  const ChoiceElement = done ? "div" : "button";
+  const ChoiceElement = done ? "div" : "button"; // This way you can select text once the question is answered
+  const wasDone = useRef(done);
 
   return (
     <div>
@@ -45,7 +46,7 @@ export default function QuestionTemplate({
           return (
             <li key={index}>
               <ChoiceElement
-                className={`${
+                className={`relative ${
                   !done && isMiss ? styles.wrong_choice : ""
                 } border-2 border-solid border-transparent flex items-center w-full transition-colors rounded-xl py-2 px-4 text-left ${
                   isMiss
@@ -65,6 +66,11 @@ export default function QuestionTemplate({
                       : "text-gray-500 text-lg"
                   }`}
                 >
+                  {isHit && !wasDone.current && (
+                    <div
+                      className={`${styles.hit} absolute top-0 left-0 bg-green-500 rounded-2xl z-10`}
+                    />
+                  )}
                   {isMiss ? "×" : isHit ? "️✓︎" : index + 1}
                 </div>
                 {c}

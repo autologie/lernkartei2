@@ -10,3 +10,23 @@
 .wrong_choice {
   animation: linear shake .15s 5;
 }
+
+.hit {
+  animation: effect 0.5s cubic-bezier(0, 0, 0.2, 1) 1;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+@keyframes effect {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    margin: -25px;
+    opacity: 0;
+    width: calc(100% + 50px);
+    height: calc(100% + 50px);
+  }
+}
