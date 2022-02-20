@@ -15,7 +15,6 @@ export interface State {
   weights: Weights;
   historyCursor?: number;
   settings: Settings;
-  allDone: boolean;
   modal?: { type: "word-added"; word: Word };
 }
 
@@ -67,7 +66,7 @@ export function applyAction(state: State, action: Action): State {
       }
 
       if (state.historyCursor === undefined) {
-        if (state.words === undefined || !state.done || state.allDone) {
+        if (state.words === undefined || !state.done) {
           return state;
         }
 
@@ -87,7 +86,7 @@ export function applyAction(state: State, action: Action): State {
           return {
             ...state,
             history,
-            allDone: true,
+            question: undefined,
           };
         }
 
@@ -115,7 +114,6 @@ export function applyAction(state: State, action: Action): State {
       if (nextQuestion === undefined) {
         return {
           ...state,
-          allDone: true,
         };
       }
 
@@ -161,7 +159,6 @@ export function getInitialState({
     missResponses: [],
     history: [],
     settings,
-    allDone: false,
     progress: { table: {}, tick: 0 },
     weights,
     words,

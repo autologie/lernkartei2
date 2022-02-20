@@ -7,10 +7,8 @@ import NextButton from "../components/NextButton";
 import Question from "../components/Question";
 import Word from "../components/Word";
 import useAddNewWord from "../hooks/useAddNewWord";
-import { useSwipe } from "../hooks/useSwipe";
 import useKeyEventListener from "../hooks/useKeyEventListener";
 import useNextAutomatically from "../hooks/useNextAutomatically";
-import useNotifier from "../hooks/useNotifier";
 import { LearningProgress } from "../models/LearningProgress";
 import { Question as QuestionModel } from "../models/Question";
 import { Settings, test } from "../models/Settings";
@@ -31,10 +29,7 @@ interface IndexProps {
 
 export default function Index(props: IndexProps) {
   const [state, dispatch] = useReducer(applyAction, props, getInitialState);
-  const historyToShow =
-    state.historyCursor === undefined
-      ? undefined
-      : state.history[state.historyCursor];
+  const historyToShow = state.history[state.historyCursor ?? -1];
   const word = useMemo(() => {
     const german =
       historyToShow === undefined
@@ -50,19 +45,10 @@ export default function Index(props: IndexProps) {
     []
   );
   const handleAdd = useAddNewWord(dispatch);
-  const handleSwipe = useCallback((direction: "n" | "s" | "w" | "e") => {
-    if (direction === "n" || direction === "s") {
-      return;
-    }
-
-    dispatch({ type: direction === "e" ? "next" : "back" });
-  }, []);
   const prevHistoryCursor = usePrevious(state.historyCursor);
 
-  useNextAutomatically(1000, state, dispatch);
+  useNextAutomatically(500, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
-  useNotifier(state);
-  useSwipe(handleSwipe);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
