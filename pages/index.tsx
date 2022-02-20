@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import AddButton from "../components/AddButton";
 import Debugger from "../components/Debugger";
 import NavButton from "../components/NavButton";
@@ -18,6 +18,7 @@ import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { modify, Word as WordModel } from "../models/Word";
 import { loadWords } from "./api/words/[word]";
+import { usePrevious } from "../hooks/usePrevious";
 
 function noop() {}
 
@@ -56,16 +57,12 @@ export default function Index(props: IndexProps) {
 
     dispatch({ type: direction === "e" ? "next" : "back" });
   }, []);
-  const prevHistoryCursor = useRef(state.historyCursor);
+  const prevHistoryCursor = usePrevious(state.historyCursor);
 
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
   useSwipe(handleSwipe);
-
-  useEffect(() => {
-    prevHistoryCursor.current = state.historyCursor;
-  }, [state.historyCursor]);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
@@ -85,7 +82,7 @@ export default function Index(props: IndexProps) {
         </div>
       ) : (
         <div className="relative">
-          {historyToShow === undefined ? (
+          {historyToShow === undefined || state.historyCursor === undefined ? (
             <Question
               key={state.question.word}
               isNewer={true}
@@ -105,8 +102,8 @@ export default function Index(props: IndexProps) {
               key={historyToShow.question.word}
               word={word}
               isNewer={
-                prevHistoryCursor.current !== undefined &&
-                state.historyCursor < prevHistoryCursor.current
+                prevHistoryCursor !== undefined &&
+                state.historyCursor < prevHistoryCursor
               }
               question={historyToShow.question}
               missedResponses={historyToShow.missResponses}

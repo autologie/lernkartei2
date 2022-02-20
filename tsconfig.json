@@ -25,12 +25,6 @@
   "include": [
     "."
   ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS",
-      "isolatedModules": false
-    }
-  },
   "exclude": [
     "node_modules"
   ]
