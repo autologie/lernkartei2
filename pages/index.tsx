@@ -17,6 +17,7 @@ import { createQuestion, createWeights } from "../models/Weights";
 import { modify, Word as WordModel } from "../models/Word";
 import { loadWords } from "./api/words/[word]";
 import { usePrevious } from "../hooks/usePrevious";
+import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
 
 function noop() {}
 
@@ -49,6 +50,7 @@ export default function Index(props: IndexProps) {
 
   useNextAutomatically(500, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
+  useSwipeNavigation(dispatch);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
