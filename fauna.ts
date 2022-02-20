@@ -12,7 +12,16 @@ async function request<T>(gql: string, variables: unknown): Promise<T> {
       variables,
       query: gql,
     }),
-  }).then((r) => r.json());
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      if (data.errors !== undefined) {
+        console.error(data);
+        throw Error("Fauna error response");
+      }
+
+      return data;
+    });
 }
 
 export async function addWord(word: Word) {
@@ -45,8 +54,9 @@ export async function loadWords(): Promise<Word[]> {
       };
     };
   }>(
+    // TODO: paginate properly
     `query {
-       words {
+       words(_size: 1000) {
          data {
            german,
            partOfSpeech,

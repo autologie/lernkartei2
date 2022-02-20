@@ -159,10 +159,10 @@ export default function Index(props: IndexProps) {
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<IndexProps>> {
-  const size = ctx.params?.["size"];
-  const partOfSpeech = ctx.params?.["partOfSpeech"];
-  const filter = ctx.params?.["filter"];
-  const debug = ctx.params?.["debug"];
+  const size = ctx.query?.["size"];
+  const partOfSpeech = ctx.query?.["partOfSpeech"];
+  const filter = ctx.query?.["filter"];
+  const debug = ctx.query?.["debug"];
   const settings = {
     ...(size === undefined || Array.isArray(size)
       ? undefined
