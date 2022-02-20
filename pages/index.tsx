@@ -1,20 +1,20 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { useCallback, useMemo, useReducer } from "react";
-import AddButton from "../src/components/AddButton";
-import Debugger from "../src/components/Debugger";
-import NavButton from "../src/components/NavButton";
-import NextButton from "../src/components/NextButton";
-import Question from "../src/components/Question";
-import Word from "../src/components/Word";
-import useAddNewWord from "../src/hooks/useAddNewWord";
-import useKeyEventListener from "../src/hooks/useKeyEventListener";
-import { useLearningProgressPersistence } from "../src/hooks/useLearningProgressPersistence";
-import useNextAutomatically from "../src/hooks/useNextAutomatically";
-import useNotifier from "../src/hooks/useNotifier";
-import { LearningProgress } from "../src/models/LearningProgress";
-import { Settings } from "../src/models/Settings";
-import { applyAction, getInitialState } from "../src/models/State";
-import { Word as WordModel } from "../src/models/Word";
+import AddButton from "../components/AddButton";
+import Debugger from "../components/Debugger";
+import NavButton from "../components/NavButton";
+import NextButton from "../components/NextButton";
+import Question from "../components/Question";
+import Word from "../components/Word";
+import useAddNewWord from "../hooks/useAddNewWord";
+import useKeyEventListener from "../hooks/useKeyEventListener";
+import { useLearningProgressPersistence } from "../hooks/useLearningProgressPersistence";
+import useNextAutomatically from "../hooks/useNextAutomatically";
+import useNotifier from "../hooks/useNotifier";
+import { LearningProgress } from "../models/LearningProgress";
+import { Settings } from "../models/Settings";
+import { applyAction, getInitialState } from "../models/State";
+import { Word as WordModel } from "../models/Word";
 import { loadWords } from "./api/words/[word]";
 
 function noop() {}

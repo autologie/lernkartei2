@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 import jsdom from "jsdom";
-import { Photo, Word } from "../../../src/models/Word";
+import { Photo, Word } from "../../../models/Word";
 import fs from "fs";
 import path from "path";
 
