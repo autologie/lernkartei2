@@ -12,6 +12,7 @@ export default function AddButton({
       }`}
       onClick={onClick}
     >
+      <span className="sr-only">Add word</span>
       <svg viewBox="0 0 20 20" className="w-4 md:w-6 w-4 md:h-6">
         <rect width={2} height={20} x={9} y={0} fill="currentColor" />
         <rect width={20} height={2} x={0} y={9} fill="currentColor" />

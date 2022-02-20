@@ -15,6 +15,7 @@ export default function NavButton({
       }`}
       onClick={onClick}
     >
+      <span className="sr-only">{direction}</span>
       <svg
         viewBox="0 0 20 20"
         className="w-4 h-4 transform -rotate-45 mx-auto"

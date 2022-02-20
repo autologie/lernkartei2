@@ -29,7 +29,7 @@ export type Action =
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
     case "respond":
-      if (state.question === undefined) {
+      if (state.question === undefined || state.done) {
         return state;
       }
 
