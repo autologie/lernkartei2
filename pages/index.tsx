@@ -8,13 +8,14 @@ import Question from "../components/Question";
 import Word from "../components/Word";
 import useAddNewWord from "../hooks/useAddNewWord";
 import useKeyEventListener from "../hooks/useKeyEventListener";
-import { useLearningProgressPersistence } from "../hooks/useLearningProgressPersistence";
 import useNextAutomatically from "../hooks/useNextAutomatically";
 import useNotifier from "../hooks/useNotifier";
 import { LearningProgress } from "../models/LearningProgress";
-import { Settings } from "../models/Settings";
+import { Question as QuestionModel } from "../models/Question";
+import { Settings, test } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
-import { Word as WordModel } from "../models/Word";
+import { createQuestion, createWeights } from "../models/Weights";
+import { modify, Word as WordModel } from "../models/Word";
 import { loadWords } from "./api/words/[word]";
 
 function noop() {}
@@ -23,6 +24,7 @@ interface IndexProps {
   settings: Settings;
   words: WordModel[];
   progress: LearningProgress;
+  question: QuestionModel;
 }
 
 export default function Index(props: IndexProps) {
@@ -50,7 +52,6 @@ export default function Index(props: IndexProps) {
   useNextAutomatically(1000, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useNotifier(state);
-  useLearningProgressPersistence(state.progress, dispatch);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative">
@@ -163,12 +164,19 @@ export async function getStaticProps(
     ...(filter === undefined || Array.isArray(filter) ? undefined : { filter }),
     debug: debug !== undefined,
   };
+  const words = (await loadWords())
+    .filter((word) => test(settings, word))
+    .slice(0, settings?.size)
+    .map(modify)
+    .sort((a, b) => a.german.localeCompare(b.german));
+  const progress = { tick: 0, table: {} };
 
   return {
     props: {
       settings,
-      words: await loadWords(),
-      progress: { tick: 0, table: {} },
+      words,
+      progress: progress,
+      question: createQuestion(createWeights(words, progress), words),
     },
   };
 }

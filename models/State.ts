@@ -25,7 +25,6 @@ export type Action =
   | { type: "back" }
   | { type: "next" }
   | { type: "close-modal" }
-  | { type: "load-learning-progress"; payload?: LearningProgress }
   | { type: "add"; payload: Word };
 
 export function applyAction(state: State, action: Action): State {
@@ -141,8 +140,6 @@ export function applyAction(state: State, action: Action): State {
           };
     case "close-modal":
       return { ...state, modal: undefined };
-    case "load-learning-progress":
-      return { ...state, progress: action.payload ?? state.progress };
   }
 }
 
@@ -150,17 +147,14 @@ export function getInitialState({
   settings,
   words,
   progress,
+  question,
 }: {
   settings: Settings;
   words: Word[];
   progress: LearningProgress;
+  question: Question;
 }): State {
-  const words_ = words
-    .filter((word) => test(settings, word))
-    .slice(0, settings?.size)
-    .map(modify)
-    .sort((a, b) => a.german.localeCompare(b.german));
-  const weights = createWeights(words_, progress);
+  const weights = createWeights(words, progress);
 
   return {
     done: false,
@@ -170,7 +164,7 @@ export function getInitialState({
     allDone: false,
     progress: { table: {}, tick: 0 },
     weights,
-    words: words_,
-    question: createQuestion(weights, words_),
+    words,
+    question,
   };
 }
