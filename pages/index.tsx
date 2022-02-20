@@ -15,7 +15,7 @@ import { Settings, test } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { modify, Word as WordModel } from "../models/Word";
-import { loadWords } from "./api/words/[word]";
+import { loadWords } from "../fauna";
 import { usePrevious } from "../hooks/usePrevious";
 import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
 

@@ -2,10 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 import jsdom from "jsdom";
 import { Photo, Word } from "../../../models/Word";
-import fs from "fs";
-import path from "path";
-
-const WORDS_FILE = path.join(__dirname, "../../../words.ndjson");
+import { addWord } from "../../../fauna";
 
 function findIndex(text: string | null): number {
   return Number.parseInt(text?.match(/^\[(\d+)\]/)?.[1] ?? "", 10) - 1;
@@ -132,19 +129,6 @@ function extractWiktionaryContent(
   return word;
 }
 
-export function loadWords(): Word[] {
-  return fs
-    .readFileSync(WORDS_FILE, "utf8")
-    .split("\n")
-    .flatMap<Word>((line) => {
-      try {
-        return [JSON.parse(line)];
-      } catch (e) {
-        return [];
-      }
-    });
-}
-
 export async function fetchFromWiktionary(
   word: string
 ): Promise<Word | undefined> {
@@ -162,18 +146,11 @@ export async function fetchFromWiktionary(
   return extractWiktionaryContent(word, wiktionaryBody);
 }
 
-export function addWord(word: Word) {
-  fs.appendFileSync(WORDS_FILE, JSON.stringify(word) + "\n", "utf8");
-}
-
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (
-    Array.isArray(req.query.word) ||
-    loadWords().some((w) => w.german === req.query.word)
-  ) {
+  if (Array.isArray(req.query.word)) {
     return res.status(400).end();
   }
 
@@ -183,6 +160,6 @@ export default async function handle(
     return res.status(400).end();
   }
 
-  addWord(word);
+  await addWord(word);
   res.json(word);
 }

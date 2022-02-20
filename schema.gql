@@ -1,0 +1,21 @@
+type Photo @embedded {
+  url: String!
+  caption: String!
+}
+
+type WordMeaning @embedded {
+  definition: String!
+  english: [String]
+  examples: [String]!
+  photos: [Photo]
+}
+
+type Word {
+  partOfSpeech: String!
+  german: String! @unique
+  definitions: [WordMeaning]!
+}
+
+type Query {
+  words: [Word]!
+}
