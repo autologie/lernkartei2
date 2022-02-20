@@ -12,7 +12,10 @@ export default function AddButton({
       }`}
       onClick={onClick}
     >
-      <div className="-mt-1">+</div>
+      <svg viewBox="0 0 20 20" className="w-6 h-6">
+        <rect width={2} height={20} x={9} y={0} fill="currentColor" />
+        <rect width={20} height={2} x={0} y={9} fill="currentColor" />
+      </svg>
     </button>
   );
 }

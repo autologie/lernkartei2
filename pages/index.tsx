@@ -68,7 +68,7 @@ export default function Index(props: IndexProps) {
   }, [state.historyCursor]);
 
   return (
-    <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden">
+    <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
       {state.words?.length === 0 ? (
         <p>Add a few words to get started!</p>
       ) : state.question === undefined ? (
