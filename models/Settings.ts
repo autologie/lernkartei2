@@ -45,10 +45,10 @@ export function encode({
 }
 
 export function decode(query: ParsedUrlQuery): Settings {
-  const size = query?.["size"];
-  const partOfSpeech = query?.["partOfSpeech"];
-  const filter = query?.["filter"];
-  const debug = query?.["debug"];
+  const size = query["size"];
+  const partOfSpeech = query["partOfSpeech"];
+  const filter = query["filter"];
+  const debug = query["debug"];
 
   return {
     ...(size === undefined || Array.isArray(size)

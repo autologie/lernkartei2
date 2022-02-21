@@ -11,14 +11,17 @@ export default function Debugger({
   weights: Weights;
 }) {
   const maxWeight = Math.max(
-    ...Object.values(weights).flatMap((b) => Object.values(b ?? {}))
+    ...Object.values(weights).flatMap((b) =>
+      Object.values(b ?? {}).flatMap((c) => Object.values(c ?? {}))
+    )
   );
 
   return (
-    <div className="fixed bottom-0 left-0 text-xs max-h-screen overflow-auto">
+    <div className="fixed bottom-0 left-0 text-xs max-h-screen overflow-auto bg-black bg-opacity-10">
       <table className="border-collapse m-4 mt-32">
         <thead>
           <tr>
+            <th></th>
             <th></th>
             {questionTypes.map((t) => (
               <th key={t} className="p-0 relative">
@@ -30,16 +33,21 @@ export default function Debugger({
           </tr>
         </thead>
         <tbody>
-          {words.map((w) => (
-            <tr key={w.german}>
-              <td className="pr-2 text-right">{w.german}</td>
-              {questionTypes.map((t) => (
-                <td key={t} className="p-0">
-                  <Tile weight={(weights[w.german]?.[t] ?? 0) / maxWeight} />
-                </td>
-              ))}
-            </tr>
-          ))}
+          {words.flatMap((w) =>
+            w.definitions.map((_, i) => (
+              <tr key={`${w.german}-${i}`}>
+                <td className="pr-2 text-right">{w.german}</td>
+                <td className="w-4">{i + 1}</td>
+                {questionTypes.map((t) => (
+                  <td key={t} className="p-0">
+                    <Tile
+                      weight={(weights[w.german]?.[i]?.[t] ?? 0) / maxWeight}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

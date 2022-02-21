@@ -1,3 +1,4 @@
+import { getRandomElement } from "./Array";
 import { LearningProgress, LearningProgressEntry } from "./LearningProgress";
 import {
   createDefineQuestion,
@@ -16,10 +17,12 @@ export type Weights = QuestionTable<number>;
 function getWeight(
   currentTick: number,
   totalWordCount: number,
+  word: Word,
+  definitionIndex: number,
   type: Question["type"],
-  entry?: { [key in Question["type"]]?: LearningProgressEntry }
+  entry: LearningProgress["table"][string]
 ): number {
-  const subEntry = entry?.[type];
+  const subEntry = entry?.[definitionIndex]?.[type];
   const INVISIBLE_DURATION = 1;
 
   if (entry === undefined) {
@@ -27,15 +30,17 @@ function getWeight(
     return 8;
   }
 
-  const lastTick = Object.values(entry).reduce<number | undefined>(
-    (a, b) =>
-      a === undefined
-        ? b.lastEncounteredTick
-        : b.lastEncounteredTick === undefined
-        ? a
-        : Math.max(a, b.lastEncounteredTick),
-    undefined
-  );
+  const lastTick = Object.values(entry)
+    .flatMap((v) => Object.values(v ?? {}))
+    .reduce<number | undefined>(
+      (a, b) =>
+        a === undefined
+          ? b.lastEncounteredTick
+          : b.lastEncounteredTick === undefined
+          ? a
+          : Math.max(a, b.lastEncounteredTick),
+      undefined
+    );
 
   if (lastTick !== undefined && currentTick < lastTick + INVISIBLE_DURATION) {
     // word that is seen very recently
@@ -52,7 +57,11 @@ function getWeight(
     return 1;
   }
 
-  if (Object.values(entry).some((e) => e.miss)) {
+  if (
+    Object.values(entry).some((e) =>
+      Object.values(e ?? {}).some((se) => se.miss)
+    )
+  ) {
     // question that is wrongly answered before
     return Math.max(1, currentTick - (lastTick ?? 0)) * totalWordCount;
   }
@@ -64,55 +73,80 @@ export function createWeights(
   words: Word[],
   progress: LearningProgress
 ): Weights {
-  return words.reduce<Weights>((passed, word) => {
-    const entry = progress.table[word.german];
+  return Object.entries(progress.table).reduce<Weights>(
+    (passed, [word, entry]) => {
+      if (passed[word] === undefined) {
+        passed[word] = {};
+      }
 
-    passed[word.german] = {
-      define: getWeight(progress.tick, words.length, "define", entry),
-      "fill-blank": getWeight(progress.tick, words.length, "fill-blank", entry),
-      "translate-from": getWeight(
-        progress.tick,
-        words.length,
-        "translate-from",
-        entry
-      ),
-      "translate-to": getWeight(
-        progress.tick,
-        words.length,
-        "translate-to",
-        entry
-      ),
-      photo: getWeight(progress.tick, words.length, "photo", entry),
-    };
+      Object.entries(entry ?? {}).forEach(([definitionIndex_]) => {
+        const definitionIndex = Number.parseInt(definitionIndex_, 10);
+        const w = words.find((w) => w.german === word);
 
-    return passed;
-  }, {});
+        if (w === undefined) {
+          return;
+        }
+
+        passed[word]![definitionIndex] = questionTypes.reduce<
+          NonNullable<NonNullable<Weights[string]>[number]>
+        >((passed2, t) => {
+          passed2[t] = getWeight(
+            progress.tick,
+            words.length,
+            w,
+            definitionIndex,
+            t,
+            entry
+          );
+
+          return passed2;
+        }, {});
+      }, []);
+
+      return passed;
+    },
+    {}
+  );
+}
+
+function getDefaultScore(
+  word: Word,
+  definitionIndex: number,
+  questionType: Question["type"]
+): number {
+  return 5;
 }
 
 function findRandom(words: Word[], weights: Weights): [Word, Question["type"]] {
-  const cursor =
-    Object.values(weights).reduce(
-      (a, b) => a + Object.values(b ?? {}).reduce((c, d) => c + d, 0),
-      0
-    ) * Math.random();
+  const sum = words.reduce(
+    (p0, word) =>
+      p0 +
+      word.definitions.reduce(
+        (p1, _, di) =>
+          p1 +
+          questionTypes.reduce(
+            (p2, t) =>
+              p2 +
+              (weights[word.german]?.[di]?.[t] ?? getDefaultScore(word, di, t)),
+            0
+          ),
+        0
+      ),
+    0
+  );
+
+  const cursor = sum * Math.random();
   let current = 0;
 
-  for (const [german, entry] of Object.entries(weights)) {
-    if (entry === undefined) {
-      continue;
-    }
+  for (const word of words) {
+    for (let i = 0; i < word.definitions.length; i++) {
+      for (const t of questionTypes) {
+        current +=
+          weights[word.german]?.[i]?.[t] ?? getDefaultScore(word, i, t);
 
-    for (const t of questionTypes) {
-      current += entry[t] ?? 0;
-
-      if (current >= cursor) {
-        const word = words.find((w) => w.german === german);
-
-        if (word === undefined) {
-          throw Error();
+        if (current >= cursor) {
+          return [word, t];
         }
-
-        return [word, t];
       }
     }
   }

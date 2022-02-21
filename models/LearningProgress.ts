@@ -18,7 +18,7 @@ export function addResult(
   ok: boolean
 ): LearningProgress {
   const entry = progress.table[question.word] ?? {};
-  const subEntry = entry[question.type];
+  const subEntry = entry[question.definitionIndex]?.[question.type];
   const tick = progress.tick + 1;
 
   return {
@@ -28,14 +28,17 @@ export function addResult(
       ...progress.table,
       [question.word]: {
         ...entry,
-        [question.type]: {
-          miss: (subEntry?.miss ?? false) || !ok,
-          lastEncounteredTick: tick,
-          certainty: ok
-            ? subEntry?.miss ?? false
-              ? fromNumber((subEntry?.certainty ?? 0) + 1)
-              : 3
-            : 0,
+        [question.definitionIndex]: {
+          ...entry[question.definitionIndex],
+          [question.type]: {
+            miss: (subEntry?.miss ?? false) || !ok,
+            lastEncounteredTick: tick,
+            certainty: ok
+              ? subEntry?.miss ?? false
+                ? fromNumber((subEntry?.certainty ?? 0) + 1)
+                : 3
+              : 0,
+          },
         },
       },
     },

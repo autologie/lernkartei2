@@ -121,5 +121,6 @@ export async function listWords(settings: Settings): Promise<Word[]> {
   return res.data.words.data
     .map(modify)
     .filter((word) => test(settings, word))
-    .slice(0, settings.size);
+    .slice(0, settings.size)
+    .sort((a, b) => a.german.localeCompare(b.german));
 }

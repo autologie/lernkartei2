@@ -49,7 +49,9 @@ export type Question = FillBlank | Define | TranslateTo | TranslateFrom | Photo;
 export interface QuestionTable<T> {
   [word: string]:
     | {
-        [key in Question["type"]]?: T;
+        [definitionIndex: number]:
+          | { [key in Question["type"]]?: T }
+          | undefined;
       }
     | undefined;
 }
