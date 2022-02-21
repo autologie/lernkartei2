@@ -10,7 +10,7 @@ export default function useAddNewWord(
       return;
     }
 
-    const word = window.prompt("Word");
+    const word = window.prompt("Word to add");
 
     if (word !== null) {
       try {

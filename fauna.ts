@@ -1,3 +1,5 @@
+import { Settings } from "./models/Settings";
+import { test } from "./models/Settings";
 import { modify, Word, WordData } from "./models/Word";
 
 async function request<T>(gql: string, variables: unknown): Promise<T> {
@@ -74,7 +76,7 @@ export async function updateWord(
   return res.data.updateWord;
 }
 
-export async function listWords(): Promise<Word[]> {
+export async function listWords(settings: Settings): Promise<Word[]> {
   const res = await request<{
     data: {
       words: {
@@ -116,5 +118,8 @@ export async function listWords(): Promise<Word[]> {
     {}
   );
 
-  return res.data.words.data.map(modify);
+  return res.data.words.data
+    .map(modify)
+    .filter((word) => test(settings, word))
+    .slice(0, settings.size);
 }

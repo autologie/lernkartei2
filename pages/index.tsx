@@ -10,10 +10,10 @@ import useKeyEventListener from "../hooks/useKeyEventListener";
 import useNextAutomatically from "../hooks/useNextAutomatically";
 import { LearningProgress } from "../models/LearningProgress";
 import { Question as QuestionModel } from "../models/Question";
-import { Settings, test } from "../models/Settings";
+import { decode, encode, Settings, test } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
-import { modify, Word as WordModel } from "../models/Word";
+import { Word as WordModel } from "../models/Word";
 import { listWords } from "../fauna";
 import { usePrevious } from "../hooks/usePrevious";
 import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
@@ -28,7 +28,7 @@ interface IndexProps {
   settings: Settings;
   words: WordModel[];
   progress: LearningProgress;
-  question?: QuestionModel;
+  question: QuestionModel | null;
 }
 
 export default function Index(props: IndexProps) {
@@ -83,9 +83,30 @@ export default function Index(props: IndexProps) {
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
       {state.words?.length === 0 ? (
-        <p>Add a few words to get started!</p>
+        <p className="text-center">
+          <button className="text-blue-500 underline" onClick={handleAdd}>
+            Add a few words
+          </button>{" "}
+          {state.settings.wordFilter === undefined ? (
+            ""
+          ) : (
+            <>
+              or{" "}
+              <a
+                className="text-blue-500 underline"
+                href={`?${encode({
+                  ...state.settings,
+                  wordFilter: undefined,
+                })}`}
+              >
+                clear filter
+              </a>
+            </>
+          )}{" "}
+          to get started!
+        </p>
       ) : state.question === undefined ? (
-        <p>Loading...</p>
+        <p className="text-center">Loading...</p>
       ) : word === undefined ? (
         <div className="mt-4 flex items-center flex-col gap-4 p-4 bg-red-100 rounded-lg">
           <p className="text-2xl font-semibold text-red-700">Word not found</p>
@@ -221,23 +242,8 @@ export default function Index(props: IndexProps) {
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<IndexProps>> {
-  const size = ctx.query?.["size"];
-  const partOfSpeech = ctx.query?.["partOfSpeech"];
-  const filter = ctx.query?.["filter"];
-  const debug = ctx.query?.["debug"];
-  const settings = {
-    ...(size === undefined || Array.isArray(size)
-      ? undefined
-      : { size: Number.parseInt(size, 10) }),
-    ...(partOfSpeech === undefined || Array.isArray(partOfSpeech)
-      ? undefined
-      : { partOfSpeech }),
-    ...(filter === undefined || Array.isArray(filter) ? undefined : { filter }),
-    debug: debug !== undefined,
-  };
-  const words = (await listWords())
-    .filter((word) => test(settings, word))
-    .slice(0, settings?.size);
+  const settings = decode(ctx.query);
+  const words = await listWords(settings);
   const progress = { tick: 0, table: {} };
 
   return {
@@ -245,7 +251,7 @@ export async function getServerSideProps(
       settings,
       words,
       progress: progress,
-      question: createQuestion(createWeights(words, progress), words),
+      question: createQuestion(createWeights(words, progress), words) ?? null,
     },
   };
 }

@@ -170,7 +170,7 @@ export function getInitialState({
   settings: Settings;
   words: Word[];
   progress: LearningProgress;
-  question?: Question;
+  question: Question | null;
 }): State {
   const weights = createWeights(words, progress);
 
@@ -182,6 +182,6 @@ export function getInitialState({
     progress: { table: {}, tick: 0 },
     weights,
     words,
-    question,
+    question: question ?? undefined,
   };
 }
