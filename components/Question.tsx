@@ -144,6 +144,7 @@ export default function Question({
             <>
               Welche Wort passt zum Bild an?
               <Image
+                unoptimized={true}
                 src={photo.url}
                 alt={photo.caption}
                 className="block mx-auto mt-4"
