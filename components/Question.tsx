@@ -12,6 +12,7 @@ export default function Question({
   showExplanation,
   isNewer,
   onResponse,
+  onConfigureWord,
 }: {
   question: Model;
   word: Word;
@@ -20,6 +21,7 @@ export default function Question({
   showExplanation: boolean;
   isNewer: boolean;
   onResponse: (responses: number) => void;
+  onConfigureWord: (word: Word) => void;
 }) {
   const [showHint, setHint] = useState(false);
   const commonProps = {
@@ -31,6 +33,7 @@ export default function Question({
     definitionIndex: question.definitionIndex,
     showExplanation,
     onResponse,
+    onConfigureWord,
   };
 
   switch (question.type) {

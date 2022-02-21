@@ -3,7 +3,7 @@ import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
 import { Settings, test } from "./Settings";
 import { createQuestion, createWeights, Weights } from "./Weights";
-import { modify, Word } from "./Word";
+import { Word } from "./Word";
 
 export interface State {
   words: Word[];
@@ -15,7 +15,9 @@ export interface State {
   weights: Weights;
   historyCursor?: number;
   settings: Settings;
-  modal?: { type: "word-added"; word: Word };
+  modal?:
+    | { type: "word-added"; word: Word }
+    | { type: "configure-word"; word: Word };
 }
 
 export type Action =
@@ -24,7 +26,10 @@ export type Action =
   | { type: "back" }
   | { type: "next" }
   | { type: "close-modal" }
-  | { type: "add"; payload: Word };
+  | { type: "add"; payload: Word }
+  | { type: "replace"; payload: Word }
+  | { type: "remove"; payload: string }
+  | { type: "configure-word"; payload: Word };
 
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
@@ -125,17 +130,32 @@ export function applyAction(state: State, action: Action): State {
       };
 
     case "add":
-      const word = modify(action.payload);
-
       return state.words === undefined || !test(state.settings, action.payload)
         ? state
         : {
             ...state,
-            words: state.words
-              .concat([word])
-              .sort((a, b) => a.german.localeCompare(b.german)),
-            modal: { type: "word-added", word },
+            words: state.words.concat([action.payload]),
+            modal: { type: "word-added", word: action.payload },
           };
+    case "configure-word":
+      return {
+        ...state,
+        modal: { type: "configure-word", word: action.payload },
+      };
+    case "remove":
+      return {
+        ...state,
+        modal: undefined,
+        words: state.words.filter((w) => w.german !== action.payload),
+      };
+    case "replace":
+      return {
+        ...state,
+        modal: undefined,
+        words: state.words.map((w) =>
+          w.german === action.payload.german ? action.payload : w
+        ),
+      };
     case "close-modal":
       return { ...state, modal: undefined };
   }

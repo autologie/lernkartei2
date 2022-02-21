@@ -15,6 +15,7 @@ export default function QuestionTemplate({
   showExplanation,
   isNewer,
   onResponse,
+  onConfigureWord,
 }: {
   question: ReactNode;
   layout: "grid" | "list";
@@ -27,6 +28,7 @@ export default function QuestionTemplate({
   isNewer: boolean;
   showExplanation: boolean;
   onResponse: (response: number) => void;
+  onConfigureWord: (word: WordModel) => void;
 }) {
   const ChoiceElement = done ? "div" : "button"; // This way you can select text once the question is answered
   const wasDone = useRef(done);
@@ -86,7 +88,12 @@ export default function QuestionTemplate({
         })}
       </ol>
       {showExplanation && (
-        <Word word={word} className="mt-4" highlightedIndex={definitionIndex} />
+        <Word
+          word={word}
+          className="mt-4"
+          highlightedIndex={definitionIndex}
+          onConfigure={onConfigureWord}
+        />
       )}
     </div>
   );

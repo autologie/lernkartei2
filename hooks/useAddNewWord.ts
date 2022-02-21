@@ -1,8 +1,15 @@
 import { Dispatch, useCallback } from "react";
 import { Action } from "../models/State";
 
-export default function useAddNewWord(dispatch: Dispatch<Action>) {
+export default function useAddNewWord(
+  dispatch: Dispatch<Action>,
+  disabled: boolean
+) {
   return useCallback(async () => {
+    if (disabled) {
+      return;
+    }
+
     const word = window.prompt("Word");
 
     if (word !== null) {
@@ -20,5 +27,5 @@ export default function useAddNewWord(dispatch: Dispatch<Action>) {
         window.alert(`Failed (${(e as any).message})`);
       }
     }
-  }, [dispatch]);
+  }, [dispatch, disabled]);
 }

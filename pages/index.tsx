@@ -1,9 +1,8 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import AddButton from "../components/AddButton";
 import Debugger from "../components/Debugger";
 import NavButton from "../components/NavButton";
-import NextButton from "../components/NextButton";
 import Question from "../components/Question";
 import Word from "../components/Word";
 import useAddNewWord from "../hooks/useAddNewWord";
@@ -15,9 +14,13 @@ import { Settings, test } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { modify, Word as WordModel } from "../models/Word";
-import { loadWords } from "../fauna";
+import { listWords } from "../fauna";
 import { usePrevious } from "../hooks/usePrevious";
 import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
+import { Modal } from "../components/Modal";
+import Button from "../components/Button";
+import useRefreshWord from "../hooks/useRefreshWord";
+import useRemoveWord from "../hooks/useRemoveWord";
 
 function noop() {}
 
@@ -45,12 +48,37 @@ export default function Index(props: IndexProps) {
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
   );
-  const handleAdd = useAddNewWord(dispatch);
+  const handleConfigureWord = useCallback(
+    (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
+    []
+  );
+  const handleAdd = useAddNewWord(dispatch, state.modal !== undefined);
   const prevHistoryCursor = usePrevious(state.historyCursor);
+  const handleRefresh = useRefreshWord(
+    dispatch,
+    state.modal?.type === "configure-word" ? state.modal.word : undefined
+  );
+  const handleRemove = useRemoveWord(
+    dispatch,
+    state.modal?.type === "configure-word" ? state.modal.word : undefined
+  );
+  const handleCloseModal = useCallback(
+    () => dispatch({ type: "close-modal" }),
+    []
+  );
 
   useNextAutomatically(500, state, dispatch);
   useKeyEventListener(state.question, dispatch, handleAdd);
   useSwipeNavigation(dispatch);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.document.body.style.overflow =
+      state.modal === undefined ? "auto" : "hidden";
+  }, [state.modal]);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
@@ -84,6 +112,7 @@ export default function Index(props: IndexProps) {
                 state.done
               }
               onResponse={handleResponse}
+              onConfigureWord={handleConfigureWord}
             />
           ) : (
             <Question
@@ -98,6 +127,7 @@ export default function Index(props: IndexProps) {
               showExplanation={true}
               done={true}
               onResponse={noop}
+              onConfigureWord={handleConfigureWord}
             />
           )}
           {state.history.length > 0 &&
@@ -123,31 +153,61 @@ export default function Index(props: IndexProps) {
         state.done &&
         state.historyCursor === undefined && (
           <div className="fixed left-0 bottom-0 w-full">
-            <NextButton
+            <Button
+              color="blue"
+              standout={true}
               className="mx-auto my-4"
               onClick={() => dispatch({ type: "next" })}
-            />
+            >
+              Next
+            </Button>
           </div>
         )}
       <AddButton
-        className="fixed right-0 bottom-0 m-3 md:m-4"
+        className="fixed z-10 right-0 bottom-0 m-3 md:m-4"
         onClick={handleAdd}
       />
-      {state.modal?.type === "word-added" && (
-        <div className="bg-black bg-opacity-30 fixed left-0 bottom-0 w-full h-full flex flex-col items-center justify-end md:justify-start z-10 p-0 md:p-12 md:pt-36 overflow-auto">
-          <div className="h-2/3 md:h-auto w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto">
-            <h2 className="text-center text-2xl font-semibold mb-4">
-              Word added
-            </h2>
-            <Word word={state.modal.word} />
-            <button
-              className="block mx-auto mt-4 transition-colors bg-gray-200 hover:bg-gray-300 rounded-xl py-2 px-24 text-base font-light"
-              onClick={() => dispatch({ type: "close-modal" })}
-            >
-              OK
-            </button>
-          </div>
-        </div>
+      {state.modal !== undefined && (
+        <Modal onClose={handleCloseModal}>
+          {state.modal.type === "word-added" && (
+            <>
+              <h2 className="text-center text-xl font-semibold mb-4">
+                Word added
+              </h2>
+              <Word word={state.modal.word} />
+              <Button
+                color="gray"
+                className="mx-auto mt-4"
+                onClick={handleCloseModal}
+              >
+                OK
+              </Button>
+            </>
+          )}
+          {state.modal.type === "configure-word" && (
+            <>
+              <h2 className="text-center text-xl font-semibold mb-4">
+                Manage word{" "}
+                <i className="font-semibold">"{state.modal.word.german}"</i>
+              </h2>
+              <div className="flex flex-col items-stretch gap-4">
+                <Button fixedWidth={true} color="gray" onClick={handleRefresh}>
+                  Refresh dictionary
+                </Button>
+                <Button fixedWidth={true} color="gray" onClick={handleRemove}>
+                  Remove from dictionary
+                </Button>
+                <Button
+                  fixedWidth={true}
+                  color="gray"
+                  onClick={() => dispatch({ type: "close-modal" })}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </>
+          )}
+        </Modal>
       )}
       {state.settings.debug && (
         <Debugger words={state.words ?? []} weights={state.weights} />
@@ -173,11 +233,9 @@ export async function getServerSideProps(
     ...(filter === undefined || Array.isArray(filter) ? undefined : { filter }),
     debug: debug !== undefined,
   };
-  const words = (await loadWords())
+  const words = (await listWords())
     .filter((word) => test(settings, word))
-    .slice(0, settings?.size)
-    .map(modify)
-    .sort((a, b) => a.german.localeCompare(b.german));
+    .slice(0, settings?.size);
   const progress = { tick: 0, table: {} };
 
   return {

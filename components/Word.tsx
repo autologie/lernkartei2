@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import { AiFillSetting } from "react-icons/ai";
 import { Word as WordModel } from "../models/Word";
 import ExampleText from "./ExampleText";
 
@@ -13,18 +14,28 @@ export default function Word({
   word,
   className,
   highlightedIndex,
+  onConfigure,
 }: {
   word: WordModel;
   className?: string;
   highlightedIndex?: number;
+  onConfigure?: (word: WordModel) => void;
 }) {
   const [openIndex, dispatch] = useReducer(applyState, highlightedIndex);
 
   return (
-    <div className={`bg-blue-100 rounded-lg py-4 ${className ?? ""}`}>
+    <div className={`relative bg-blue-100 rounded-lg py-4 ${className ?? ""}`}>
       <h3 className="mb-3 text-xl font-semibold px-4">
         {word.german} <i className="text-base">({word.partOfSpeech})</i>
       </h3>
+      {onConfigure !== undefined && (
+        <AiFillSetting
+          size={20}
+          title="configure word"
+          className="z-10 absolute top-0 right-0 m-4 text-gray-500 cursor-pointer"
+          onClick={() => onConfigure(word)}
+        />
+      )}
       <ul className="flex flex-col gap-3">
         {word.definitions.map((def, i) => (
           <li

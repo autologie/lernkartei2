@@ -1,7 +1,12 @@
-export interface Word {
+export interface WordData {
   partOfSpeech: string;
   german: string;
   definitions: WordMeaning[];
+}
+
+export interface Word extends WordData {
+  _id: string;
+  _ts: number;
 }
 
 export interface Photo {
