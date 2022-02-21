@@ -3,13 +3,16 @@ import { Action } from "../models/State";
 import { useSwipe } from "./useSwipe";
 
 export function useSwipeNavigation(dispatch: Dispatch<Action>) {
-  const handleSwipe = useCallback((direction: "n" | "s" | "w" | "e") => {
-    if (direction === "n" || direction === "s") {
-      return;
-    }
+  const handleSwipe = useCallback(
+    (direction: "n" | "s" | "w" | "e") => {
+      if (direction === "n" || direction === "s") {
+        return;
+      }
 
-    dispatch({ type: direction === "e" ? "next" : "back" });
-  }, []);
+      dispatch({ type: direction === "e" ? "next" : "back" });
+    },
+    [dispatch]
+  );
 
   useSwipe(handleSwipe);
 }

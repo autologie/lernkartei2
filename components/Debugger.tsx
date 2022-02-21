@@ -46,7 +46,7 @@ export default function Debugger({
   );
 }
 
-const Tile = React.memo(({ weight }: { weight: number }) => {
+const Tile = React.memo(function Title_({ weight }: { weight: number }) {
   return (
     <div
       className={`w-5 h-5 m-0.5 cursor-default rounded text-transparent hover:text-black flex items-center justify-center`}

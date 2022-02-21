@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState } from "react";
 import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
@@ -142,7 +143,7 @@ export default function Question({
           question={
             <>
               Welche Wort passt zum Bild an?
-              <img
+              <Image
                 src={photo.url}
                 alt={photo.caption}
                 className="block mx-auto mt-4"
