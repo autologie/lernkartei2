@@ -74,7 +74,8 @@ export function shuffleChoices(question: Question) {
 
 export function createDefineQuestion(word: Word, words: Word[]): Question {
   const definitionIndex = getRandomIndex(word.definitions);
-  const question: Question = {
+
+  return shuffleChoices({
     type: "define",
     word: word.german,
     definitionIndex,
@@ -91,9 +92,7 @@ export function createDefineQuestion(word: Word, words: Word[]): Question {
       .map((w) => w.definition)
       .filter((v): v is string => v !== undefined),
     answerIndex: 0,
-  };
-
-  return shuffleChoices(question);
+  });
 }
 
 export function createFillBlankQuestion(word: Word, words: Word[]): Question {
@@ -101,7 +100,8 @@ export function createFillBlankQuestion(word: Word, words: Word[]): Question {
   const exampleIndex = getRandomIndex(
     word.definitions[definitionIndex].examples
   );
-  const question: Question = {
+
+  return shuffleChoices({
     type: "fill-blank",
     word: word.german,
     definitionIndex,
@@ -113,9 +113,7 @@ export function createFillBlankQuestion(word: Word, words: Word[]): Question {
       ).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
-  };
-
-  return shuffleChoices(question);
+  });
 }
 
 export function createTranslateFromQuestion(
@@ -126,7 +124,8 @@ export function createTranslateFromQuestion(
   const englishIndex = getRandomIndex(
     word.definitions[definitionIndex].english
   );
-  const question: Question = {
+
+  return shuffleChoices({
     type: "translate-from",
     word: word.german,
     definitionIndex,
@@ -138,15 +137,14 @@ export function createTranslateFromQuestion(
       ).slice(0, 4),
     ].map((w) => w.german),
     answerIndex: 0,
-  };
-
-  return shuffleChoices(question);
+  });
 }
 
 export function createTranslateToQuestion(word: Word, words: Word[]): Question {
   const definitionIndex = getRandomIndex(word.definitions);
   const english = getRandomElement(word.definitions[definitionIndex].english);
-  const question: Question = {
+
+  return shuffleChoices({
     type: "translate-to",
     word: word.german,
     definitionIndex,
@@ -161,9 +159,7 @@ export function createTranslateToQuestion(word: Word, words: Word[]): Question {
       ).slice(0, 4),
     ].filter((v): v is string => v !== undefined),
     answerIndex: 0,
-  };
-
-  return shuffleChoices(question);
+  });
 }
 
 export function createPhotoQuestion(word: Word, words: Word[]): Question {
@@ -171,7 +167,8 @@ export function createPhotoQuestion(word: Word, words: Word[]): Question {
   const photoIndex = getRandomIndex(
     word.definitions[definitionIndex].photos ?? []
   );
-  const question: Question = {
+
+  return shuffleChoices({
     type: "photo",
     word: word.german,
     definitionIndex,
@@ -185,7 +182,5 @@ export function createPhotoQuestion(word: Word, words: Word[]): Question {
       ).slice(0, 4),
     ].filter((v): v is string => v !== undefined),
     answerIndex: 0,
-  };
-
-  return shuffleChoices(question);
+  });
 }

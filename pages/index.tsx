@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import AddButton from "../components/AddButton";
 import Debugger from "../components/Debugger";
 import NavButton from "../components/NavButton";
@@ -10,7 +10,7 @@ import useKeyEventListener from "../hooks/useKeyEventListener";
 import useNextAutomatically from "../hooks/useNextAutomatically";
 import { LearningProgress } from "../models/LearningProgress";
 import { Question as QuestionModel } from "../models/Question";
-import { decode, encode, Settings, test } from "../models/Settings";
+import { decode, encode, Settings } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
@@ -33,17 +33,9 @@ interface IndexProps {
 
 export default function Index(props: IndexProps) {
   const [state, dispatch] = useReducer(applyAction, props, getInitialState);
-  const historyToShow = state.history[state.historyCursor ?? -1];
-  const word = useMemo(() => {
-    const german =
-      historyToShow === undefined
-        ? state.question?.word
-        : historyToShow?.question.word;
-
-    return german === undefined
-      ? undefined
-      : state.words?.find((w) => w.german === german);
-  }, [historyToShow, state.question, state.words]);
+  const item =
+    state.history.length === 0 ? undefined : state.history[state.historyCursor];
+  const word = state.words.find((w) => w.german === item?.question.word);
   const handleResponse = useCallback(
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
@@ -68,7 +60,7 @@ export default function Index(props: IndexProps) {
   );
 
   useNextAutomatically(500, state, dispatch);
-  useKeyEventListener(state.question, dispatch, handleAdd);
+  useKeyEventListener(item?.question, dispatch, handleAdd);
   useSwipeNavigation(dispatch);
 
   useEffect(() => {
@@ -82,7 +74,7 @@ export default function Index(props: IndexProps) {
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
-      {state.words?.length === 0 ? (
+      {state.words.length === 0 ? (
         <p className="text-center">
           <button className="text-blue-500 underline" onClick={handleAdd}>
             Add a few words
@@ -105,7 +97,7 @@ export default function Index(props: IndexProps) {
           )}{" "}
           to get started!
         </p>
-      ) : state.question === undefined ? (
+      ) : item === undefined ? (
         <p className="text-center">Loading...</p>
       ) : word === undefined ? (
         <div className="mt-4 flex items-center flex-col gap-4 p-4 bg-red-100 rounded-lg">
@@ -119,48 +111,32 @@ export default function Index(props: IndexProps) {
         </div>
       ) : (
         <div className="relative">
-          {historyToShow === undefined || state.historyCursor === undefined ? (
-            <Question
-              key={state.question.word}
-              isNewer={true}
-              word={word}
-              question={state.question}
-              missedResponses={state.missResponses}
-              done={state.done}
-              showExplanation={
-                state.missResponses.length > 0 &&
-                state.question !== undefined &&
-                state.done
-              }
-              onResponse={handleResponse}
-              onConfigureWord={handleConfigureWord}
-            />
-          ) : (
-            <Question
-              key={historyToShow.question.word}
-              word={word}
-              isNewer={
-                prevHistoryCursor !== undefined &&
-                state.historyCursor < prevHistoryCursor
-              }
-              question={historyToShow.question}
-              missedResponses={historyToShow.missResponses}
-              showExplanation={true}
-              done={true}
-              onResponse={noop}
-              onConfigureWord={handleConfigureWord}
-            />
-          )}
+          <Question
+            key={item.question.word}
+            word={word}
+            isNewer={
+              state.historyCursor === 0 ||
+              prevHistoryCursor > state.historyCursor
+            }
+            question={item.question}
+            missedResponses={item.missResponses}
+            showExplanation={
+              state.historyCursor > 0 ||
+              (state.done && item.missResponses.length > 0)
+            }
+            done={state.historyCursor > 0 || state.done}
+            onResponse={!state.done ? handleResponse : noop}
+            onConfigureWord={handleConfigureWord}
+          />
           {state.history.length > 0 &&
-            (state.historyCursor === undefined ||
-              state.history.length > state.historyCursor + 1) && (
+            state.history.length > state.historyCursor + 1 && (
               <NavButton
                 direction="prev"
                 className="hidden md:block mt-20 absolute left-0 top-0 -ml-20"
                 onClick={() => dispatch({ type: "back" })}
               />
             )}
-          {state.historyCursor !== undefined && (
+          {state.historyCursor > 0 && (
             <NavButton
               direction="next"
               className="hidden md:block mt-20 absolute right-0 top-0 -mr-20"
@@ -169,10 +145,9 @@ export default function Index(props: IndexProps) {
           )}
         </div>
       )}
-      {state.missResponses.length > 0 &&
-        state.question !== undefined &&
+      {(item?.missResponses.length ?? 0) > 0 &&
         state.done &&
-        state.historyCursor === undefined && (
+        state.historyCursor === 0 && (
           <div className="fixed left-0 bottom-0 w-full">
             <Button
               color="blue"

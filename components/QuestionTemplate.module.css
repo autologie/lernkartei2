@@ -8,7 +8,7 @@
 }
 
 .wrong_choice {
-  animation: linear shake .15s 5;
+  animation: linear shake .15s 3;
 }
 
 .hit {

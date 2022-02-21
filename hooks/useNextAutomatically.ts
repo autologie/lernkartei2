@@ -6,7 +6,11 @@ export default function useNextAutomatically(
   state: State,
   dispatch: Dispatch<Action>
 ) {
-  const shouldTrigger = state.missResponses.length === 0 && state.done;
+  const shouldTrigger =
+    state.historyCursor === 0 &&
+    state.history.length > 0 &&
+    state.history[0].missResponses.length === 0 &&
+    state.done;
 
   useEffect(() => {
     if (!shouldTrigger) {

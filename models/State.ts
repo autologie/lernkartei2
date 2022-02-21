@@ -7,13 +7,11 @@ import { Word } from "./Word";
 
 export interface State {
   words: Word[];
-  question?: Question;
   done: boolean;
-  missResponses: number[];
   history: HistoryItem[];
   progress: LearningProgress;
   weights: Weights;
-  historyCursor?: number;
+  historyCursor: number;
   settings: Settings;
   modal?:
     | { type: "word-added"; word: Word }
@@ -31,18 +29,40 @@ export type Action =
   | { type: "remove"; payload: string }
   | { type: "configure-word"; payload: Word };
 
+function setNewQuestion(state: State): State {
+  const nextQuestion = createQuestion(state.weights, state.words);
+
+  if (nextQuestion === undefined) {
+    return state;
+  }
+
+  return {
+    ...state,
+    done: false,
+    history: [{ missResponses: [] as number[], question: nextQuestion }].concat(
+      state.history
+    ),
+  };
+}
+
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
-    case "respond":
-      if (state.question === undefined || state.done) {
+    case "respond": {
+      if (
+        state.historyCursor !== 0 ||
+        state.history.length === 0 ||
+        state.done
+      ) {
         return state;
       }
 
-      if (state.question.answerIndex === action.payload) {
+      const item = state.history[0];
+
+      if (item.question.answerIndex === action.payload) {
         const progress = addResult(
           state.progress,
-          state.question,
-          state.missResponses.length === 0
+          item.question,
+          item.missResponses.length === 0
         );
 
         return {
@@ -55,80 +75,36 @@ export function applyAction(state: State, action: Action): State {
 
       return {
         ...state,
-        missResponses: state.missResponses.concat([action.payload]),
+        history: [
+          { ...item, missResponses: item.missResponses.concat(action.payload) },
+        ].concat(state.history.slice(1)),
       };
-    case "back":
-      return state.historyCursor === undefined
-        ? state.history.length > 0
-          ? { ...state, historyCursor: 0 }
-          : state
-        : state.historyCursor < state.history.length - 1
+    }
+    case "back": {
+      if (state.modal !== undefined) {
+        return state;
+      }
+
+      return state.historyCursor < state.history.length - 1
         ? { ...state, historyCursor: state.historyCursor + 1 }
         : state;
+    }
     case "next":
       if (state.modal !== undefined) {
         return state;
       }
 
-      if (state.historyCursor === undefined) {
-        if (state.words === undefined || !state.done) {
+      if (state.historyCursor === 0) {
+        if (!state.done) {
           return state;
         }
 
-        const history = (
-          state.question === undefined
-            ? []
-            : [
-                {
-                  question: state.question,
-                  missResponses: state.missResponses,
-                },
-              ]
-        ).concat(state.history);
-        const nextQuestion = createQuestion(state.weights, state.words);
-
-        if (nextQuestion === undefined) {
-          return {
-            ...state,
-            history,
-            question: undefined,
-          };
-        }
-
-        return {
-          ...state,
-          question: nextQuestion,
-          done: false,
-          missResponses: [],
-          history,
-        };
+        return setNewQuestion(state);
       }
 
-      return {
-        ...state,
-        historyCursor:
-          state.historyCursor === 0 ? undefined : state.historyCursor - 1,
-      };
+      return { ...state, historyCursor: state.historyCursor - 1 };
     case "skip":
-      if (state.words === undefined) {
-        return state;
-      }
-
-      const nextQuestion = createQuestion(state.weights, state.words);
-
-      if (nextQuestion === undefined) {
-        return {
-          ...state,
-        };
-      }
-
-      return {
-        ...state,
-        question: nextQuestion,
-        done: false,
-        missResponses: [],
-      };
-
+      return setNewQuestion(state);
     case "add":
       return state.words === undefined || !test(state.settings, action.payload)
         ? state
@@ -176,12 +152,11 @@ export function getInitialState({
 
   return {
     done: false,
-    missResponses: [],
-    history: [],
+    history: question === null ? [] : [{ missResponses: [], question }],
+    historyCursor: 0,
     settings,
     progress: { table: {}, tick: 0 },
     weights,
     words,
-    question: question ?? undefined,
   };
 }

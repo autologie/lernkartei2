@@ -12,24 +12,28 @@ function extractEnglish(dom: JSDOM): Map<number, string[]> {
       ?.textContent ?? ""
   )
     .replace(/Englisch:\s*/, "")
-    .split(/\s*;\s*/)
+    .split(/\s*[,;]\s*/)
     .map((t) => t.split(/\s*→\s*/)[0].split(/\s+/))
-    .reduce((passed, [num, ...phrase]) => {
-      const index = findIndex(num);
+    .reduce<[number | undefined, Map<number, string[]>]>(
+      ([currentIndex, passed], [num, ...phrase]) => {
+        const found = findIndex(num);
+        const index = Number.isNaN(found) ? currentIndex : found;
 
-      if (index !== undefined && phrase.length > 0) {
-        passed.set(
-          index,
-          (passed.get(index) ?? []).concat(
-            [phrase.join(" ").replace(/\[\d+\]/g, "")].filter(
-              (e) => e.trim() !== ""
+        if (index !== undefined && phrase.length > 0) {
+          passed.set(
+            index,
+            (passed.get(index) ?? []).concat(
+              [phrase.join(" ").replace(/\[\d+\]/g, "")].filter(
+                (e) => e.trim() !== ""
+              )
             )
-          )
-        );
-      }
+          );
+        }
 
-      return passed;
-    }, new Map<number, string[]>());
+        return [index, passed];
+      },
+      [undefined, new Map<number, string[]>()]
+    )[1];
 }
 
 function extractExamples(dom: JSDOM): Map<number, string[]> {
