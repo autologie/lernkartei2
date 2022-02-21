@@ -189,7 +189,7 @@ export default function Index(props: IndexProps) {
               <h2 className="text-center text-xl font-semibold mb-4">
                 Manage word{" "}
                 <i className="font-semibold">
-                  &quote;{state.modal.word.german}&quote;
+                  &quot;{state.modal.word.german}&quot;
                 </i>
               </h2>
               <div className="flex flex-col items-stretch gap-4">
