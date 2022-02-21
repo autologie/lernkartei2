@@ -60,7 +60,7 @@ export default function Index(props: IndexProps) {
   );
 
   useNextAutomatically(500, state, dispatch);
-  useKeyEventListener(item?.question, dispatch, handleAdd);
+  useKeyEventListener(state, dispatch, handleAdd);
   useSwipeNavigation(dispatch);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ export default function Index(props: IndexProps) {
       ) : (
         <div className="relative">
           <Question
-            key={item.question.word}
+            key={`${state.history.length}-${state.historyCursor}`}
             word={word}
             isNewer={
               state.historyCursor === 0 ||

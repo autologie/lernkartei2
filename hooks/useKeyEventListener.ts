@@ -1,13 +1,13 @@
 import { Dispatch, useEffect } from "react";
-import { Question } from "../models/Question";
-import { Action } from "../models/State";
+import { Action, State } from "../models/State";
 
 export default function useKeyEventListener(
-  question: Question | undefined,
+  state: State,
   dispatch: Dispatch<Action>,
   onAddNew: () => void
 ) {
-  const choiceCount = question?.choices.length;
+  const choiceCount = state.history[0]?.question.choices.length;
+  const isAddingWord = state.modal?.type === "word-added";
 
   useEffect(() => {
     if (choiceCount === undefined) {
@@ -28,7 +28,7 @@ export default function useKeyEventListener(
         return;
       }
 
-      if (e.key === "Escape") {
+      if ((e.key === "Enter" && isAddingWord) || e.key === "Escape") {
         dispatch({ type: "close-modal" });
         return;
       }
@@ -53,5 +53,5 @@ export default function useKeyEventListener(
     return () => {
       window.removeEventListener("keydown", handleEvent);
     };
-  }, [choiceCount, dispatch, onAddNew]);
+  }, [choiceCount, dispatch, isAddingWord, onAddNew]);
 }
