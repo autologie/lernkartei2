@@ -115,6 +115,12 @@ function extractPartOfSpeech(dom: JSDOM): string | undefined {
     ?.textContent?.trim();
 }
 
+function isGerman(dom: JSDOM): boolean {
+  return (
+    dom.window.document.querySelector("[title='Wiktionary:Deutsch']") !== null
+  );
+}
+
 function extractWiktionaryContent(
   entry: string,
   html: string
@@ -126,7 +132,7 @@ function extractWiktionaryContent(
   const photosMap = extractPhotos(dom);
   const definitions = extractDefinitions(dom);
 
-  if (partOfSpeech === undefined || definitions.size === 0) {
+  if (!isGerman(dom) || partOfSpeech === undefined || definitions.size === 0) {
     return undefined;
   }
 
