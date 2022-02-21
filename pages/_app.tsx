@@ -6,10 +6,9 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <meta name="theme-color" content="#000000" />
         <meta
           name="description"
-          content="Yet another flashcard app for learning the German language"
+          content="Yet another flashcard app for building German language vocabulary"
         />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <title>Lernkartei v2</title>
