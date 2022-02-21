@@ -2,8 +2,13 @@ import fetch from "node-fetch";
 import jsdom, { JSDOM } from "jsdom";
 import { Photo, WordData } from "./models/Word";
 
-function findIndex(text: string | null): number {
-  return Number.parseInt(text?.match(/^\[(\d+)\]/)?.[1] ?? "", 10) - 1;
+function findIndices(text: string | null): number[] {
+  return (text ?? "").split(/[\[,\]]/).flatMap((segment) => {
+    const n = Number.parseInt(segment.trim(), 10);
+    console.log("---", segment, n);
+
+    return Number.isNaN(n) ? [] : [n];
+  });
 }
 
 function extractEnglish(dom: JSDOM): Map<number, string[]> {
@@ -11,29 +16,24 @@ function extractEnglish(dom: JSDOM): Map<number, string[]> {
     dom.window.document.querySelector("[title='Englisch']")?.parentNode
       ?.textContent ?? ""
   )
-    .replace(/Englisch:\s*/, "")
-    .split(/\s*[,;]\s*/)
-    .map((t) => t.split(/\s*→\s*/)[0].split(/\s+/))
-    .reduce<[number | undefined, Map<number, string[]>]>(
-      ([currentIndex, passed], [num, ...phrase]) => {
-        const found = findIndex(num);
-        const index = Number.isNaN(found) ? currentIndex : found;
+    .split("[")
+    .slice(1)
+    .map((segment) => segment.split("]"))
+    .reduce<Map<number, string[]>>((passed, [num, words]) => {
+      findIndices(num).forEach((index) => {
+        passed.set(
+          index,
+          (passed.get(index) ?? []).concat(
+            words
+              .split(/[,;]/)
+              .map((w) => w.split(/→\s*/)[0].trim())
+              .filter((w) => w !== "")
+          )
+        );
+      });
 
-        if (index !== undefined && phrase.length > 0) {
-          passed.set(
-            index,
-            (passed.get(index) ?? []).concat(
-              [phrase.join(" ").replace(/\[\d+\]/g, "")].filter(
-                (e) => e.trim() !== ""
-              )
-            )
-          );
-        }
-
-        return [index, passed];
-      },
-      [undefined, new Map<number, string[]>()]
-    )[1];
+      return passed;
+    }, new Map());
 }
 
 function extractExamples(dom: JSDOM): Map<number, string[]> {
@@ -42,21 +42,24 @@ function extractExamples(dom: JSDOM): Map<number, string[]> {
       .querySelector("[title='Verwendungsbeispielsätze'] ~ dl")
       ?.querySelectorAll("dd") ?? []),
   ].reduce((passed, e) => {
-    const index = findIndex(e.textContent);
+    const indices = findIndices(e.textContent);
+    console.log(indices, e.textContent);
 
-    passed.set(
-      index,
-      (passed.get(index) ?? []).concat(
-        [
-          [...e.childNodes]
-            .map((n) =>
-              n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
-            )
-            .join("")
-            .replace(/\[\d+\]/g, ""),
-        ].filter((e) => e.trim() !== "")
-      )
-    );
+    indices.forEach((index) => {
+      passed.set(
+        index,
+        (passed.get(index) ?? []).concat(
+          [
+            [...e.childNodes]
+              .map((n) =>
+                n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
+              )
+              .join("")
+              .replace(/\[\d+\]/g, ""),
+          ].filter((e) => e.trim() !== "")
+        )
+      );
+    });
     return passed;
   }, new Map<number, string[]>());
 }
@@ -68,22 +71,24 @@ function extractPhotos(dom: JSDOM): Map<number, Photo[]> {
       const captionEl = el.querySelector(".thumbcaption");
 
       if (img !== null && captionEl !== null) {
-        const index = findIndex(captionEl.textContent ?? "");
+        const indices = findIndices(captionEl.textContent ?? "");
 
-        passed.set(
-          index,
-          (passed.get(index) ?? []).concat([
-            {
-              url: img.src,
-              caption: [...captionEl.childNodes]
-                .map((n) =>
-                  n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
-                )
-                .join("")
-                .replace(/\[\d+\]/g, ""),
-            },
-          ])
-        );
+        indices.forEach((index) => {
+          passed.set(
+            index,
+            (passed.get(index) ?? []).concat([
+              {
+                url: img.src,
+                caption: [...captionEl.childNodes]
+                  .map((n) =>
+                    n.nodeName === "I" ? `[[${n.textContent}]]` : n.textContent
+                  )
+                  .join("")
+                  .replace(/\[\d+\]/g, ""),
+              },
+            ])
+          );
+        });
       }
 
       return passed;
@@ -98,11 +103,11 @@ function extractDefinitions(dom: JSDOM): Map<number, string> {
       .querySelector("[title='Sinn und Bezeichnetes (Semantik)'] ~ dl")
       ?.querySelectorAll("dd") ?? []),
   ].reduce((passed, el) => {
-    const index = findIndex(el.textContent);
+    const indices = findIndices(el.textContent);
 
-    if (!Number.isNaN(index)) {
+    if (indices.length > 0) {
       passed.set(
-        index,
+        indices[0],
         el.textContent
           ?.replace(/^\[\d+\]\s*(Hilfsverb [\w]+(,|:)\s*)?/, "")
           .replace(/\[\d+\]/g, "") ?? ""
