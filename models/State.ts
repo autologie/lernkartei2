@@ -1,4 +1,3 @@
-import { Dictionary } from "./Dictionary";
 import { HistoryItem } from "./HistoryItem";
 import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
@@ -7,7 +6,7 @@ import { createQuestion, createWeights, Weights } from "./Weights";
 import { Word } from "./Word";
 
 export interface State {
-  words: Dictionary;
+  words: Word[];
   done: boolean;
   history: HistoryItem[];
   progress: LearningProgress;
