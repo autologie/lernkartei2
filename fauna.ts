@@ -142,13 +142,16 @@ export async function addLearningLog(data: LearningLogData) {
   return res.data.createLearningLog;
 }
 
-export async function listLearningLogs(): Promise<LearningLog[]> {
+export async function listLearningLogs(
+  sessionId: string
+): Promise<LearningLog[]> {
   const res = await request<{
     data: {
       learningLogs: {
         data: {
           _id: string;
           _ts: number;
+          sessionId: string;
           tick: number;
           word: string;
           definitionIndex: number;
@@ -159,8 +162,8 @@ export async function listLearningLogs(): Promise<LearningLog[]> {
     };
   }>(
     // TODO: paginate properly
-    `query {
-       learningLogs(_size: 1000) {
+    `query($sessionId: String!) {
+       learningLogs(_size: 1000, sessionId: $sessionId) {
          data {
            _id,
            _ts,
@@ -172,7 +175,7 @@ export async function listLearningLogs(): Promise<LearningLog[]> {
          }
        }
      }`,
-    {}
+    { sessionId }
   );
 
   return res.data.learningLogs.data;

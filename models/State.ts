@@ -14,8 +14,10 @@ export interface State {
   historyCursor: number;
   prevHistoryCursor?: number;
   settings: Settings;
+  sessionId: string;
   modal?:
     | { type: "search"; word: string }
+    | { type: "qr-code" }
     | { type: "word"; word: Word; message?: string }
     | { type: "configure-word"; word: Word }
     | { type: "explain-choice"; item: HistoryItem; choiceIndex: number };
@@ -28,6 +30,7 @@ export type Action =
   | { type: "back" }
   | { type: "view-word"; payload: Word }
   | { type: "next" }
+  | { type: "show-qr-code" }
   | { type: "close-modal" }
   | { type: "add"; payload: Word }
   | { type: "replace"; payload: Word }
@@ -166,22 +169,27 @@ export function applyAction(state: State, action: Action): State {
         ),
       };
     case "close-modal":
-      debugger;
       return { ...state, modal: undefined };
+    case "show-qr-code":
+      return { ...state, modal: { type: "qr-code" } };
   }
 }
 
-export function getInitialState({
-  settings,
-  words,
-  progress,
-  question,
-}: {
+export interface InitialStateArgs {
   settings: Settings;
   words: Word[];
   progress: LearningProgress;
   question: Question | null;
-}): State {
+  sessionId: string;
+}
+
+export function getInitialState({
+  sessionId,
+  settings,
+  words,
+  progress,
+  question,
+}: InitialStateArgs): State {
   const weights = createWeights(words, progress);
 
   return {
@@ -192,6 +200,7 @@ export function getInitialState({
     progress,
     weights,
     words,
+    sessionId,
   };
 }
 
@@ -217,5 +226,13 @@ export function shouldShowExplanation(state: State): boolean {
   return (
     state.historyCursor > 0 ||
     (state.done && state.history[state.historyCursor].missResponses.length > 0)
+  );
+}
+
+export function isNewerQuestion(state: State): boolean {
+  return (
+    state.historyCursor === 0 ||
+    (state.prevHistoryCursor !== undefined &&
+      state.prevHistoryCursor > state.historyCursor)
   );
 }

@@ -22,11 +22,11 @@ export function addResult(
 ): LearningProgress {
   const entry = progress.table[word] ?? {};
   const subEntry = entry[definitionIndex]?.[questionType];
-  const tick = progress.tick + 1;
+  const tick = progress.tick;
 
   return {
     ...progress,
-    tick: tick,
+    tick: tick + 1,
     table: {
       ...progress.table,
       [word]: {

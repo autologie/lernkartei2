@@ -2,6 +2,7 @@ import { Fauna } from "./Fauna";
 import { Question } from "./Question";
 
 export interface LearningLogData {
+  sessionId: string;
   tick: number;
   word: string;
   definitionIndex: number;

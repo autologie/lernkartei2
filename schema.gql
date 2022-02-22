@@ -17,6 +17,7 @@ type Word {
 }
 
 type LearningLog {
+  sessionId: String!
   tick: Int!
   word: String!
   definitionIndex: Int!
@@ -26,5 +27,5 @@ type LearningLog {
 
 type Query {
   words: [Word]!
-  learningLogs: [LearningLog]!
+  learningLogs(sessionId: String!): [LearningLog]!
 }

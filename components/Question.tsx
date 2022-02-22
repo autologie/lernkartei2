@@ -50,13 +50,13 @@ export default function Question({
                 Was bedeutet <i className="font-semibold">{word.german}</i>?
               </p>
               {question.definitionIndex > 0 && (
-                <p className="text-base mt-2 text-gray-500">
+                <p className="text-sm mt-2 text-gray-500 font-light">
                   Note: <i>{word.german}</i> has multiple meanings.
                 </p>
               )}
             </>
           }
-          choices={question.choices.map((c) =>
+          choices={question.choices.map((c, i) =>
             c.definition.replace(word.german, "———")
           )}
         />
@@ -94,7 +94,7 @@ export default function Question({
                 Englisch?
               </p>
               {question.definitionIndex > 0 && (
-                <p className="text-base mt-2 text-gray-500">
+                <p className="text-sm mt-2 text-gray-500 font-light">
                   Note: <i>{word.german}</i> has multiple meanings.
                 </p>
               )}
@@ -118,12 +118,12 @@ export default function Question({
                 }
               </ExampleText>
               {showHint || done ? (
-                <p className="text-base mt-2 text-gray-500">
+                <p className="text-sm mt-2 text-gray-500 font-light">
                   Hint: {word.definitions[question.definitionIndex].definition}
                 </p>
               ) : (
                 <button
-                  className="block text-base mt-2 text-gray-500 underline"
+                  className="block text-sm mt-2 text-gray-500 font-light underline"
                   onClick={() => setHint(true)}
                 >
                   Show hint
