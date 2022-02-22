@@ -5,7 +5,7 @@ import { test } from "./models/Settings";
 import { modify, Word, WordData } from "./models/Word";
 
 async function request<T>(gql: string, variables: unknown): Promise<T> {
-  return fetch("https://graphql.eu.fauna.com/graphql", {
+  return fetch("https://graphql.us.fauna.com/graphql", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -167,6 +167,7 @@ export async function listLearningLogs(
          data {
            _id,
            _ts,
+           sessionId,
            tick,
            word,
            definitionIndex,
