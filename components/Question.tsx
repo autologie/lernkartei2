@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { useState } from "react";
 import { Question as Model } from "../models/Question";
@@ -144,10 +145,8 @@ export default function Question({
           layout="grid"
           question={
             <>
-              Welche Wort passt zum Bild an?
-              <Image
-                layout="fill"
-                unoptimized={true}
+              Welches Wort passt zum Bild an?
+              <img
                 src={photo.url}
                 alt={photo.caption}
                 className="block mx-auto mt-4"
