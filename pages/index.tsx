@@ -28,6 +28,7 @@ import useLogSync from "../hooks/useLogSync";
 import NothingToShow from "../components/NothingToShow";
 import Modal from "../components/Modal";
 import WordNotFound from "../components/WordNotFound";
+import SearchButton from "../components/SearchButton";
 
 interface IndexProps {
   settings: Settings;
@@ -50,7 +51,10 @@ export default function Index(props: IndexProps) {
     []
   );
   const handleAdd = useAddNewWord(dispatch, state.modal !== undefined);
-  const prevHistoryCursor = usePrevious(state.historyCursor);
+  const handleSearch = useCallback(
+    () => dispatch({ type: "search", payload: "" }),
+    []
+  );
 
   useNextAutomatically(500, state, dispatch);
   useKeyEventListener(state, dispatch, handleAdd);
@@ -75,7 +79,8 @@ export default function Index(props: IndexProps) {
             word={word}
             isNewer={
               state.historyCursor === 0 ||
-              prevHistoryCursor > state.historyCursor
+              (state.prevHistoryCursor !== undefined &&
+                state.prevHistoryCursor > state.historyCursor)
             }
             question={item.question}
             missResponses={item.missResponses}
@@ -112,10 +117,10 @@ export default function Index(props: IndexProps) {
           </Button>
         </div>
       )}
-      <AddButton
-        className="fixed z-10 right-0 bottom-0 m-3 md:m-4"
-        onClick={handleAdd}
-      />
+      <div className="fixed z-10 right-0 bottom-0 p-3 md:p-4 flex flex-col items-center gap-2">
+        <SearchButton onClick={handleSearch} />
+        <AddButton onClick={handleAdd} />
+      </div>
       <Modal model={state.modal} words={state.words} dispatch={dispatch} />
       {state.settings.debug && (
         <Debugger words={state.words} weights={state.weights} maxCount={20} />

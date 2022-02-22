@@ -7,7 +7,6 @@ export default function useKeyEventListener(
   onAddNew: () => void
 ) {
   const choiceCount = state.history[0]?.question.choices.length;
-  const isAddingWord = state.modal?.type === "word-added";
 
   useEffect(() => {
     if (choiceCount === undefined) {
@@ -28,13 +27,20 @@ export default function useKeyEventListener(
         return;
       }
 
-      if ((e.key === "Enter" && isAddingWord) || e.key === "Escape") {
+      if (e.key === "Escape") {
         dispatch({ type: "close-modal" });
         return;
       }
 
       if (e.key === "ArrowRight" || e.key === "Enter") {
         dispatch({ type: "next" });
+        return;
+      }
+
+      if (e.key === "/" && state.modal === undefined) {
+        e.stopPropagation();
+        e.preventDefault();
+        dispatch({ type: "search", payload: "" });
         return;
       }
 
@@ -53,5 +59,5 @@ export default function useKeyEventListener(
     return () => {
       window.removeEventListener("keydown", handleEvent);
     };
-  }, [choiceCount, dispatch, isAddingWord, onAddNew]);
+  }, [choiceCount, dispatch, onAddNew, state.modal]);
 }

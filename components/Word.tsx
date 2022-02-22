@@ -88,8 +88,8 @@ export default function Word({
           </li>
         ))}
       </ul>
-      <p className="px-4 mt-3 text-opacity-70 text-black text-sm">
-        Source:{" "}
+      <p className="px-4 mt-4 text-opacity-70 text-black text-sm text-right">
+        From{" "}
         <a
           className="underline"
           target="_blank"
@@ -99,7 +99,8 @@ export default function Word({
           )}`}
         >
           Wiktionary
-        </a>
+        </a>{" "}
+        on {new Date(word._ts / 1000).toLocaleString()}
       </p>
     </div>
   );

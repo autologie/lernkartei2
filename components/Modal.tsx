@@ -7,6 +7,7 @@ import Button from "./Button";
 import CloseButton from "./CloseButton";
 import Explanation from "./Explanation";
 import { ModalTemplate } from "./ModalTemplate";
+import { Search } from "./Search";
 import Word from "./Word";
 
 export default function Modal({
@@ -46,10 +47,19 @@ export default function Modal({
 
   return (
     <ModalTemplate onClose={handleCloseModal}>
-      {model.type === "word-added" && (
+      {model.type === "word" && (
         <>
-          <h2 className="text-center text-xl font-semibold mb-4">Word added</h2>
-          <Word word={model.word} />
+          {model.message !== undefined && (
+            <h2 className="text-center text-xl font-semibold mb-4">
+              Word added
+            </h2>
+          )}
+          <Word
+            word={model.word}
+            onConfigure={(word) =>
+              dispatch({ type: "configure-word", payload: word })
+            }
+          />
           <Button
             color="gray"
             className="mx-auto mt-4"
@@ -101,6 +111,9 @@ export default function Modal({
             Close
           </Button>
         </>
+      )}
+      {model.type === "search" && (
+        <Search words={words} dispatch={dispatch} keyword={model.word} />
       )}
     </ModalTemplate>
   );

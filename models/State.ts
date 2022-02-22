@@ -12,9 +12,11 @@ export interface State {
   progress: LearningProgress;
   weights: Weights;
   historyCursor: number;
+  prevHistoryCursor?: number;
   settings: Settings;
   modal?:
-    | { type: "word-added"; word: Word }
+    | { type: "search"; word: string }
+    | { type: "word"; word: Word; message?: string }
     | { type: "configure-word"; word: Word }
     | { type: "explain-choice"; item: HistoryItem; choiceIndex: number };
 }
@@ -22,7 +24,9 @@ export interface State {
 export type Action =
   | { type: "respond"; payload: number }
   | { type: "skip" }
+  | { type: "search"; payload: string }
   | { type: "back" }
+  | { type: "view-word"; payload: Word }
   | { type: "next" }
   | { type: "close-modal" }
   | { type: "add"; payload: Word }
@@ -96,7 +100,11 @@ export function applyAction(state: State, action: Action): State {
       }
 
       return state.historyCursor < state.history.length - 1
-        ? { ...state, historyCursor: state.historyCursor + 1 }
+        ? {
+            ...state,
+            historyCursor: state.historyCursor + 1,
+            prevHistoryCursor: state.historyCursor,
+          }
         : state;
     }
     case "next":
@@ -112,7 +120,11 @@ export function applyAction(state: State, action: Action): State {
         return setNewQuestion(state);
       }
 
-      return { ...state, historyCursor: state.historyCursor - 1 };
+      return {
+        ...state,
+        historyCursor: state.historyCursor - 1,
+        prevHistoryCursor: state.historyCursor,
+      };
     case "skip":
       return setNewQuestion(state);
     case "add":
@@ -121,12 +133,23 @@ export function applyAction(state: State, action: Action): State {
         : {
             ...state,
             words: state.words.concat([action.payload]),
-            modal: { type: "word-added", word: action.payload },
+            modal: {
+              type: "word",
+              word: action.payload,
+              message: "Word added",
+            },
           };
+    case "view-word":
+      return { ...state, modal: { type: "word", word: action.payload } };
     case "configure-word":
       return {
         ...state,
         modal: { type: "configure-word", word: action.payload },
+      };
+    case "search":
+      return {
+        ...state,
+        modal: { type: "search", word: action.payload },
       };
     case "remove":
       return {
@@ -143,6 +166,7 @@ export function applyAction(state: State, action: Action): State {
         ),
       };
     case "close-modal":
+      debugger;
       return { ...state, modal: undefined };
   }
 }

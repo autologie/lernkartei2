@@ -2,7 +2,7 @@ export default function AddButton({
   className,
   onClick,
 }: {
-  className: string;
+  className?: string;
   onClick: () => void;
 }) {
   return (

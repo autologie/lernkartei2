@@ -26,8 +26,7 @@ export function ModalTemplate({
       onClick={(e) => {
         if (
           contentRef.current === null ||
-          !(e.target instanceof HTMLElement) ||
-          !contentRef.current.contains(e.target)
+          !contentRef.current.contains(e.target as any)
         ) {
           onClose();
         }
