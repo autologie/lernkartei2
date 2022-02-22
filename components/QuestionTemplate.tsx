@@ -8,7 +8,7 @@ export default function QuestionTemplate({
   choices,
   answerIndex,
   definitionIndex,
-  missedResponses,
+  missResponses,
   done,
   word,
   layout,
@@ -22,7 +22,7 @@ export default function QuestionTemplate({
   answerIndex: number;
   definitionIndex: number;
   choices: string[];
-  missedResponses: number[];
+  missResponses: number[];
   done: boolean;
   word: WordModel;
   isNewer: boolean;
@@ -48,7 +48,7 @@ export default function QuestionTemplate({
         }`}
       >
         {choices.map((c, index) => {
-          const isMiss = missedResponses.includes(index);
+          const isMiss = missResponses.includes(index);
           const isHit = done && answerIndex === index;
 
           return (

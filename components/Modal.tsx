@@ -1,33 +1,82 @@
-import { ReactNode, useRef } from "react";
+import { Dispatch, useCallback, useEffect } from "react";
+import useRefreshWord from "../hooks/useRefreshWord";
+import useRemoveWord from "../hooks/useRemoveWord";
+import { Action, State } from "../models/State";
+import Button from "./Button";
+import { ModalTemplate } from "./ModalTemplate";
+import Word from "./Word";
 
-export function Modal({
-  children,
-  onClose,
+export default function Modal({
+  model,
+  dispatch,
 }: {
-  children: ReactNode;
-  onClose: () => void;
+  model: State["modal"];
+  dispatch: Dispatch<Action>;
 }) {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const handleRefresh = useRefreshWord(
+    dispatch,
+    model?.type === "configure-word" ? model.word : undefined
+  );
+  const handleRemove = useRemoveWord(
+    dispatch,
+    model?.type === "configure-word" ? model.word : undefined
+  );
+  const handleCloseModal = useCallback(
+    () => dispatch({ type: "close-modal" }),
+    [dispatch]
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.document.body.style.overflow =
+      model === undefined ? "auto" : "hidden";
+  }, [model]);
+
+  if (model === undefined) {
+    return <></>;
+  }
 
   return (
-    <div
-      className="bg-black bg-opacity-30 fixed left-0 bottom-0 w-full h-full flex flex-col items-center justify-end md:justify-start z-10 p-0 md:p-12 md:pt-36 overflow-auto"
-      onClick={(e) => {
-        if (
-          contentRef.current === null ||
-          !(e.target instanceof HTMLElement) ||
-          !contentRef.current.contains(e.target)
-        ) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        ref={contentRef}
-        className="max-h-2/3 md:max-h-auto w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto"
-      >
-        {children}
-      </div>
-    </div>
+    <ModalTemplate onClose={handleCloseModal}>
+      {model.type === "word-added" && (
+        <>
+          <h2 className="text-center text-xl font-semibold mb-4">Word added</h2>
+          <Word word={model.word} />
+          <Button
+            color="gray"
+            className="mx-auto mt-4"
+            onClick={handleCloseModal}
+          >
+            OK
+          </Button>
+        </>
+      )}
+      {model.type === "configure-word" && (
+        <>
+          <h2 className="text-center text-xl font-semibold mb-4">
+            Manage word{" "}
+            <i className="font-semibold">&quot;{model.word.german}&quot;</i>
+          </h2>
+          <div className="flex flex-col items-stretch gap-4">
+            <Button fixedWidth={true} color="gray" onClick={handleRefresh}>
+              Refresh dictionary
+            </Button>
+            <Button fixedWidth={true} color="gray" onClick={handleRemove}>
+              Remove from dictionary
+            </Button>
+            <Button
+              fixedWidth={true}
+              color="gray"
+              onClick={() => dispatch({ type: "close-modal" })}
+            >
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
+    </ModalTemplate>
   );
 }

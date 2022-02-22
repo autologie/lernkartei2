@@ -162,3 +162,28 @@ export function getInitialState({
     words,
   };
 }
+
+export function shouldShowNavBackButton(state: State): boolean {
+  return (
+    state.history.length > 0 && state.history.length > state.historyCursor + 1
+  );
+}
+
+export function shouldShowNavNextButton(state: State): boolean {
+  return state.historyCursor > 0;
+}
+
+export function shouldShowNextButton(state: State): boolean {
+  return (
+    (state.history[state.historyCursor]?.missResponses.length ?? 0) > 0 &&
+    state.done &&
+    state.historyCursor === 0
+  );
+}
+
+export function shouldShowExplanation(state: State): boolean {
+  return (
+    state.historyCursor > 0 ||
+    (state.done && state.history[state.historyCursor].missResponses.length > 0)
+  );
+}

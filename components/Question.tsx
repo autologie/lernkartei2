@@ -8,7 +8,7 @@ import QuestionTemplate from "./QuestionTemplate";
 export default function Question({
   question,
   word,
-  missedResponses,
+  missResponses,
   done,
   showExplanation,
   isNewer,
@@ -18,7 +18,7 @@ export default function Question({
   question: Model;
   word: Word;
   done: boolean;
-  missedResponses: number[];
+  missResponses: number[];
   showExplanation: boolean;
   isNewer: boolean;
   onResponse: (responses: number) => void;
@@ -28,7 +28,7 @@ export default function Question({
   const commonProps = {
     isNewer,
     word,
-    missedResponses,
+    missResponses,
     done,
     answerIndex: question.answerIndex,
     definitionIndex: question.definitionIndex,
