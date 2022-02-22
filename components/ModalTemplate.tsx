@@ -24,7 +24,7 @@ export function ModalTemplate({
     >
       <div
         ref={contentRef}
-        className="max-h-2/3 md:max-h-auto w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto"
+        className="relative max-h-2/3 md:max-h-unset w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible"
       >
         {children}
       </div>

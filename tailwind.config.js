@@ -4,6 +4,7 @@ module.exports = {
     extend: {
       maxHeight: {
         "2/3": "67%",
+        unset: "unset",
       },
     },
   },

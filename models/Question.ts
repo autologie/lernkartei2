@@ -14,7 +14,7 @@ export interface Define {
   type: "define";
   word: string;
   definitionIndex: number;
-  choices: string[];
+  choices: { word: string; definition: string; definitionIndex: number }[];
   answerIndex: number;
 }
 
@@ -22,7 +22,12 @@ export interface TranslateTo {
   type: "translate-to";
   word: string;
   definitionIndex: number;
-  choices: string[];
+  choices: {
+    word: string;
+    definitionIndex: number;
+    english: string;
+    englishIndex: number;
+  }[];
   answerIndex: number;
 }
 
@@ -64,12 +69,12 @@ export const questionTypes: Question["type"][] = [
   "photo",
 ];
 
-export function shuffleChoices(question: Question) {
-  const choices = shuffle(question.choices);
+export function shuffleChoices(question: Question): Question {
+  const choices = shuffle(question.choices as any) as any; // TODO
 
   return {
     ...question,
-    choices: choices,
+    choices,
     answerIndex: choices.indexOf(question.choices[question.answerIndex]),
   };
 }
@@ -82,17 +87,25 @@ export function createDefineQuestion(word: Word, words: Word[]): Question {
     word: word.german,
     definitionIndex,
     choices: [
-      word.definitions[definitionIndex],
+      {
+        word: word.german,
+        definitionIndex,
+        definition: word.definitions[definitionIndex].definition,
+      },
       ...shuffle(
         words.flatMap((w) =>
           w === word || w.partOfSpeech !== word.partOfSpeech
             ? []
-            : w.definitions
+            : Array.from({ length: w.definitions.length }).map(
+                (_, definitionIndex) => ({
+                  word: w.german,
+                  definitionIndex,
+                  definition: w.definitions[definitionIndex].definition,
+                })
+              )
         )
       ).slice(0, 4),
-    ]
-      .map((w) => w.definition)
-      .filter((v): v is string => v !== undefined),
+    ],
     answerIndex: 0,
   });
 }
@@ -144,22 +157,36 @@ export function createTranslateFromQuestion(
 
 export function createTranslateToQuestion(word: Word, words: Word[]): Question {
   const definitionIndex = getRandomIndex(word.definitions);
-  const english = getRandomElement(word.definitions[definitionIndex].english);
+  const englishIndex = getRandomIndex(
+    word.definitions[definitionIndex].english
+  );
 
   return shuffleChoices({
     type: "translate-to",
     word: word.german,
     definitionIndex,
     choices: [
-      english,
+      {
+        word: word.german,
+        definitionIndex,
+        englishIndex,
+        english: word.definitions[definitionIndex].english[englishIndex],
+      },
       ...shuffle(
         words.flatMap((w) =>
           w === word || w.partOfSpeech !== word.partOfSpeech
             ? []
-            : w.definitions.flatMap((d) => d.english)
+            : w.definitions.flatMap((d, definitionIndex) =>
+                d.english.map((english, englishIndex) => ({
+                  word: w.german,
+                  definitionIndex,
+                  englishIndex,
+                  english,
+                }))
+              )
         )
       ).slice(0, 4),
-    ].filter((v): v is string => v !== undefined),
+    ],
     answerIndex: 0,
   });
 }
@@ -182,7 +209,7 @@ export function createPhotoQuestion(word: Word, words: Word[]): Question {
           w === word || w.partOfSpeech !== word.partOfSpeech ? [] : [w.german]
         )
       ).slice(0, 4),
-    ].filter((v): v is string => v !== undefined),
+    ],
     answerIndex: 0,
   });
 }

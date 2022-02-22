@@ -2,15 +2,20 @@ import { Dispatch, useCallback, useEffect } from "react";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
 import { Action, State } from "../models/State";
+import { Word as WordModel } from "../models/Word";
 import Button from "./Button";
+import CloseButton from "./CloseButton";
+import Explanation from "./Explanation";
 import { ModalTemplate } from "./ModalTemplate";
 import Word from "./Word";
 
 export default function Modal({
   model,
+  words,
   dispatch,
 }: {
   model: State["modal"];
+  words: WordModel[];
   dispatch: Dispatch<Action>;
 }) {
   const handleRefresh = useRefreshWord(
@@ -75,6 +80,26 @@ export default function Modal({
               Cancel
             </Button>
           </div>
+        </>
+      )}
+      {model.type === "explain-choice" && (
+        <>
+          <Explanation
+            question={model.item.question}
+            choiceIndex={model.choiceIndex}
+            words={words}
+          />
+          <CloseButton
+            className="absolute right-0 top-0 z-10 invisible md:visible -m-3"
+            onClick={() => dispatch({ type: "close-modal" })}
+          />
+          <Button
+            className="mx-auto mt-4 md:hidden"
+            color="gray"
+            onClick={() => dispatch({ type: "close-modal" })}
+          >
+            Close
+          </Button>
         </>
       )}
     </ModalTemplate>

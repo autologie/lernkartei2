@@ -30,7 +30,6 @@ export default function QuestionTemplate({
   onResponse: (response: number) => void;
   onConfigureWord: (word: WordModel) => void;
 }) {
-  const ChoiceElement = done ? "div" : "button"; // This way you can select text once the question is answered
   const wasDone = useRef(done);
 
   return (
@@ -53,7 +52,7 @@ export default function QuestionTemplate({
 
           return (
             <li key={index}>
-              <ChoiceElement
+              <button
                 className={`relative ${
                   !done && isMiss ? styles.wrong_choice : ""
                 } border-2 border-solid border-transparent flex items-center w-full transition-colors rounded-xl py-2 px-4 text-left ${
@@ -63,7 +62,7 @@ export default function QuestionTemplate({
                     ? "bg-green-500 text-white"
                     : `bg-gray-100 ${done ? "" : "hover:bg-gray-200"}`
                 } ${layout === "grid" ? "text-xl" : "text-base"}`}
-                onClick={done ? undefined : () => onResponse(index)}
+                onClick={() => onResponse(index)}
               >
                 <div
                   className={`w-8 flex-grow-0 flex-shrink-0 font-semibold ${
@@ -82,7 +81,7 @@ export default function QuestionTemplate({
                   {isMiss ? "×" : isHit ? "️✓︎" : index + 1}
                 </div>
                 {c}
-              </ChoiceElement>
+              </button>
             </li>
           );
         })}

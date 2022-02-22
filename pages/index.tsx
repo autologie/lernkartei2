@@ -29,8 +29,6 @@ import NothingToShow from "../components/NothingToShow";
 import Modal from "../components/Modal";
 import WordNotFound from "../components/WordNotFound";
 
-function noop() {}
-
 interface IndexProps {
   settings: Settings;
   words: WordModel[];
@@ -83,7 +81,7 @@ export default function Index(props: IndexProps) {
             missResponses={item.missResponses}
             showExplanation={shouldShowExplanation(state)}
             done={state.historyCursor > 0 || state.done}
-            onResponse={!state.done ? handleResponse : noop}
+            onResponse={handleResponse}
             onConfigureWord={handleConfigureWord}
           />
           {shouldShowNavBackButton(state) && (
@@ -118,13 +116,9 @@ export default function Index(props: IndexProps) {
         className="fixed z-10 right-0 bottom-0 m-3 md:m-4"
         onClick={handleAdd}
       />
-      <Modal model={state.modal} dispatch={dispatch} />
+      <Modal model={state.modal} words={state.words} dispatch={dispatch} />
       {state.settings.debug && (
-        <Debugger
-          words={state.words ?? []}
-          weights={state.weights}
-          maxCount={20}
-        />
+        <Debugger words={state.words} weights={state.weights} maxCount={20} />
       )}
     </div>
   );

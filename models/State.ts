@@ -15,7 +15,8 @@ export interface State {
   settings: Settings;
   modal?:
     | { type: "word-added"; word: Word }
-    | { type: "configure-word"; word: Word };
+    | { type: "configure-word"; word: Word }
+    | { type: "explain-choice"; item: HistoryItem; choiceIndex: number };
 }
 
 export type Action =
@@ -48,11 +49,18 @@ function setNewQuestion(state: State): State {
 export function applyAction(state: State, action: Action): State {
   switch (action.type) {
     case "respond": {
-      if (
-        state.historyCursor !== 0 ||
-        state.history.length === 0 ||
-        state.done
-      ) {
+      if (state.done || state.historyCursor > 0) {
+        return {
+          ...state,
+          modal: {
+            type: "explain-choice",
+            item: state.history[state.historyCursor],
+            choiceIndex: action.payload,
+          },
+        };
+      }
+
+      if (state.historyCursor !== 0 || state.history.length === 0) {
         return state;
       }
 

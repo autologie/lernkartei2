@@ -55,7 +55,9 @@ export default function Question({
               )}
             </>
           }
-          choices={question.choices.map((c) => c.replace(word.german, "———"))}
+          choices={question.choices.map((c) =>
+            c.definition.replace(word.german, "———")
+          )}
         />
       );
     case "translate-from":
@@ -97,7 +99,7 @@ export default function Question({
               )}
             </>
           }
-          choices={question.choices}
+          choices={question.choices.map((c) => c.english)}
         />
       );
     case "fill-blank":
