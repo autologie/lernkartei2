@@ -1,5 +1,4 @@
 import { Dispatch, useCallback, useEffect } from "react";
-import { AiOutlineQrcode } from "react-icons/ai";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
 import { Action, State } from "../models/State";

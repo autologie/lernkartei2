@@ -1,12 +1,19 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import dynamic from "next/dynamic";
 import { useCallback, useReducer } from "react";
 import AddButton from "../components/AddButton";
-import Debugger from "../components/Debugger";
+import Button from "../components/Button";
 import NavButton from "../components/NavButton";
+import NothingToShow from "../components/NothingToShow";
 import Question from "../components/Question";
+import SearchButton from "../components/SearchButton";
+import WordNotFound from "../components/WordNotFound";
+import { listLearningLogs, listWords } from "../fauna";
 import useAddNewWord from "../hooks/useAddNewWord";
 import useKeyEventListener from "../hooks/useKeyEventListener";
+import useLogSync from "../hooks/useLogSync";
 import useNextAutomatically from "../hooks/useNextAutomatically";
+import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
 import { restoreFromLogs } from "../models/LearningProgress";
 import { decode } from "../models/Settings";
 import {
@@ -21,14 +28,9 @@ import {
 } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
-import { listLearningLogs, listWords } from "../fauna";
-import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
-import Button from "../components/Button";
-import useLogSync from "../hooks/useLogSync";
-import NothingToShow from "../components/NothingToShow";
-import Modal from "../components/Modal";
-import WordNotFound from "../components/WordNotFound";
-import SearchButton from "../components/SearchButton";
+
+const Modal = dynamic(() => import("../components/Modal"));
+const Debugger = dynamic(() => import("../components/Debugger"));
 
 export default function Session(props: InitialStateArgs) {
   const [state, dispatch] = useReducer(applyAction, props, getInitialState);

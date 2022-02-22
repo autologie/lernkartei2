@@ -7,10 +7,12 @@ export default function Index() {
 export async function getServerSideProps(): Promise<
   GetServerSidePropsResult<{}>
 > {
+  const newSessionId = Math.random().toString().slice(2, 10);
+
   return {
     redirect: {
       statusCode: 302,
-      destination: `/${Math.random().toString().slice(2, 10)}`,
+      destination: `/${newSessionId}`,
     },
   };
 }

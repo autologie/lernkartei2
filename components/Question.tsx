@@ -149,7 +149,7 @@ export default function Question({
               <img
                 src={photo.url}
                 alt={photo.caption}
-                className="block mx-auto mt-4"
+                className="block w-full mt-4"
               />
             </>
           }
