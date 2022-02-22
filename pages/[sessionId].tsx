@@ -146,6 +146,7 @@ export async function getServerSideProps(
   ]);
   const time1 = process.uptime() * 1000;
   const progress = restoreFromLogs(logs);
+  const weights = createWeights(words, progress);
   const time2 = process.uptime() * 1000;
 
   ctx.res.setHeader(
@@ -157,6 +158,7 @@ export async function getServerSideProps(
     props: {
       settings,
       words,
+      weights,
       progress,
       question: createQuestion(createWeights(words, progress), words) ?? null,
       sessionId,

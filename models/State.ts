@@ -1,3 +1,4 @@
+import { Dictionary } from "./Dictionary";
 import { HistoryItem } from "./HistoryItem";
 import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
@@ -6,7 +7,7 @@ import { createQuestion, createWeights, Weights } from "./Weights";
 import { Word } from "./Word";
 
 export interface State {
-  words: Word[];
+  words: Dictionary;
   done: boolean;
   history: HistoryItem[];
   progress: LearningProgress;
@@ -178,6 +179,7 @@ export function applyAction(state: State, action: Action): State {
 export interface InitialStateArgs {
   settings: Settings;
   words: Word[];
+  weights: Weights;
   progress: LearningProgress;
   question: Question | null;
   sessionId: string;
@@ -187,11 +189,10 @@ export function getInitialState({
   sessionId,
   settings,
   words,
+  weights,
   progress,
   question,
 }: InitialStateArgs): State {
-  const weights = createWeights(words, progress);
-
   return {
     done: false,
     history: question === null ? [] : [{ missResponses: [], question }],
