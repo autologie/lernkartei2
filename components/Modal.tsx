@@ -90,7 +90,7 @@ export default function Modal({
             words={words}
           />
           <CloseButton
-            className="absolute right-0 top-0 z-10 invisible md:visible -m-3"
+            className="absolute right-0 top-0 z-10 hidden md:flex -m-3"
             onClick={() => dispatch({ type: "close-modal" })}
           />
           <Button
