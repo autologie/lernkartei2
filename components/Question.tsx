@@ -144,6 +144,7 @@ export default function Question({
             <>
               Welche Wort passt zum Bild an?
               <Image
+                layout="fill"
                 unoptimized={true}
                 src={photo.url}
                 alt={photo.caption}

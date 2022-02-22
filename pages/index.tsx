@@ -8,19 +8,20 @@ import Word from "../components/Word";
 import useAddNewWord from "../hooks/useAddNewWord";
 import useKeyEventListener from "../hooks/useKeyEventListener";
 import useNextAutomatically from "../hooks/useNextAutomatically";
-import { LearningProgress } from "../models/LearningProgress";
+import { LearningProgress, restoreFromLogs } from "../models/LearningProgress";
 import { Question as QuestionModel } from "../models/Question";
 import { decode, encode, Settings } from "../models/Settings";
 import { applyAction, getInitialState } from "../models/State";
 import { createQuestion, createWeights } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
-import { listWords } from "../fauna";
+import { listLearningLogs, listWords } from "../fauna";
 import { usePrevious } from "../hooks/usePrevious";
 import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
 import { Modal } from "../components/Modal";
 import Button from "../components/Button";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
+import useLogSync from "../hooks/useLogSync";
 
 function noop() {}
 
@@ -62,6 +63,7 @@ export default function Index(props: IndexProps) {
   useNextAutomatically(500, state, dispatch);
   useKeyEventListener(state, dispatch, handleAdd);
   useSwipeNavigation(dispatch);
+  useLogSync(state);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -208,7 +210,11 @@ export default function Index(props: IndexProps) {
         </Modal>
       )}
       {state.settings.debug && (
-        <Debugger words={state.words ?? []} weights={state.weights} />
+        <Debugger
+          words={state.words ?? []}
+          weights={state.weights}
+          maxCount={20}
+        />
       )}
     </div>
   );
@@ -218,8 +224,11 @@ export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<IndexProps>> {
   const settings = decode(ctx.query);
-  const words = await listWords(settings);
-  const progress = { tick: 0, table: {} };
+  const [words, logs] = await Promise.all([
+    listWords(settings),
+    listLearningLogs(),
+  ]);
+  const progress = restoreFromLogs(logs);
 
   return {
     props: {

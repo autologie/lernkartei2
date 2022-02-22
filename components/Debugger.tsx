@@ -6,9 +6,11 @@ import React from "react";
 export default function Debugger({
   words,
   weights,
+  maxCount,
 }: {
   words: Word[];
   weights: Weights;
+  maxCount: number;
 }) {
   const maxWeight = Math.max(
     ...Object.values(weights).flatMap((b) =>
@@ -33,21 +35,29 @@ export default function Debugger({
           </tr>
         </thead>
         <tbody>
-          {words.flatMap((w) =>
-            w.definitions.map((_, i) => (
+          {[...words]
+            .flatMap((w) =>
+              w.definitions.map<
+                [Word, number, NonNullable<Weights[string]>[number]]
+              >((_, i) => [w, i, weights[w.german]?.[i]])
+            )
+            .sort(
+              ([, , a], [, , b]) =>
+                Math.max(...Object.values(b ?? {})) -
+                Math.max(...Object.values(a ?? {}))
+            )
+            .slice(0, maxCount)
+            .map(([w, i, myWeight]) => (
               <tr key={`${w.german}-${i}`}>
                 <td className="pr-2 text-right">{w.german}</td>
                 <td className="w-4">{i + 1}</td>
                 {questionTypes.map((t) => (
                   <td key={t} className="p-0">
-                    <Tile
-                      weight={(weights[w.german]?.[i]?.[t] ?? 0) / maxWeight}
-                    />
+                    <Tile weight={(myWeight?.[t] ?? 0) / maxWeight} />
                   </td>
                 ))}
               </tr>
-            ))
-          )}
+            ))}
         </tbody>
       </table>
     </div>

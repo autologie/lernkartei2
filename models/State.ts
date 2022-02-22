@@ -61,8 +61,10 @@ export function applyAction(state: State, action: Action): State {
       if (item.question.answerIndex === action.payload) {
         const progress = addResult(
           state.progress,
-          item.question,
-          item.missResponses.length === 0
+          item.question.word,
+          item.question.definitionIndex,
+          item.question.type,
+          item.missResponses.length > 0
         );
 
         return {
@@ -155,7 +157,7 @@ export function getInitialState({
     history: question === null ? [] : [{ missResponses: [], question }],
     historyCursor: 0,
     settings,
-    progress: { table: {}, tick: 0 },
+    progress,
     weights,
     words,
   };

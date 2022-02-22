@@ -16,6 +16,15 @@ type Word {
   definitions: [WordMeaning]!
 }
 
+type LearningLog {
+  tick: Int!
+  word: String!
+  definitionIndex: Int!
+  questionType: String!
+  miss: Boolean!
+}
+
 type Query {
   words: [Word]!
+  learningLogs: [LearningLog]!
 }

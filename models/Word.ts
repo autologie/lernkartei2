@@ -1,13 +1,12 @@
+import { Fauna } from "./Fauna";
+
 export interface WordData {
   partOfSpeech: string;
   german: string;
   definitions: WordMeaning[];
 }
 
-export interface Word extends WordData {
-  _id: string;
-  _ts: number;
-}
+export type Word = Fauna<WordData>;
 
 export interface Photo {
   url: string;

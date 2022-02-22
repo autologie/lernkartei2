@@ -1,3 +1,5 @@
+import { LearningLog, LearningLogData } from "./models/LearningLog";
+import { Question } from "./models/Question";
 import { Settings } from "./models/Settings";
 import { test } from "./models/Settings";
 import { modify, Word, WordData } from "./models/Word";
@@ -32,13 +34,13 @@ export async function addWord(
   const res = await request<{
     data: { createWord: { _id: string; _ts: number } };
   }>(
-    `mutation CreateWord($partOfSpeech: String!, $german: String!, $definitions: [WordMeaningInput]!) {
-       createWord(data: { partOfSpeech: $partOfSpeech, german: $german, definitions: $definitions }) {
+    `mutation CreateWord($data: WordInput!) {
+       createWord(data: $data) {
          _id,
          _ts
        }
      }`,
-    data
+    { data }
   );
 
   return res.data.createWord;
@@ -97,7 +99,7 @@ export async function listWords(settings: Settings): Promise<Word[]> {
   }>(
     // TODO: paginate properly
     `query {
-       words(_size: 1000) {
+       words(_size: ${settings.size ?? 1000}) {
          data {
            _id,
            _ts,
@@ -121,6 +123,57 @@ export async function listWords(settings: Settings): Promise<Word[]> {
   return res.data.words.data
     .map(modify)
     .filter((word) => test(settings, word))
-    .slice(0, settings.size)
     .sort((a, b) => a.german.localeCompare(b.german));
+}
+
+export async function addLearningLog(data: LearningLogData) {
+  const res = await request<{
+    data: { createLearningLog: { _id: string; _ts: number } };
+  }>(
+    `mutation CreateLearningLog($data: LearningLogInput!) {
+       createLearningLog(data: $data) {
+         _id,
+         _ts
+       }
+     }`,
+    { data }
+  );
+
+  return res.data.createLearningLog;
+}
+
+export async function listLearningLogs(): Promise<LearningLog[]> {
+  const res = await request<{
+    data: {
+      learningLogs: {
+        data: {
+          _id: string;
+          _ts: number;
+          tick: number;
+          word: string;
+          definitionIndex: number;
+          questionType: Question["type"];
+          miss: boolean;
+        }[];
+      };
+    };
+  }>(
+    // TODO: paginate properly
+    `query {
+       learningLogs(_size: 1000) {
+         data {
+           _id,
+           _ts,
+           tick,
+           word,
+           definitionIndex,
+           questionType,
+           miss
+         }
+       }
+     }`,
+    {}
+  );
+
+  return res.data.learningLogs.data;
 }

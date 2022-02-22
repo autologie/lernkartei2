@@ -1,4 +1,5 @@
 import { Certainty, fromNumber } from "./Certainty";
+import { LearningLog } from "./LearningLog";
 import { Question, QuestionTable } from "./Question";
 
 export interface LearningProgressEntry {
@@ -14,11 +15,13 @@ export interface LearningProgress {
 
 export function addResult(
   progress: LearningProgress,
-  question: Question,
-  ok: boolean
+  word: string,
+  definitionIndex: number,
+  questionType: Question["type"],
+  miss: boolean
 ): LearningProgress {
-  const entry = progress.table[question.word] ?? {};
-  const subEntry = entry[question.definitionIndex]?.[question.type];
+  const entry = progress.table[word] ?? {};
+  const subEntry = entry[definitionIndex]?.[questionType];
   const tick = progress.tick + 1;
 
   return {
@@ -26,21 +29,43 @@ export function addResult(
     tick: tick,
     table: {
       ...progress.table,
-      [question.word]: {
+      [word]: {
         ...entry,
-        [question.definitionIndex]: {
-          ...entry[question.definitionIndex],
-          [question.type]: {
-            miss: (subEntry?.miss ?? false) || !ok,
+        [definitionIndex]: {
+          ...entry[definitionIndex],
+          [questionType]: {
+            miss: (subEntry?.miss ?? false) || miss,
             lastEncounteredTick: tick,
-            certainty: ok
-              ? subEntry?.miss ?? false
-                ? fromNumber((subEntry?.certainty ?? 0) + 1)
-                : 3
-              : 0,
+            certainty: miss
+              ? 0
+              : subEntry?.miss ?? false
+              ? fromNumber((subEntry?.certainty ?? 0) + 1)
+              : 3,
           },
         },
       },
     },
+  };
+}
+
+export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
+  const sorted = [...logs].sort((a, b) => a.tick - b.tick);
+
+  return {
+    ...sorted.reduce(
+      (passed, log) =>
+        addResult(
+          passed,
+          log.word,
+          log.definitionIndex,
+          log.questionType,
+          log.miss
+        ),
+      {
+        tick: 0,
+        table: {},
+      }
+    ),
+    tick: (sorted[sorted.length - 1]?.tick ?? 0) + 1,
   };
 }
