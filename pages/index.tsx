@@ -74,6 +74,9 @@ export default function Index(props: IndexProps) {
         />
       ) : (
         <div className="relative">
+          <p className="text-lg text-gray-500 font-light">
+            #{state.progress.tick - state.historyCursor}
+          </p>
           <Question
             key={`${state.history.length}-${state.historyCursor}`}
             word={word}

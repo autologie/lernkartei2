@@ -38,7 +38,7 @@ export default function QuestionTemplate({
         isNewer ? styles.question_from_right : styles.question_from_left
       }
     >
-      <h2 className="text-2xl py-6">{question}</h2>
+      <h2 className="text-2xl pb-6">{question}</h2>
       <ol
         className={`gap-2 ${
           layout === "grid"
