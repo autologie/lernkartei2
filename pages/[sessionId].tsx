@@ -153,6 +153,7 @@ export async function getServerSideProps(
     "Server-Timing",
     `db;dur=${Math.ceil(time1 - time0)}, app;dur=${Math.ceil(time2 - time1)}`
   );
+  ctx.res.setHeader("Set-Cookie", `sessionId=${sessionId}`);
 
   return {
     props: {
