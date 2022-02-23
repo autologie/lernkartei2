@@ -19,8 +19,10 @@ export function Search({
       return [];
     }
 
+    const lowerKeyword = keyword.toLocaleLowerCase();
+
     return words
-      .filter((w) => w.german.toLocaleLowerCase().includes(keyword))
+      .filter((w) => w.german.toLocaleLowerCase().includes(lowerKeyword))
       .slice(0, 100);
   }, [keyword, words]);
   const handleConfigureWord = useCallback(
