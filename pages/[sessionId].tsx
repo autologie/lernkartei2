@@ -120,7 +120,13 @@ export default function Session(props: InitialStateArgs) {
       </div>
       <Modal state={state} dispatch={dispatch} />
       {state.settings.debug && (
-        <Debugger words={state.words} weights={state.weights} maxCount={20} />
+        <Debugger
+          words={state.words}
+          weights={state.weights}
+          maxCount={20}
+          progress={state.progress}
+          currentQuestion={state.history[0]?.question}
+        />
       )}
     </div>
   );

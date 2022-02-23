@@ -149,7 +149,8 @@ export default function Question({
               <img
                 src={photo.url}
                 alt={photo.caption}
-                className="block w-full mt-4"
+                className="block w-full mt-4 object-contain bg-gray-100 rounded"
+                style={{ maxHeight: "50vh" }}
               />
             </>
           }
