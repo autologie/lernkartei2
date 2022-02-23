@@ -2,6 +2,7 @@ import { Dispatch, useCallback, useEffect } from "react";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
 import { Action, State } from "../models/State";
+import { Word as WordModel } from "../models/Word";
 import Button from "./Button";
 import CloseButton from "./CloseButton";
 import Explanation from "./Explanation";
@@ -28,6 +29,10 @@ export default function Modal({
   );
   const handleCloseModal = useCallback(
     () => dispatch({ type: "close-modal" }),
+    [dispatch]
+  );
+  const handleConfigure = useCallback(
+    (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
     [dispatch]
   );
 
@@ -59,13 +64,6 @@ export default function Modal({
               dispatch({ type: "configure-word", payload: word })
             }
           />
-          <Button
-            color="gray"
-            className="mx-auto mt-4"
-            onClick={handleCloseModal}
-          >
-            OK
-          </Button>
         </>
       )}
       {modal.type === "configure-word" && (
@@ -97,18 +95,12 @@ export default function Modal({
             question={modal.item.question}
             choiceIndex={modal.choiceIndex}
             words={state.words}
+            onConfigure={handleConfigure}
           />
           <CloseButton
             className="absolute right-0 top-0 z-10 hidden md:flex -m-3"
             onClick={() => dispatch({ type: "close-modal" })}
           />
-          <Button
-            className="mx-auto mt-4 md:hidden"
-            color="gray"
-            onClick={() => dispatch({ type: "close-modal" })}
-          >
-            Close
-          </Button>
         </>
       )}
       {modal.type === "search" && (

@@ -6,10 +6,12 @@ export default function Explanation({
   question,
   choiceIndex,
   words,
+  onConfigure,
 }: {
   question: Question;
   choiceIndex: number;
   words: WordModel[];
+  onConfigure: (word: WordModel) => void;
 }) {
   const german: string =
     question.type === "define" || question.type === "translate-to"
@@ -25,7 +27,7 @@ export default function Explanation({
     case "translate-from":
     case "photo":
     case "fill-blank":
-      return <Word word={word} />;
+      return <Word word={word} onConfigure={onConfigure} />;
     case "translate-to":
       return (
         <>
@@ -36,6 +38,7 @@ export default function Explanation({
           <Word
             word={word}
             highlightedIndex={question.choices[choiceIndex].definitionIndex}
+            onConfigure={onConfigure}
           />
         </>
       );
@@ -48,6 +51,7 @@ export default function Explanation({
           <Word
             word={word}
             highlightedIndex={question.choices[choiceIndex].definitionIndex}
+            onConfigure={onConfigure}
           />
         </>
       );

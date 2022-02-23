@@ -16,7 +16,9 @@ export function Search({
       return [];
     }
 
-    return words.filter((w) => w.german.includes(keyword)).slice(0, 100);
+    return words
+      .filter((w) => w.german.toLocaleLowerCase().includes(keyword))
+      .slice(0, 100);
   }, [keyword, words]);
 
   return (
