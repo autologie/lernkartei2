@@ -1,13 +1,16 @@
-import { Dispatch, useMemo } from "react";
+import { Dispatch, useCallback, useMemo } from "react";
 import { Action } from "../models/State";
-import { Word } from "../models/Word";
+import { Word as WordModel } from "../models/Word";
+import Word from "./Word";
 
 export function Search({
   words,
   dispatch,
+  detailExpand,
   keyword,
 }: {
-  words: Word[];
+  words: WordModel[];
+  detailExpand?: string;
   keyword: string;
   dispatch: Dispatch<Action>;
 }) {
@@ -20,6 +23,10 @@ export function Search({
       .filter((w) => w.german.toLocaleLowerCase().includes(keyword))
       .slice(0, 100);
   }, [keyword, words]);
+  const handleConfigureWord = useCallback(
+    (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
+    [dispatch]
+  );
 
   return (
     <div className="flex flex-col items-stretch overflow-hidden">
@@ -34,18 +41,28 @@ export function Search({
         <ul className="flex flex-col items-stretch py-4 flex-grow flex-shrink">
           {matchedWords.map((w) => (
             <li key={w.german}>
-              <button
-                className="p-2 w-full transition-colors flex flex-col md:flex-row items-start gap-0 md:gap-2 bg-transparent hover:bg-gray-100 rounded-lg"
-                type="button"
-                onClick={() => dispatch({ type: "view-word", payload: w })}
-              >
-                <div className="w-auto md:w-32 flex-grow-0 flex-shrink-0 font-semibold">
-                  {w.german}
-                </div>
-                <div className="text-left text-gray-500 text-sm line-clamp-2 flex-grow flex-shrink">
-                  {w.definitions.map((d) => d.definition).join("; ")}
-                </div>
-              </button>
+              {w.german === detailExpand ? (
+                <Word
+                  className="my-2"
+                  word={w}
+                  onConfigure={handleConfigureWord}
+                />
+              ) : (
+                <button
+                  className="p-2 w-full transition-colors flex flex-col md:flex-row items-start gap-0 md:gap-2 bg-transparent hover:bg-gray-100 rounded-lg"
+                  type="button"
+                  onClick={() =>
+                    dispatch({ type: "toggle-detail", payload: w.german })
+                  }
+                >
+                  <div className="w-auto md:w-32 flex-grow-0 flex-shrink-0 font-semibold">
+                    {w.german}
+                  </div>
+                  <div className="text-left text-gray-500 text-sm line-clamp-2 flex-grow flex-shrink">
+                    {w.definitions.map((d) => d.definition).join("; ")}
+                  </div>
+                </button>
+              )}
             </li>
           ))}
         </ul>

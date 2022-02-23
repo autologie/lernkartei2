@@ -16,10 +16,9 @@ export interface State {
   settings: Settings;
   sessionId: string;
   modal?:
-    | { type: "search"; word: string }
+    | { type: "search"; word: string; detailExpand?: string }
     | { type: "qr-code" }
-    | { type: "word"; word: Word; message?: string }
-    | { type: "configure-word"; word: Word }
+    | { type: "word"; word: Word; message?: string; configure: boolean }
     | { type: "explain-choice"; item: HistoryItem; choiceIndex: number };
 }
 
@@ -27,6 +26,7 @@ export type Action =
   | { type: "respond"; payload: number }
   | { type: "skip" }
   | { type: "search"; payload: string }
+  | { type: "toggle-detail"; payload: string }
   | { type: "back" }
   | { type: "view-word"; payload: Word }
   | { type: "next" }
@@ -140,14 +140,18 @@ export function applyAction(state: State, action: Action): State {
               type: "word",
               word: action.payload,
               message: "Word added",
+              configure: false,
             },
           };
     case "view-word":
-      return { ...state, modal: { type: "word", word: action.payload } };
+      return {
+        ...state,
+        modal: { type: "word", word: action.payload, configure: false },
+      };
     case "configure-word":
       return {
         ...state,
-        modal: { type: "configure-word", word: action.payload },
+        modal: { type: "word", word: action.payload, configure: true },
       };
     case "search":
       return {
@@ -172,6 +176,19 @@ export function applyAction(state: State, action: Action): State {
       return { ...state, modal: undefined };
     case "show-qr-code":
       return { ...state, modal: { type: "qr-code" } };
+    case "toggle-detail":
+      return state.modal?.type === "search"
+        ? {
+            ...state,
+            modal: {
+              ...state.modal,
+              detailExpand:
+                state.modal.detailExpand === action.payload
+                  ? undefined
+                  : action.payload,
+            },
+          }
+        : state;
   }
 }
 

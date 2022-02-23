@@ -1,4 +1,5 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import CloseButton from "./CloseButton";
 
 export function ModalTemplate({
   children,
@@ -35,10 +36,15 @@ export function ModalTemplate({
       <div
         ref={contentRef}
         className={`relative duration-300 ${
-          animState ? "opacity-100 max-h-2/3" : "opacity-0 max-h-0"
+          animState ? "opacity-100 max-h-3/4" : "opacity-0 max-h-0"
         } md:max-h-unset w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible`}
       >
         {children}
+
+        <CloseButton
+          className="absolute right-0 top-0 z-10 hidden md:flex -m-3"
+          onClick={onClose}
+        />
       </div>
     </div>
   );

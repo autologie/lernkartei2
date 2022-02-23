@@ -1,6 +1,7 @@
 import { useReducer } from "react";
 import { Word as WordModel } from "../models/Word";
 import ExampleText from "./ExampleText";
+import { formatDistanceToNow } from "date-fns";
 
 function applyState(
   openIndex: number | undefined,
@@ -13,9 +14,11 @@ export default function Word({
   word,
   className,
   highlightedIndex,
+  hideEdit = false,
   onConfigure,
 }: {
   word: WordModel;
+  hideEdit?: boolean;
   className?: string;
   highlightedIndex?: number;
   onConfigure: (word: WordModel) => void;
@@ -91,10 +94,18 @@ export default function Word({
         >
           Wiktionary
         </a>{" "}
-        on {new Date(word._ts / 1000).toLocaleString()} •{" "}
-        <button className="underline" onClick={() => onConfigure(word)}>
-          Edit
-        </button>
+        {formatDistanceToNow(new Date(word._ts / 1000), { addSuffix: true })}
+        {hideEdit ? (
+          ""
+        ) : (
+          <>
+            {" "}
+            •{" "}
+            <button className="underline" onClick={() => onConfigure(word)}>
+              Edit
+            </button>
+          </>
+        )}
       </p>
     </div>
   );
