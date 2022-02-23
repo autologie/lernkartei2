@@ -1,47 +1,5 @@
 import { Fragment } from "react";
-
-function collectItems<T>(
-  children: string,
-  factory: (
-    segment: string,
-    kind: "tail" | "match" | "pre" | "symbol",
-    key: number
-  ) => T
-): T[] {
-  const regex = /\[\[[^\].,?!]+(,|\?|.|!)?\]\]/g;
-  const segments: T[] = [];
-  let index = 0;
-
-  while (true) {
-    const matched = regex.exec(children);
-
-    if (matched === null) {
-      segments.push(
-        factory(children.slice(index, children.length), "tail", 3 * index)
-      );
-      break;
-    }
-
-    const nextIndex = matched.index + matched[0].length;
-
-    segments.push(
-      factory(children.slice(index, matched.index), "pre", 3 * index),
-      factory(
-        children.slice(
-          matched.index + 2,
-          nextIndex - 2 - (matched[1]?.length ?? 0)
-        ),
-        "match",
-        3 * index + 1
-      ),
-      factory(matched[1] ?? "", "symbol", 3 * index + 2)
-    );
-
-    index = nextIndex;
-  }
-
-  return segments;
-}
+import { chunk } from "../models/String";
 
 export default function ExampleText({
   children: children_,
@@ -58,29 +16,25 @@ export default function ExampleText({
   if (mode === "mask") {
     return (
       <>
-        {collectItems(children, (segment, kind) =>
-          kind === "match"
-            ? "_____"
-            : kind === "symbol"
-            ? ` ${segment}`
-            : segment
-        ).join("")}
+        {chunk(children)
+          .map(({ segment, isMatch }) => (isMatch ? "_____" : segment))
+          .join("")}
       </>
     );
   }
 
   return (
     <>
-      {collectItems(children, (segment, kind, key) =>
-        kind === "match" ? (
+      {chunk(children).map(({ segment, isMatch }, index) =>
+        isMatch ? (
           <i
-            key={key}
+            key={index}
             className={mode === "italic-green" ? "text-green-600" : ""}
           >
             {segment}
           </i>
         ) : (
-          <Fragment key={key}>{segment}</Fragment>
+          <Fragment key={index}>{segment}</Fragment>
         )
       )}
     </>
