@@ -84,7 +84,7 @@ export function isEasyMastered(
 export function isHardMastered(
   progress: NonNullable<LearningProgress["table"][string]>[number]
 ): boolean {
-  return HARD_QUESTIONS.every((q) => progress?.[q]?.certainty === 3);
+  return HARD_QUESTIONS.some((q) => progress?.[q]?.certainty === 3);
 }
 
 export function isMastered(
