@@ -60,9 +60,7 @@ export default function Modal({
           <Word
             word={modal.word}
             hideEdit={modal.configure}
-            onConfigure={(word) =>
-              dispatch({ type: "configure-word", payload: word })
-            }
+            onConfigure={handleConfigure}
           />
           {modal.configure && (
             <div className="mt-4 flex flex-col items-stretch gap-2">
@@ -115,6 +113,26 @@ export default function Modal({
             Session ID: {state.sessionId}
           </h2>
         </div>
+      )}
+      {modal.type === "mastered" && (
+        <>
+          <h1 className="text-2xl font-semibold text-center">
+            Congratulations!
+          </h1>
+          <p className="mt-2 mb-4 text-center">You have mastered a new word.</p>
+          <Word
+            word={modal.word}
+            highlightedIndex={modal.definitionIndex}
+            onConfigure={handleConfigure}
+          />
+          <Button
+            className="mx-auto mt-4"
+            color="blue"
+            onClick={() => dispatch({ type: "next" })}
+          >
+            Continue Learning
+          </Button>
+        </>
       )}
     </ModalTemplate>
   );

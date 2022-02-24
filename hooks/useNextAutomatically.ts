@@ -10,7 +10,8 @@ export default function useNextAutomatically(
     state.historyCursor === 0 &&
     state.history.length > 0 &&
     state.history[0].missResponses.length === 0 &&
-    state.done;
+    state.done &&
+    state.modal?.type !== "mastered";
 
   useEffect(() => {
     if (!shouldTrigger) {

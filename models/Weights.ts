@@ -1,10 +1,11 @@
-import { LearningProgress } from "./LearningProgress";
+import { isHardMastered, LearningProgress } from "./LearningProgress";
 import {
   createDefineQuestion,
   createFillBlankQuestion,
   createPhotoQuestion,
   createTranslateFromQuestion,
   createTranslateToQuestion,
+  HARD_QUESTIONS,
   Question,
   QuestionTable,
   questionTypes,
@@ -13,14 +14,7 @@ import { Word } from "./Word";
 
 export type Weights = QuestionTable<number | undefined>;
 
-const HARD_QUESTIONS: Question["type"][] = ["define", "fill-blank"];
-const EASY_QUESTIONS: Question["type"][] = [
-  "translate-to",
-  "translate-from",
-  "photo",
-];
-
-function getWeight(
+function getWordWeight(
   currentTick: number,
   totalWordCount: number,
   word: Word,
@@ -43,29 +37,28 @@ function getWeight(
         (pp) => pp.lastEncounteredTick ?? 0
       )
     );
+
     const def = word.definitions[i];
+    const easyMastered = isHardMastered(progressForDefinition);
+    const hardMastered = isHardMastered(progressForDefinition);
 
     ret[i] = {};
 
     for (const t of questionTypes) {
+      if (
+        (t === "photo" && (def.photos ?? []).length === 0) ||
+        (t === "fill-blank" && def.examples.length === 0) ||
+        ((t === "translate-from" || t === "translate-to") &&
+          def.english.length === 0)
+      ) {
+        ret[i]![t] = 0;
+        continue;
+      }
+
       const progressForType = progressForDefinition[t];
       const typeLastTick = progressForType?.lastEncounteredTick ?? 0;
-
-      const value =
-        (wordLastTick === 0 ? 1 : currentTick - wordLastTick) *
-        (definitionLastTick === 0 ? 1 : currentTick - wordLastTick) *
-        (typeLastTick === 0 ? 1 : currentTick - wordLastTick) *
-        (progressForType?.certainty === 3 ? 1 : totalWordCount) *
-        (HARD_QUESTIONS.includes(t)
-          ? EASY_QUESTIONS.reduce(
-              (a, b) => a * (progressForDefinition[b]?.certainty ?? 3),
-              1
-            )
-          : HARD_QUESTIONS.reduce(
-              (p, q) => p * (3 - (progressForDefinition[q]?.certainty ?? 0)),
-              1
-            )) *
-        (i === 0
+      const definitionIndexFactor =
+        i === 0
           ? 1
           : Array.from({ length: i }).reduce<number>(
               (a, _, ii) =>
@@ -75,13 +68,33 @@ function getWeight(
                   1
                 ),
               1
-            )) *
-        ((t === "photo" && (def.photos ?? []).length === 0) ||
-        (t === "fill-blank" && def.examples.length === 0) ||
-        ((t === "translate-from" || t === "translate-to") &&
-          def.english.length === 0)
-          ? 0
-          : 1);
+            );
+      const hardnessFactor = HARD_QUESTIONS.includes(t)
+        ? easyMastered
+          ? hardMastered
+            ? 0.5
+            : 1
+          : hardMastered
+          ? 0.3
+          : 0.5
+        : easyMastered
+        ? hardMastered
+          ? 0.5
+          : 0.5
+        : hardMastered
+        ? 0.3
+        : 0.5;
+      const timePassedFactor =
+        (hardMastered || wordLastTick === 0 ? 1 : currentTick - wordLastTick) *
+        (hardMastered || definitionLastTick === 0
+          ? 1
+          : currentTick - wordLastTick) *
+        (hardMastered || typeLastTick === 0 ? 1 : currentTick - wordLastTick);
+      const value =
+        timePassedFactor *
+        (progressForType?.certainty === 3 ? 1 : totalWordCount) *
+        hardnessFactor *
+        definitionIndexFactor;
 
       ret[i]![t] = value;
       sum += value;
@@ -91,13 +104,13 @@ function getWeight(
   return [ret, sum];
 }
 
-function findRandom(
+function getQuestionParams(
   words: Word[],
   progress: LearningProgress
 ): [Word, number, Question["type"], Weights] {
   const [weights, sum] = words.reduce<[Weights, number]>(
     ([passed, s], word) => {
-      const [weight, localSum] = getWeight(
+      const [weight, localSum] = getWordWeight(
         progress.tick,
         words.length,
         word,
@@ -132,7 +145,7 @@ export function createQuestion(
   progress: LearningProgress,
   words: Word[]
 ): [Question | undefined, Weights] {
-  const [word, definitionIndex, questionType, weights] = findRandom(
+  const [word, definitionIndex, questionType, weights] = getQuestionParams(
     words,
     progress
   );

@@ -5,6 +5,7 @@ import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
 import ExampleText from "./ExampleText";
 import QuestionTemplate from "./QuestionTemplate";
+import WiktionaryLink from "./WiktionaryLink";
 
 export default function Question({
   question,
@@ -117,18 +118,19 @@ export default function Question({
                   ]
                 }
               </ExampleText>
-              {showHint || done ? (
-                <p className="text-sm mt-2 text-gray-500 font-light">
-                  Hint: {word.definitions[question.definitionIndex].definition}
-                </p>
-              ) : (
-                <button
-                  className="block text-sm mt-2 text-gray-500 font-light underline"
-                  onClick={() => setHint(true)}
-                >
-                  Show hint
-                </button>
-              )}
+              <p className="text-base mt-2 text-gray-500">
+                Text Source: <WiktionaryLink entry={question.word} /> •{" "}
+                {showHint || done ? (
+                  <>
+                    Hint:{" "}
+                    {word.definitions[question.definitionIndex].definition}
+                  </>
+                ) : (
+                  <button className="underline" onClick={() => setHint(true)}>
+                    Show hint
+                  </button>
+                )}
+              </p>
             </>
           }
           choices={question.choices}
@@ -152,6 +154,9 @@ export default function Question({
                 className="block w-full mt-4 object-contain bg-gray-100 rounded"
                 style={{ maxHeight: "50vh" }}
               />
+              <p className="my-1 text-center text-gray-500 text-base">
+                Image source: <WiktionaryLink entry={question.word} />
+              </p>
             </>
           }
           choices={question.choices}

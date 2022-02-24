@@ -2,6 +2,7 @@ import { useReducer } from "react";
 import { Word as WordModel } from "../models/Word";
 import ExampleText from "./ExampleText";
 import { formatDistanceToNow } from "date-fns";
+import WiktionaryLink from "./WiktionaryLink";
 
 function applyState(
   openIndex: number | undefined,
@@ -83,17 +84,7 @@ export default function Word({
         ))}
       </ul>
       <p className="px-4 mt-4 text-opacity-70 text-black text-sm text-right">
-        From{" "}
-        <a
-          className="underline"
-          target="_blank"
-          rel="noopener noreferrer"
-          href={`https://de.wiktionary.org/wiki/${encodeURIComponent(
-            word.german
-          )}`}
-        >
-          Wiktionary
-        </a>{" "}
+        From <WiktionaryLink entry={word.german} />{" "}
         {formatDistanceToNow(new Date(word._ts / 1000), { addSuffix: true })}
         {hideEdit ? (
           ""

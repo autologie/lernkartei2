@@ -35,14 +35,16 @@ export default function Debugger({
         currentQuestion.type
       ];
 
-    return v === undefined ? v : v / maxWeight;
-  }, [currentQuestion, maxWeight, weights]);
+    return v === undefined
+      ? v
+      : ((100 * (v / maxWeight)) / sumWeight).toPrecision(3);
+  }, [currentQuestion, maxWeight, sumWeight, weights]);
 
   return (
     <div className="fixed m-2 rounded bottom-0 left-0 text-xs max-h-screen text-white bg-black bg-opacity-80">
-      {currentQuestion !== undefined && (
+      {currentQuestionWeight !== undefined && (
         <p className="p-2 text-lg font-semibold">
-          Selected: {currentQuestionWeight?.toExponential(3) ?? "(default)"}
+          Selected: {currentQuestionWeight}%
         </p>
       )}
       <table className="border-collapse m-4 mt-32">
@@ -120,7 +122,7 @@ const Tile = React.memo(function Title_({
           : "hover:outline outline-white"
       }`}
       style={{
-        backgroundColor: `hsla(0, 50%, 50%, ${Math.log2(1 + weight)})`,
+        backgroundColor: `hsla(0, 50%, 50%, ${weight})`,
       }}
     >
       {progress?.certainty ?? ""}
@@ -130,8 +132,7 @@ const Tile = React.memo(function Title_({
         } p-2 bg-black bg-opacity-90 rounded hidden group-hover:block leading-relaxed`}
       >
         <div className="whitespace-pre">
-          Weight: {weight.toPrecision(3)} (
-          {((100 * weight) / sumWeight).toPrecision(3)}%)
+          Weight: {((100 * weight) / sumWeight).toPrecision(3)}%
         </div>
         <div className="whitespace-pre">
           Missed: {progress?.miss === true ? "Yes" : "-"}

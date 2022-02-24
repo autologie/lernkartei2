@@ -1,5 +1,5 @@
 import { HistoryItem } from "./HistoryItem";
-import { addResult, LearningProgress } from "./LearningProgress";
+import { addResult, isMastered, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
 import { Settings, test } from "./Settings";
 import { createQuestion, Weights } from "./Weights";
@@ -18,6 +18,7 @@ export interface State {
   modal?:
     | { type: "search"; word: string; detailExpand?: string }
     | { type: "qr-code" }
+    | { type: "mastered"; word: Word; definitionIndex: number }
     | { type: "word"; word: Word; message?: string; configure: boolean }
     | { type: "explain-choice"; item: HistoryItem; choiceIndex: number };
 }
@@ -47,6 +48,7 @@ function setNewQuestion(state: State): State {
   return {
     ...state,
     done: false,
+    modal: undefined,
     weights,
     history: [{ missResponses: [] as number[], question: nextQuestion }].concat(
       state.history
@@ -82,11 +84,24 @@ export function applyAction(state: State, action: Action): State {
           item.question.type,
           item.missResponses.length > 0
         );
+        const masteredWord = isMastered(
+          progress.table[item.question.word]?.[item.question.definitionIndex]
+        )
+          ? state.words.find((w) => w.german === item.question.word)
+          : undefined;
 
         return {
           ...state,
           done: true,
           progress,
+          modal:
+            masteredWord === undefined
+              ? undefined
+              : {
+                  type: "mastered",
+                  word: masteredWord,
+                  definitionIndex: item.question.definitionIndex,
+                },
         };
       }
 
@@ -111,7 +126,7 @@ export function applyAction(state: State, action: Action): State {
         : state;
     }
     case "next":
-      if (state.modal !== undefined) {
+      if (state.modal !== undefined && state.modal.type !== "mastered") {
         return state;
       }
 

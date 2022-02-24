@@ -1,6 +1,11 @@
 import { Certainty, fromNumber } from "./Certainty";
 import { LearningLog } from "./LearningLog";
-import { Question, QuestionTable } from "./Question";
+import {
+  EASY_QUESTIONS,
+  HARD_QUESTIONS,
+  Question,
+  QuestionTable,
+} from "./Question";
 
 export interface LearningProgressEntry {
   miss: boolean;
@@ -68,4 +73,22 @@ export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
     ),
     tick: (sorted[sorted.length - 1]?.tick ?? 0) + 1,
   };
+}
+
+export function isEasyMastered(
+  progress: NonNullable<LearningProgress["table"][string]>[number]
+): boolean {
+  return EASY_QUESTIONS.some((q) => progress?.[q]?.certainty === 3);
+}
+
+export function isHardMastered(
+  progress: NonNullable<LearningProgress["table"][string]>[number]
+): boolean {
+  return HARD_QUESTIONS.every((q) => progress?.[q]?.certainty === 3);
+}
+
+export function isMastered(
+  progress: NonNullable<LearningProgress["table"][string]>[number]
+): boolean {
+  return isHardMastered(progress) && isEasyMastered(progress);
 }

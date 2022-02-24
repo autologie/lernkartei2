@@ -51,6 +51,14 @@ export interface Photo {
 
 export type Question = FillBlank | Define | TranslateTo | TranslateFrom | Photo;
 
+export const HARD_QUESTIONS: Question["type"][] = ["define", "fill-blank"];
+
+export const EASY_QUESTIONS: Question["type"][] = [
+  "translate-to",
+  "translate-from",
+  "photo",
+];
+
 export interface QuestionTable<T> {
   [word: string]:
     | {
