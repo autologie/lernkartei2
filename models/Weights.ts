@@ -1,4 +1,8 @@
-import { isHardMastered, LearningProgress } from "./LearningProgress";
+import {
+  isEasyMastered,
+  isHardMastered,
+  LearningProgress,
+} from "./LearningProgress";
 import {
   createDefineQuestion,
   createFillBlankQuestion,
@@ -39,7 +43,7 @@ function getWordWeight(
     );
 
     const def = word.definitions[i];
-    const easyMastered = isHardMastered(progressForDefinition);
+    const easyMastered = isEasyMastered(progressForDefinition);
     const hardMastered = isHardMastered(progressForDefinition);
 
     ret[i] = {};
