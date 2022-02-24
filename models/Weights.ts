@@ -11,14 +11,22 @@ import {
 } from "./Question";
 import { Word } from "./Word";
 
-export type Weights = QuestionTable<number>;
+export type Weights = QuestionTable<number | undefined>;
+
+const HARD_QUESTIONS: Question["type"][] = ["define", "fill-blank"];
+const EASY_QUESTIONS: Question["type"][] = [
+  "translate-to",
+  "translate-from",
+  "photo",
+];
 
 function getWeight(
   currentTick: number,
   totalWordCount: number,
   word: Word,
   progress: LearningProgress["table"][string] = {}
-): Weights[string] {
+): [Weights[string], number] {
+  let sum = 0;
   const ret: Weights[string] = {};
   const wordLastTick = Math.max(
     0,
@@ -35,6 +43,7 @@ function getWeight(
         (pp) => pp.lastEncounteredTick ?? 0
       )
     );
+    const def = word.definitions[i];
 
     ret[i] = {};
 
@@ -42,94 +51,75 @@ function getWeight(
       const progressForType = progressForDefinition[t];
       const typeLastTick = progressForType?.lastEncounteredTick ?? 0;
 
-      ret[i]![t] =
-        (typeLastTick === 0
-          ? 1
-          : definitionLastTick === 0
-          ? 2
-          : wordLastTick === 0
-          ? 3
-          : currentTick - wordLastTick < 2
-          ? 0.1
-          : Math.pow(currentTick - typeLastTick, 2)) *
-        (Math.pow(
-          2,
-          progressForType?.certainty === undefined
-            ? 1
-            : progressForType.certainty === 3
-            ? 1 / totalWordCount
-            : progressForType.certainty + 1
-        ) -
-          1) *
-        (["define", "fill-blank"].includes(t)
-          ? questionTypes.reduce(
-              (p, tt) =>
-                p + (t === tt ? 0 : progressForDefinition[tt]?.certainty ?? 0),
-              0.1
+      const value =
+        (wordLastTick === 0 ? 1 : currentTick - wordLastTick) *
+        (definitionLastTick === 0 ? 1 : currentTick - wordLastTick) *
+        (typeLastTick === 0 ? 1 : currentTick - wordLastTick) *
+        (progressForType?.certainty === 3 ? 1 : totalWordCount) *
+        (HARD_QUESTIONS.includes(t)
+          ? EASY_QUESTIONS.reduce(
+              (a, b) => a * (progressForDefinition[b]?.certainty ?? 3),
+              1
             )
-          : 6) *
+          : HARD_QUESTIONS.reduce(
+              (p, q) => p * (3 - (progressForDefinition[q]?.certainty ?? 0)),
+              1
+            )) *
         (i === 0
           ? 1
-          : Object.values(progress[i - 1] ?? {}).some((k) => k.certainty === 3)
-          ? 1
-          : 0.1);
+          : Array.from({ length: i }).reduce<number>(
+              (a, _, ii) =>
+                a *
+                questionTypes.reduce<number>(
+                  (a, k) => a * (progress[ii]?.[k]?.certainty ?? 0),
+                  1
+                ),
+              1
+            )) *
+        ((t === "photo" && (def.photos ?? []).length === 0) ||
+        (t === "fill-blank" && def.examples.length === 0) ||
+        ((t === "translate-from" || t === "translate-to") &&
+          def.english.length === 0)
+          ? 0
+          : 1);
+
+      ret[i]![t] = value;
+      sum += value;
     }
   }
 
-  return ret;
+  return [ret, sum];
 }
 
-export function createWeights(
+function findRandom(
   words: Word[],
   progress: LearningProgress
-): Weights {
-  const m = Object.entries(progress.table).reduce<Weights>(
-    (passed, [word, entry]) => {
-      const w = words.find((w) => w.german === word);
+): [Word, number, Question["type"], Weights] {
+  const [weights, sum] = words.reduce<[Weights, number]>(
+    ([passed, s], word) => {
+      const [weight, localSum] = getWeight(
+        progress.tick,
+        words.length,
+        word,
+        progress.table[word.german]
+      );
 
-      if (w !== undefined) {
-        passed[word] = getWeight(progress.tick, words.length, w, entry);
-      }
+      passed[word.german] = weight;
 
-      return passed;
+      return [passed, s + localSum];
     },
-    {}
+    [{}, 0]
   );
 
-  return m;
-}
-
-function findRandom(words: Word[], weights: Weights): [Word, Question["type"]] {
-  const scores = Object.values(weights).flatMap((p) =>
-    Object.values(p ?? {}).flatMap((pp) => Object.values(pp ?? {}))
-  );
-  const fallback = scores.length > 0 ? Math.min(...scores) : 1;
-
-  const sum = words.reduce(
-    (p0, word) =>
-      p0 +
-      word.definitions.reduce(
-        (p1, _, di) =>
-          p1 +
-          questionTypes.reduce(
-            (p2, t) => p2 + (weights[word.german]?.[di]?.[t] ?? fallback),
-            0
-          ),
-        0
-      ),
-    0
-  );
-
-  const cursor = sum * Math.random();
-  let current = 0;
+  let cursor = sum * Math.random();
 
   for (const word of words) {
     for (let i = 0; i < word.definitions.length; i++) {
       for (const t of questionTypes) {
-        current += weights[word.german]?.[i]?.[t] ?? fallback;
+        cursor -= weights[word.german]?.[i]?.[t] ?? 0;
 
-        if (current >= cursor) {
-          return [word, t];
+        if (cursor <= 0) {
+          return [word, i, t, weights];
         }
       }
     }
@@ -139,33 +129,27 @@ function findRandom(words: Word[], weights: Weights): [Word, Question["type"]] {
 }
 
 export function createQuestion(
-  weights: Weights,
+  progress: LearningProgress,
   words: Word[]
-): Question | undefined {
-  function createQuestionImpl(retries: number): Question | undefined {
-    try {
-      if (retries > 10) {
-        return undefined;
-      }
+): [Question | undefined, Weights] {
+  const [word, definitionIndex, questionType, weights] = findRandom(
+    words,
+    progress
+  );
 
-      const [word, questionType] = findRandom(words, weights);
-
-      switch (questionType) {
-        case "define":
-          return createDefineQuestion(word, words);
-        case "fill-blank":
-          return createFillBlankQuestion(word, words);
-        case "translate-from":
-          return createTranslateFromQuestion(word, words);
-        case "translate-to":
-          return createTranslateToQuestion(word, words);
-        case "photo":
-          return createPhotoQuestion(word, words);
-      }
-    } catch (e) {
-      return createQuestionImpl(retries + 1);
-    }
+  switch (questionType) {
+    case "define":
+      return [createDefineQuestion(word, definitionIndex, words), weights];
+    case "fill-blank":
+      return [createFillBlankQuestion(word, definitionIndex, words), weights];
+    case "translate-from":
+      return [
+        createTranslateFromQuestion(word, definitionIndex, words),
+        weights,
+      ];
+    case "translate-to":
+      return [createTranslateToQuestion(word, definitionIndex, words), weights];
+    case "photo":
+      return [createPhotoQuestion(word, definitionIndex, words), weights];
   }
-
-  return createQuestionImpl(0);
 }

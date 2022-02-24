@@ -26,7 +26,7 @@ import {
   shouldShowNavNextButton,
   shouldShowNextButton,
 } from "../models/State";
-import { createQuestion, createWeights } from "../models/Weights";
+import { createQuestion } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
 
 const Modal = dynamic(() => import("../components/Modal"));
@@ -152,7 +152,6 @@ export async function getServerSideProps(
   ]);
   const time1 = process.uptime() * 1000;
   const progress = restoreFromLogs(logs);
-  const weights = createWeights(words, progress);
   const time2 = process.uptime() * 1000;
 
   ctx.res.setHeader(
@@ -161,13 +160,15 @@ export async function getServerSideProps(
   );
   ctx.res.setHeader("Set-Cookie", `sessionId=${sessionId}`);
 
+  const [question, weights] = createQuestion(progress, words);
+
   return {
     props: {
       settings,
       words,
       weights,
       progress,
-      question: createQuestion(createWeights(words, progress), words) ?? null,
+      question: question ?? null,
       sessionId,
     },
   };

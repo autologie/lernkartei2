@@ -42,7 +42,7 @@ export default function QuestionTemplate({
       <ol
         className={`gap-2 ${
           layout === "grid"
-            ? "grid grid-col-1 md:grid-cols-2"
+            ? "grid grid-col-1 md:grid-cols-2 place-items-stretch"
             : "flex flex-col items-stretch"
         }`}
       >

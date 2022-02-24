@@ -2,7 +2,7 @@ import { HistoryItem } from "./HistoryItem";
 import { addResult, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
 import { Settings, test } from "./Settings";
-import { createQuestion, createWeights, Weights } from "./Weights";
+import { createQuestion, Weights } from "./Weights";
 import { Word } from "./Word";
 
 export interface State {
@@ -38,7 +38,7 @@ export type Action =
   | { type: "configure-word"; payload: Word };
 
 function setNewQuestion(state: State): State {
-  const nextQuestion = createQuestion(state.weights, state.words);
+  const [nextQuestion, weights] = createQuestion(state.progress, state.words);
 
   if (nextQuestion === undefined) {
     return state;
@@ -47,6 +47,7 @@ function setNewQuestion(state: State): State {
   return {
     ...state,
     done: false,
+    weights,
     history: [{ missResponses: [] as number[], question: nextQuestion }].concat(
       state.history
     ),
@@ -86,7 +87,6 @@ export function applyAction(state: State, action: Action): State {
           ...state,
           done: true,
           progress,
-          weights: createWeights(state.words ?? [], progress),
         };
       }
 

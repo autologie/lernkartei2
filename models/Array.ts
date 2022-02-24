@@ -23,13 +23,3 @@ export function getRandomIndex(arr: unknown[]): number {
 
   return Math.floor(Math.random() * arr.length);
 }
-
-export function getRandomElement<T>(arr: T[]): T {
-  const index = getRandomIndex(arr);
-
-  if (index === undefined) {
-    throw Error();
-  }
-
-  return arr[index];
-}

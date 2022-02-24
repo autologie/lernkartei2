@@ -45,7 +45,7 @@ export default function Debugger({
           Selected: {currentQuestionWeight?.toExponential(3) ?? "(default)"}
         </p>
       )}
-      <table className="border-collapse mb-4 mt-32">
+      <table className="border-collapse m-4 mt-32">
         <thead>
           <tr>
             <th></th>
@@ -73,29 +73,21 @@ export default function Debugger({
             )
             .slice(0, maxCount)
             .map(([w, i, myWeight], j) => (
-              <tr
-                key={`${w.german}-${i}`}
-                className={`${
-                  currentQuestion?.definitionIndex === i &&
-                  currentQuestion?.word === w.german
-                    ? "outline outline-blue-500 outline-4"
-                    : ""
-                }`}
-              >
-                <td className="pl-4 pr-2 text-right">{w.german}</td>
+              <tr key={`${w.german}-${i}`}>
+                <td className="pr-2 text-right">{w.german}</td>
                 <td className="w-4">{i}</td>
-                {questionTypes.map((t, ti) => (
-                  <td
-                    key={t}
-                    className={`p-0 ${
-                      ti === questionTypes.length - 1 ? "pr-4" : ""
-                    }`}
-                  >
+                {questionTypes.map((t) => (
+                  <td key={t} className={`p-0`}>
                     <Tile
                       weight={(myWeight?.[t] ?? 0) / maxWeight}
                       sumWeight={sumWeight}
                       progress={progress.table[w.german]?.[i]?.[t]}
                       bottom={j >= maxCount - 4}
+                      isCurrent={
+                        currentQuestion?.word === w.german &&
+                        currentQuestion.definitionIndex === i &&
+                        currentQuestion.type === t
+                      }
                     />
                   </td>
                 ))}
@@ -111,33 +103,43 @@ const Tile = React.memo(function Title_({
   weight,
   sumWeight,
   bottom,
+  isCurrent,
   progress,
 }: {
   weight: number;
   sumWeight: number;
   bottom: boolean;
+  isCurrent: boolean;
   progress?: LearningProgressEntry;
 }) {
   return (
     <div
-      className={`group cursor-pointer hover:outline outline-white relative w-5 h-5 m-0.5 cursor-default rounded flex items-center justify-center`}
+      className={`group cursor-pointer relative w-5 h-5 m-0.5 cursor-default rounded flex items-center justify-center ${
+        isCurrent
+          ? "outline outline-white outline-2"
+          : "hover:outline outline-white"
+      }`}
       style={{
         backgroundColor: `hsla(0, 50%, 50%, ${Math.log2(1 + weight)})`,
       }}
     >
       {progress?.certainty ?? ""}
       <div
-        className={`z-10 font-light text-xs my-2 w-64 text-white absolute ${
+        className={`z-10 font-light text-xs my-2 text-white absolute ${
           bottom ? "bottom-full" : "top-full"
         } p-2 bg-black bg-opacity-90 rounded hidden group-hover:block leading-relaxed`}
       >
-        <div>
+        <div className="whitespace-pre">
           Weight: {weight.toPrecision(3)} (
           {((100 * weight) / sumWeight).toPrecision(3)}%)
         </div>
-        <div>Missed: {progress?.miss === true ? "Yes" : "-"}</div>
-        <div>Certainty: {progress?.certainty ?? "-"}</div>
-        <div>
+        <div className="whitespace-pre">
+          Missed: {progress?.miss === true ? "Yes" : "-"}
+        </div>
+        <div className="whitespace-pre">
+          Certainty: {progress?.certainty ?? "-"}
+        </div>
+        <div className="whitespace-pre">
           Last encountered:{" "}
           {progress?.lastEncounteredTick === undefined
             ? "-"

@@ -1,5 +1,5 @@
 import { Word } from "./Word";
-import { getRandomElement, getRandomIndex, shuffle } from "./Array";
+import { getRandomIndex, shuffle } from "./Array";
 
 export interface FillBlank {
   type: "fill-blank";
@@ -79,9 +79,11 @@ export function shuffleChoices(question: Question): Question {
   };
 }
 
-export function createDefineQuestion(word: Word, words: Word[]): Question {
-  const definitionIndex = getRandomIndex(word.definitions);
-
+export function createDefineQuestion(
+  word: Word,
+  definitionIndex: number,
+  words: Word[]
+): Question {
   return shuffleChoices({
     type: "define",
     word: word.german,
@@ -110,8 +112,11 @@ export function createDefineQuestion(word: Word, words: Word[]): Question {
   });
 }
 
-export function createFillBlankQuestion(word: Word, words: Word[]): Question {
-  const definitionIndex = getRandomIndex(word.definitions);
+export function createFillBlankQuestion(
+  word: Word,
+  definitionIndex: number,
+  words: Word[]
+): Question {
   const exampleIndex = getRandomIndex(
     word.definitions[definitionIndex].examples
   );
@@ -133,9 +138,9 @@ export function createFillBlankQuestion(word: Word, words: Word[]): Question {
 
 export function createTranslateFromQuestion(
   word: Word,
+  definitionIndex: number,
   words: Word[]
 ): Question {
-  const definitionIndex = getRandomIndex(word.definitions);
   const englishIndex = getRandomIndex(
     word.definitions[definitionIndex].english
   );
@@ -155,8 +160,11 @@ export function createTranslateFromQuestion(
   });
 }
 
-export function createTranslateToQuestion(word: Word, words: Word[]): Question {
-  const definitionIndex = getRandomIndex(word.definitions);
+export function createTranslateToQuestion(
+  word: Word,
+  definitionIndex: number,
+  words: Word[]
+): Question {
   const englishIndex = getRandomIndex(
     word.definitions[definitionIndex].english
   );
@@ -191,8 +199,11 @@ export function createTranslateToQuestion(word: Word, words: Word[]): Question {
   });
 }
 
-export function createPhotoQuestion(word: Word, words: Word[]): Question {
-  const definitionIndex = getRandomIndex(word.definitions);
+export function createPhotoQuestion(
+  word: Word,
+  definitionIndex: number,
+  words: Word[]
+): Question {
   const photoIndex = getRandomIndex(
     word.definitions[definitionIndex].photos ?? []
   );
