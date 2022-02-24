@@ -45,6 +45,10 @@ export default function Session(props: InitialStateArgs) {
     (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
     []
   );
+  const handleRequestHint = useCallback(
+    () => dispatch({ type: "show-hint" }),
+    []
+  );
   const handleAdd = useAddNewWord(dispatch, state.modal !== undefined);
   const handleSearch = useCallback(
     () => dispatch({ type: "search", payload: "" }),
@@ -83,8 +87,10 @@ export default function Session(props: InitialStateArgs) {
             missResponses={item.missResponses}
             showExplanation={shouldShowExplanation(state)}
             done={state.historyCursor > 0 || state.done}
+            hintUsed={item.hintUsed}
             onResponse={handleResponse}
             onConfigureWord={handleConfigureWord}
+            onRequestHint={handleRequestHint}
           />
           {shouldShowNavBackButton(state) && (
             <NavButton

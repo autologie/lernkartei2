@@ -31,6 +31,7 @@ export type Action =
   | { type: "back" }
   | { type: "view-word"; payload: Word }
   | { type: "next" }
+  | { type: "show-hint" }
   | { type: "show-qr-code" }
   | { type: "close-modal" }
   | { type: "add"; payload: Word }
@@ -50,9 +51,13 @@ function setNewQuestion(state: State): State {
     done: false,
     modal: undefined,
     weights,
-    history: [{ missResponses: [] as number[], question: nextQuestion }].concat(
-      state.history
-    ),
+    history: [
+      {
+        missResponses: [] as number[],
+        question: nextQuestion,
+        hintUsed: false,
+      },
+    ].concat(state.history),
   };
 }
 
@@ -204,6 +209,15 @@ export function applyAction(state: State, action: Action): State {
             },
           }
         : state;
+    case "show-hint":
+      return state.history.length === 0
+        ? state
+        : {
+            ...state,
+            history: [{ ...state.history[0], hintUsed: true }].concat(
+              state.history.slice(1)
+            ),
+          };
   }
 }
 
@@ -226,7 +240,10 @@ export function getInitialState({
 }: InitialStateArgs): State {
   return {
     done: false,
-    history: question === null ? [] : [{ missResponses: [], question }],
+    history:
+      question === null
+        ? []
+        : [{ missResponses: [], question, hintUsed: false }],
     historyCursor: 0,
     settings,
     progress,

@@ -11,22 +11,25 @@ export default function Question({
   question,
   word,
   missResponses,
+  hintUsed,
   done,
   showExplanation,
   isNewer,
   onResponse,
   onConfigureWord,
+  onRequestHint,
 }: {
   question: Model;
   word: Word;
   done: boolean;
   missResponses: number[];
   showExplanation: boolean;
+  hintUsed: boolean;
   isNewer: boolean;
   onResponse: (responses: number) => void;
   onConfigureWord: (word: Word) => void;
+  onRequestHint: () => void;
 }) {
-  const [showHint, setHint] = useState(false);
   const commonProps = {
     isNewer,
     word,
@@ -120,13 +123,13 @@ export default function Question({
               </ExampleText>
               <p className="text-base mt-2 text-gray-500">
                 Text Source: <WiktionaryLink entry={question.word} /> •{" "}
-                {showHint || done ? (
+                {hintUsed ? (
                   <>
                     Hint:{" "}
                     {word.definitions[question.definitionIndex].definition}
                   </>
-                ) : (
-                  <button className="underline" onClick={() => setHint(true)}>
+                ) : done ? null : (
+                  <button className="underline" onClick={onRequestHint}>
                     Show hint
                   </button>
                 )}
