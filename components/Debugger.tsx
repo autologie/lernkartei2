@@ -20,20 +20,22 @@ export default function Debugger({
   maxCount: number;
   progress: LearningProgress;
 }) {
-  const weightList = Object.values(weights).flatMap((b) =>
-    Object.values(b ?? {}).flatMap((c) => Object.values(c ?? {}))
+  const weightList = Object.values(weights.values).flatMap((b) =>
+    Object.values(b?.values ?? {}).flatMap((c) =>
+      Object.values(c?.values ?? {})
+    )
   );
   const maxWeight = Math.max(...weightList);
-  const sumWeight = weightList.reduce((a, b) => a + b, 0) / maxWeight;
+  const sumWeight = weights.value / maxWeight;
   const currentQuestionWeight = useMemo(() => {
     if (currentQuestion === undefined) {
       return;
     }
 
     const v =
-      weights[currentQuestion.word]?.[currentQuestion.definitionIndex]?.[
-        currentQuestion.type
-      ];
+      weights.values[currentQuestion.word]?.values[
+        currentQuestion.definitionIndex
+      ]?.values[currentQuestion.type];
 
     return v === undefined
       ? v
@@ -65,13 +67,17 @@ export default function Debugger({
           {[...words]
             .flatMap((w) =>
               w.definitions.map<
-                [Word, number, NonNullable<Weights[string]>[number]]
-              >((_, i) => [w, i, weights[w.german]?.[i]])
+                [
+                  Word,
+                  number,
+                  NonNullable<Weights["values"][string]>["values"][number]
+                ]
+              >((_, i) => [w, i, weights.values[w.german]?.values[i]])
             )
             .sort(
               ([, , a], [, , b]) =>
-                Math.max(0, ...Object.values(b ?? {})) -
-                Math.max(0, ...Object.values(a ?? {}))
+                Math.max(0, ...Object.values(b?.values ?? {})) -
+                Math.max(0, ...Object.values(a?.values ?? {}))
             )
             .slice(0, maxCount)
             .map(([w, i, myWeight], j) => (
@@ -81,7 +87,7 @@ export default function Debugger({
                 {questionTypes.map((t) => (
                   <td key={t} className={`p-0`}>
                     <Tile
-                      weight={(myWeight?.[t] ?? 0) / maxWeight}
+                      weight={(myWeight?.values[t] ?? 0) / maxWeight}
                       sumWeight={sumWeight}
                       progress={progress.table[w.german]?.[i]?.[t]}
                       bottom={j >= maxCount - 4}

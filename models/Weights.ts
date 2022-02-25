@@ -11,21 +11,36 @@ import {
   createTranslateToQuestion,
   HARD_QUESTIONS,
   Question,
-  QuestionTable,
   questionTypes,
 } from "./Question";
 import { Word } from "./Word";
 
-export type Weights = QuestionTable<number | undefined>;
+interface DefinitionWeights {
+  value: number;
+  values: { [key in Question["type"]]?: number };
+}
+
+interface WordWeights {
+  value: number;
+  values: {
+    [definitionIndex: number]: DefinitionWeights | undefined;
+  };
+}
+
+export interface Weights {
+  value: number;
+  values: {
+    [word: string]: WordWeights | undefined;
+  };
+}
 
 function getWordWeight(
   currentTick: number,
   totalWordCount: number,
   word: Word,
   progress: LearningProgress["table"][string] = {}
-): [Weights[string], number] {
-  let sum = 0;
-  const ret: Weights[string] = {};
+): WordWeights {
+  const ret: WordWeights = { value: 0, values: {} };
   const wordLastTick = Math.max(
     0,
     ...Object.values(progress).flatMap((p) =>
@@ -46,7 +61,7 @@ function getWordWeight(
     const easyMastered = isEasyMastered(progressForDefinition);
     const hardMastered = isHardMastered(progressForDefinition);
 
-    ret[i] = {};
+    ret.values[i] = { value: 0, values: {} };
 
     for (const t of questionTypes) {
       if (
@@ -55,7 +70,7 @@ function getWordWeight(
         ((t === "translate-from" || t === "translate-to") &&
           def.english.length === 0)
       ) {
-        ret[i]![t] = 0;
+        ret.values[i]!.values[t] = 0;
         continue;
       }
 
@@ -104,44 +119,67 @@ function getWordWeight(
         hardnessFactor *
         definitionIndexFactor;
 
-      ret[i]![t] = value;
-      sum += value;
+      ret.values[i]!.values[t] = value;
+      ret.values[i]!.value += value;
+      ret.value += value;
     }
   }
 
-  return [ret, sum];
+  return ret;
 }
 
-function getQuestionParams(
-  words: Word[],
-  progress: LearningProgress
-): [Word, number, Question["type"], Weights] {
-  const [weights, sum] = words.reduce<[Weights, number]>(
-    ([passed, s], word) => {
-      const [weight, localSum] = getWordWeight(
+function getWeights(words: Word[], progress: LearningProgress): Weights {
+  return words.reduce<Weights>(
+    (passed, word) => {
+      const weight = getWordWeight(
         progress.tick,
         words.length,
         word,
         progress.table[word.german]
       );
 
-      passed[word.german] = weight;
+      passed.values[word.german] = weight;
+      passed.value += weight.value;
 
-      return [passed, s + localSum];
+      return passed;
     },
-    [{}, 0]
+    { value: 0, values: {} }
   );
+}
 
-  let cursor = sum * Math.random();
+function getQuestionParams(
+  words: Word[],
+  progress: LearningProgress
+): [Word, number, Question["type"], Weights] {
+  const empty = { value: 0, values: {} };
+  const weights = getWeights(words, progress);
+  let cursor = weights.value * Math.random();
 
   for (const word of words) {
-    for (let i = 0; i < word.definitions.length; i++) {
-      for (const t of questionTypes) {
-        cursor -= weights[word.german]?.[i]?.[t] ?? 0;
+    const wordWeight = weights.values[word.german] ?? empty;
 
-        if (cursor <= 0) {
-          return [word, i, t, weights];
+    if (cursor > wordWeight.value) {
+      cursor -= wordWeight.value;
+      continue;
+    }
+
+    for (let i = 0; i < word.definitions.length; i++) {
+      const definitionWeight = wordWeight?.values[i] ?? empty;
+
+      if (cursor > definitionWeight.value) {
+        cursor -= definitionWeight.value;
+        continue;
+      }
+
+      for (const type of questionTypes) {
+        const typeWeight = (definitionWeight.values as any)[type] ?? 0;
+
+        if (cursor > typeWeight) {
+          cursor -= typeWeight;
+          continue;
         }
+
+        return [word, i, type, weights];
       }
     }
   }
