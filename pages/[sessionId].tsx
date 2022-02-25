@@ -1,6 +1,6 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useReducer } from "react";
+import { Suspense, useCallback, useEffect, useReducer, useState } from "react";
 import AddButton from "../components/AddButton";
 import Button from "../components/Button";
 import NavButton from "../components/NavButton";
@@ -38,6 +38,7 @@ const Debugger = dynamic(() => import("../components/Debugger"), {
 
 export default function Session(props: InitialStateArgs) {
   const [state, dispatch] = useReducer(applyAction, props, getInitialState);
+  const [isMounted, setMounted] = useState(false);
   const item =
     state.history.length === 0 ? undefined : state.history[state.historyCursor];
   const word = state.words.find((w) => w.german === item?.question.word);
@@ -63,6 +64,12 @@ export default function Session(props: InitialStateArgs) {
   useKeyEventListener(state, dispatch, handleAdd);
   useSwipeNavigation(dispatch);
   useLogSync(state);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setMounted(true);
+    }
+  }, []);
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
@@ -133,17 +140,18 @@ export default function Session(props: InitialStateArgs) {
           <Modal state={state} dispatch={dispatch} />
         </Suspense>
       )}
-      {state.settings.debug && (
-        <Suspense fallback={null}>
-          <Debugger
-            words={state.words}
-            weights={state.weights}
-            maxCount={20}
-            progress={state.progress}
-            currentQuestion={state.history[0]?.question}
-          />
-        </Suspense>
-      )}
+      {state.settings.debug &&
+        isMounted /* NOTE: rendering Suspense on server side doesn't work */ && (
+          <Suspense fallback={null}>
+            <Debugger
+              words={state.words}
+              weights={state.weights}
+              maxCount={20}
+              progress={state.progress}
+              currentQuestion={state.history[0]?.question}
+            />
+          </Suspense>
+        )}
     </div>
   );
 }
