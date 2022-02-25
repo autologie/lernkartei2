@@ -88,14 +88,18 @@ function getWordWeight(
         : hardMastered
         ? 0.3
         : 0.5;
-      const timePassedFactor =
-        (hardMastered || wordLastTick === 0 ? 1 : currentTick - wordLastTick) *
-        (hardMastered || definitionLastTick === 0
+      const wordTimePassedFactor =
+        hardMastered || wordLastTick === 0 ? 1 : currentTick - wordLastTick;
+      const definitionTimePassedFactor =
+        hardMastered || definitionLastTick === 0
           ? 1
-          : currentTick - wordLastTick) *
-        (hardMastered || typeLastTick === 0 ? 1 : currentTick - wordLastTick);
+          : currentTick - definitionLastTick;
+      const typeTimePassedFactor =
+        hardMastered || typeLastTick === 0 ? 1 : currentTick - typeLastTick;
       const value =
-        timePassedFactor *
+        wordTimePassedFactor *
+        definitionTimePassedFactor *
+        typeTimePassedFactor *
         (progressForType?.certainty === 3 ? 1 : totalWordCount) *
         hardnessFactor *
         definitionIndexFactor;

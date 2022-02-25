@@ -54,10 +54,9 @@ export function addResult(
 }
 
 export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
-  const sorted = [...logs].sort((a, b) => a.tick - b.tick);
-
-  return {
-    ...sorted.reduce(
+  return [...logs]
+    .sort((a, b) => a.tick - b.tick)
+    .reduce(
       (passed, log) =>
         addResult(
           passed,
@@ -70,9 +69,7 @@ export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
         tick: 0,
         table: {},
       }
-    ),
-    tick: (sorted[sorted.length - 1]?.tick ?? 0) + 1,
-  };
+    );
 }
 
 export function isEasyMastered(
