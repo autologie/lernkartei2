@@ -1,6 +1,6 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import dynamic from "next/dynamic";
-import { useCallback, useReducer } from "react";
+import { Suspense, useCallback, useReducer } from "react";
 import AddButton from "../components/AddButton";
 import Button from "../components/Button";
 import NavButton from "../components/NavButton";
@@ -29,8 +29,12 @@ import {
 import { createQuestion } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
 
-const Modal = dynamic(() => import("../components/Modal"));
-const Debugger = dynamic(() => import("../components/Debugger"));
+const Modal = dynamic(() => import("../components/Modal"), {
+  suspense: true,
+});
+const Debugger = dynamic(() => import("../components/Debugger"), {
+  suspense: true,
+});
 
 export default function Session(props: InitialStateArgs) {
   const [state, dispatch] = useReducer(applyAction, props, getInitialState);
@@ -124,15 +128,21 @@ export default function Session(props: InitialStateArgs) {
         <SearchButton onClick={handleSearch} />
         <AddButton onClick={handleAdd} />
       </div>
-      <Modal state={state} dispatch={dispatch} />
+      {state.modal !== undefined && (
+        <Suspense fallback={null}>
+          <Modal state={state} dispatch={dispatch} />
+        </Suspense>
+      )}
       {state.settings.debug && (
-        <Debugger
-          words={state.words}
-          weights={state.weights}
-          maxCount={20}
-          progress={state.progress}
-          currentQuestion={state.history[0]?.question}
-        />
+        <Suspense fallback={null}>
+          <Debugger
+            words={state.words}
+            weights={state.weights}
+            maxCount={20}
+            progress={state.progress}
+            currentQuestion={state.history[0]?.question}
+          />
+        </Suspense>
       )}
     </div>
   );

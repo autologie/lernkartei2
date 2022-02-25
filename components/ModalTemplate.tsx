@@ -1,14 +1,20 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import CloseButton from "./CloseButton";
 
-export function ModalTemplate({
-  children,
-  onClose,
-}: {
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  const contentRef = useRef<HTMLDivElement>(null);
+const ModalTemplate = React.forwardRef<
+  HTMLDivElement,
+  {
+    children: ReactNode;
+    onClose: () => void;
+  }
+>(({ children, onClose }, ref) => {
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const [animState, setAnimState] = useState(false);
 
   useEffect(() => {
@@ -18,6 +24,8 @@ export function ModalTemplate({
 
     window.requestAnimationFrame(() => setAnimState(true));
   }, []);
+
+  useImperativeHandle(ref, () => contentRef.current!);
 
   return (
     <div
@@ -48,4 +56,8 @@ export function ModalTemplate({
       </div>
     </div>
   );
-}
+});
+
+ModalTemplate.displayName = "ModalTemplate";
+
+export default ModalTemplate;

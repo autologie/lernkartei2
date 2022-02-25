@@ -1,11 +1,12 @@
-import { Dispatch, useCallback, useEffect } from "react";
+import { Dispatch, useCallback, useEffect, useState } from "react";
+import Confetti from "react-confetti";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
 import { Action, State } from "../models/State";
 import { Word as WordModel } from "../models/Word";
 import Button from "./Button";
 import Explanation from "./Explanation";
-import { ModalTemplate } from "./ModalTemplate";
+import ModalTemplate from "./ModalTemplate";
 import QrCode from "./QrCode";
 import { Search } from "./Search";
 import Word from "./Word";
@@ -18,6 +19,7 @@ export default function Modal({
   dispatch: Dispatch<Action>;
 }) {
   const modal = state.modal;
+  const [size, setSize] = useState<{ width: number; height: number }>();
   const handleRefresh = useRefreshWord(
     dispatch,
     modal?.type === "word" ? modal.word : undefined
@@ -34,6 +36,18 @@ export default function Modal({
     (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
     [dispatch]
   );
+  const handleRef = useCallback(
+    (e: HTMLDivElement) =>
+      setSize((v) =>
+        v === undefined
+          ? {
+              width: e?.offsetWidth ?? 0,
+              height: e?.offsetHeight ?? 0,
+            }
+          : v
+      ),
+    []
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -49,7 +63,7 @@ export default function Modal({
   }
 
   return (
-    <ModalTemplate onClose={handleCloseModal}>
+    <ModalTemplate ref={handleRef} onClose={handleCloseModal}>
       {modal.type === "word" && (
         <>
           {modal.message !== undefined && (
@@ -116,15 +130,20 @@ export default function Modal({
       )}
       {modal.type === "mastered" && (
         <>
+          {size !== undefined && <Confetti {...size} />}
           <h1 className="text-2xl font-semibold text-center">
             Congratulations!
           </h1>
           <p className="mt-2 mb-4 text-center">You have mastered a new word.</p>
-          <Word
-            word={modal.word}
-            highlightedIndex={modal.definitionIndex}
-            onConfigure={handleConfigure}
-          />
+
+          <div className="bg-blue-100 rounded-lg p-4">
+            <h3 className="mb-3 text-xl font-semibold">
+              {modal.word.german}{" "}
+              <i className="text-base">({modal.word.partOfSpeech})</i>
+            </h3>
+            <p>{modal.word.definitions[modal.definitionIndex].definition}</p>
+          </div>
+
           <Button
             className="mx-auto mt-4"
             color="blue"
