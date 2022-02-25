@@ -88,7 +88,7 @@ export default function Session(props: InitialStateArgs) {
             className="text-lg text-gray-500 font-light hover:underline"
             onClick={() => dispatch({ type: "show-qr-code" })}
           >
-            #{state.progress.tick - state.historyCursor}
+            #{1 + state.progress.count - state.historyCursor}
           </button>
           <Question
             key={`${state.history.length}-${state.historyCursor}`}

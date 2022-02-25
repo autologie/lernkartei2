@@ -132,7 +132,7 @@ function getWeights(words: Word[], progress: LearningProgress): Weights {
   return words.reduce<Weights>(
     (passed, word) => {
       const weight = getWordWeight(
-        progress.tick,
+        progress.count,
         words.length,
         word,
         progress.table[word.german]

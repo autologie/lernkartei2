@@ -18,7 +18,6 @@ type Word {
 
 type LearningLog {
   sessionId: String!
-  tick: Int!
   word: String!
   definitionIndex: Int!
   questionType: String!

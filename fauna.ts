@@ -152,7 +152,6 @@ export async function listLearningLogs(
           _id: string;
           _ts: number;
           sessionId: string;
-          tick: number;
           word: string;
           definitionIndex: number;
           questionType: Question["type"];
@@ -168,7 +167,6 @@ export async function listLearningLogs(
            _id,
            _ts,
            sessionId,
-           tick,
            word,
            definitionIndex,
            questionType,

@@ -1,6 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-import Image from "next/image";
-import { useState } from "react";
 import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
 import ExampleText from "./ExampleText";

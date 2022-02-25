@@ -10,13 +10,12 @@ export default function useLogSync(state: State) {
       ? undefined
       : {
           sessionId: state.sessionId,
-          tick: state.progress.tick - 1,
           word: h.question.word,
           definitionIndex: h.question.definitionIndex,
           questionType: h.question.type,
           miss: h.missResponses.length > 0,
         };
-  }, [state.done, state.history, state.progress.tick, state.sessionId]);
+  }, [state.done, state.history, state.sessionId]);
 
   useEffect(() => {
     if (log === undefined) {

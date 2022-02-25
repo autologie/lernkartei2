@@ -14,7 +14,7 @@ export interface LearningProgressEntry {
 }
 
 export interface LearningProgress {
-  tick: number;
+  count: number;
   table: QuestionTable<LearningProgressEntry>;
 }
 
@@ -27,11 +27,10 @@ export function addResult(
 ): LearningProgress {
   const entry = progress.table[word] ?? {};
   const subEntry = entry[definitionIndex]?.[questionType];
-  const tick = progress.tick;
 
   return {
     ...progress,
-    tick: tick + 1,
+    count: progress.count + 1,
     table: {
       ...progress.table,
       [word]: {
@@ -40,7 +39,7 @@ export function addResult(
           ...entry[definitionIndex],
           [questionType]: {
             miss: (subEntry?.miss ?? false) || miss,
-            lastEncounteredTick: tick,
+            lastEncounteredTick: progress.count,
             certainty: miss
               ? 0
               : subEntry?.miss ?? false
@@ -55,7 +54,7 @@ export function addResult(
 
 export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
   return [...logs]
-    .sort((a, b) => a.tick - b.tick)
+    .sort((a, b) => a._ts - b._ts)
     .reduce(
       (passed, log) =>
         addResult(
@@ -66,7 +65,7 @@ export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
           log.miss
         ),
       {
-        tick: 0,
+        count: 0,
         table: {},
       }
     );
