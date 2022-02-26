@@ -20,6 +20,8 @@ export default function Modal({
 }) {
   const modal = state.modal;
   const [size, setSize] = useState<{ width: number; height: number }>();
+  const [isAnimationDone, setAnimationDone] = useState(false);
+  const handleAnimationEnd = useCallback(() => setAnimationDone(true), []);
   const handleRefresh = useRefreshWord(
     dispatch,
     modal?.type === "word" ? modal.word : undefined
@@ -63,7 +65,11 @@ export default function Modal({
   }
 
   return (
-    <ModalTemplate ref={handleRef} onClose={handleCloseModal}>
+    <ModalTemplate
+      ref={handleRef}
+      onClose={handleCloseModal}
+      onAnimationEnd={handleAnimationEnd}
+    >
       {modal.type === "word" && (
         <>
           {modal.message !== undefined && (
@@ -130,7 +136,7 @@ export default function Modal({
       )}
       {modal.type === "mastered" && (
         <>
-          {size !== undefined && <Confetti {...size} />}
+          {size !== undefined && isAnimationDone && <Confetti {...size} />}
           <h1 className="text-2xl font-semibold text-center">
             Congratulations!
           </h1>

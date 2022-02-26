@@ -12,8 +12,9 @@ const ModalTemplate = React.forwardRef<
   {
     children: ReactNode;
     onClose: () => void;
+    onAnimationEnd: () => void;
   }
->(({ children, onClose }, ref) => {
+>(({ children, onClose, onAnimationEnd }, ref) => {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [animState, setAnimState] = useState(false);
 
@@ -46,6 +47,7 @@ const ModalTemplate = React.forwardRef<
         className={`relative duration-300 ${
           animState ? "opacity-100 max-h-3/4" : "opacity-0 max-h-0"
         } md:max-h-unset w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible`}
+        onAnimationEnd={onAnimationEnd}
       >
         {children}
 
