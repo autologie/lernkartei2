@@ -1,5 +1,6 @@
 import { Word } from "./Word";
 import { getRandomIndex, shuffle } from "./Array";
+import { Random } from "./Random";
 
 export interface FillBlank {
   type: "fill-blank";
@@ -67,8 +68,8 @@ export const questionTypes: Question["type"][] = [
   "photo",
 ];
 
-export function shuffleChoices(question: Question): Question {
-  const choices = shuffle(question.choices as any) as any; // TODO
+export function shuffleChoices(question: Question, random: Random): Question {
+  const choices = shuffle(question.choices as any, random) as any; // TODO
 
   return {
     ...question,
@@ -80,147 +81,180 @@ export function shuffleChoices(question: Question): Question {
 export function createDefineQuestion(
   word: Word,
   definitionIndex: number,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): Question {
-  return shuffleChoices({
-    type: "define",
-    word: word.german,
-    definitionIndex,
-    choices: [
-      {
-        word: word.german,
-        definitionIndex,
-        definition: word.definitions[definitionIndex].definition,
-      },
-      ...shuffle(
-        words.flatMap((w) =>
-          w === word || w.partOfSpeech !== word.partOfSpeech
-            ? []
-            : Array.from({ length: w.definitions.length }).map(
-                (_, definitionIndex) => ({
-                  word: w.german,
-                  definitionIndex,
-                  definition: w.definitions[definitionIndex].definition,
-                })
-              )
-        )
-      ).slice(0, 4),
-    ],
-    answerIndex: 0,
-  });
+  return shuffleChoices(
+    {
+      type: "define",
+      word: word.german,
+      definitionIndex,
+      choices: [
+        {
+          word: word.german,
+          definitionIndex,
+          definition: word.definitions[definitionIndex].definition,
+        },
+        ...shuffle(
+          words.flatMap((w) =>
+            w === word || w.partOfSpeech !== word.partOfSpeech
+              ? []
+              : Array.from({ length: w.definitions.length }).map(
+                  (_, definitionIndex) => ({
+                    word: w.german,
+                    definitionIndex,
+                    definition: w.definitions[definitionIndex].definition,
+                  })
+                )
+          ),
+          random
+        ).slice(0, 4),
+      ],
+      answerIndex: 0,
+    },
+    random
+  );
 }
 
 export function createFillBlankQuestion(
   word: Word,
   definitionIndex: number,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): Question {
   const exampleIndex = getRandomIndex(
-    word.definitions[definitionIndex].examples
+    word.definitions[definitionIndex].examples,
+    random
   );
 
-  return shuffleChoices({
-    type: "fill-blank",
-    word: word.german,
-    definitionIndex,
-    exampleIndex,
-    choices: [
-      word,
-      ...shuffle(
-        words.filter((w) => w !== word && w.partOfSpeech === word.partOfSpeech)
-      ).slice(0, 4),
-    ].map((w) => w.german),
-    answerIndex: 0,
-  });
+  return shuffleChoices(
+    {
+      type: "fill-blank",
+      word: word.german,
+      definitionIndex,
+      exampleIndex,
+      choices: [
+        word,
+        ...shuffle(
+          words.filter(
+            (w) => w !== word && w.partOfSpeech === word.partOfSpeech
+          ),
+          random
+        ).slice(0, 4),
+      ].map((w) => w.german),
+      answerIndex: 0,
+    },
+    random
+  );
 }
 
 export function createTranslateFromQuestion(
   word: Word,
   definitionIndex: number,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): Question {
   const englishIndex = getRandomIndex(
-    word.definitions[definitionIndex].english
+    word.definitions[definitionIndex].english,
+    random
   );
 
-  return shuffleChoices({
-    type: "translate-from",
-    word: word.german,
-    definitionIndex,
-    englishIndex,
-    choices: [
-      word,
-      ...shuffle(
-        words.filter((w) => w !== word && w.partOfSpeech === word.partOfSpeech)
-      ).slice(0, 4),
-    ].map((w) => w.german),
-    answerIndex: 0,
-  });
+  return shuffleChoices(
+    {
+      type: "translate-from",
+      word: word.german,
+      definitionIndex,
+      englishIndex,
+      choices: [
+        word,
+        ...shuffle(
+          words.filter(
+            (w) => w !== word && w.partOfSpeech === word.partOfSpeech
+          ),
+          random
+        ).slice(0, 4),
+      ].map((w) => w.german),
+      answerIndex: 0,
+    },
+    random
+  );
 }
 
 export function createTranslateToQuestion(
   word: Word,
   definitionIndex: number,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): Question {
   const englishIndex = getRandomIndex(
-    word.definitions[definitionIndex].english
+    word.definitions[definitionIndex].english,
+    random
   );
 
-  return shuffleChoices({
-    type: "translate-to",
-    word: word.german,
-    definitionIndex,
-    choices: [
-      {
-        word: word.german,
-        definitionIndex,
-        englishIndex,
-        english: word.definitions[definitionIndex].english[englishIndex],
-      },
-      ...shuffle(
-        words.flatMap((w) =>
-          w === word || w.partOfSpeech !== word.partOfSpeech
-            ? []
-            : w.definitions.flatMap((d, definitionIndex) =>
-                d.english.map((english, englishIndex) => ({
-                  word: w.german,
-                  definitionIndex,
-                  englishIndex,
-                  english,
-                }))
-              )
-        )
-      ).slice(0, 4),
-    ],
-    answerIndex: 0,
-  });
+  return shuffleChoices(
+    {
+      type: "translate-to",
+      word: word.german,
+      definitionIndex,
+      choices: [
+        {
+          word: word.german,
+          definitionIndex,
+          englishIndex,
+          english: word.definitions[definitionIndex].english[englishIndex],
+        },
+        ...shuffle(
+          words.flatMap((w) =>
+            w === word || w.partOfSpeech !== word.partOfSpeech
+              ? []
+              : w.definitions.flatMap((d, definitionIndex) =>
+                  d.english.map((english, englishIndex) => ({
+                    word: w.german,
+                    definitionIndex,
+                    englishIndex,
+                    english,
+                  }))
+                )
+          ),
+          random
+        ).slice(0, 4),
+      ],
+      answerIndex: 0,
+    },
+    random
+  );
 }
 
 export function createPhotoQuestion(
   word: Word,
   definitionIndex: number,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): Question {
   const photoIndex = getRandomIndex(
-    word.definitions[definitionIndex].photos ?? []
+    word.definitions[definitionIndex].photos ?? [],
+    random
   );
 
-  return shuffleChoices({
-    type: "photo",
-    word: word.german,
-    definitionIndex,
-    photoIndex,
-    choices: [
-      word.german,
-      ...shuffle(
-        words.flatMap((w) =>
-          w === word || w.partOfSpeech !== word.partOfSpeech ? [] : [w.german]
-        )
-      ).slice(0, 4),
-    ],
-    answerIndex: 0,
-  });
+  return shuffleChoices(
+    {
+      type: "photo",
+      word: word.german,
+      definitionIndex,
+      photoIndex,
+      choices: [
+        word.german,
+        ...shuffle(
+          words.flatMap((w) =>
+            w === word || w.partOfSpeech !== word.partOfSpeech ? [] : [w.german]
+          ),
+          random
+        ).slice(0, 4),
+      ],
+      answerIndex: 0,
+    },
+    random
+  );
 }
 
 export function isAvailable(

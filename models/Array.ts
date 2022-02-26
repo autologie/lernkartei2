@@ -1,11 +1,10 @@
-export function shuffle<T>(arr: T[]): T[] {
-  let res = [...arr];
-  let currentIndex = res.length,
-    randomIndex;
+import { Random } from "./Random";
 
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
+export function shuffle<T>(arr: T[], random: Random): T[] {
+  const res = [...arr];
+
+  for (let currentIndex = res.length - 1; currentIndex >= 0; currentIndex--) {
+    const randomIndex = Math.floor(random() * currentIndex);
 
     [res[currentIndex], res[randomIndex]] = [
       res[randomIndex],
@@ -16,10 +15,10 @@ export function shuffle<T>(arr: T[]): T[] {
   return res;
 }
 
-export function getRandomIndex(arr: unknown[]): number {
+export function getRandomIndex(arr: unknown[], random: Random): number {
   if (arr.length === 0) {
     throw Error();
   }
 
-  return Math.floor(Math.random() * arr.length);
+  return Math.floor(random() * arr.length);
 }

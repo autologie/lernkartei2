@@ -1,3 +1,4 @@
+import { createRandomGenerator, Random } from "./Random";
 import { HistoryItem } from "./HistoryItem";
 import { addResult, isMastered, LearningProgress } from "./LearningProgress";
 import { Question } from "./Question";
@@ -15,6 +16,7 @@ export interface State {
   prevHistoryCursor?: number;
   settings: Settings;
   sessionId: string;
+  randomSeed: number;
   modal?:
     | { type: "search"; word: string; detailExpand?: string; adding: boolean }
     | { type: "qr-code" }
@@ -41,8 +43,12 @@ export type Action =
   | { type: "remove"; payload: string }
   | { type: "configure-word"; payload: Word };
 
-function setNewQuestion(state: State): State {
-  const [nextQuestion, weights] = createQuestion(state.progress, state.words);
+function setNewQuestion(state: State, random: Random): State {
+  const [nextQuestion, weights] = createQuestion(
+    state.progress,
+    state.words,
+    random
+  );
 
   if (nextQuestion === undefined) {
     return state;
@@ -63,7 +69,11 @@ function setNewQuestion(state: State): State {
   };
 }
 
-export function applyAction(state: State, action: Action): State {
+function applyActionWithRandom(
+  state: State,
+  action: Action,
+  random: Random
+): State {
   switch (action.type) {
     case "respond": {
       if (state.done || state.historyCursor > 0) {
@@ -144,7 +154,7 @@ export function applyAction(state: State, action: Action): State {
           return state;
         }
 
-        return setNewQuestion(state);
+        return setNewQuestion(state, random);
       }
 
       return {
@@ -153,7 +163,7 @@ export function applyAction(state: State, action: Action): State {
         prevHistoryCursor: state.historyCursor,
       };
     case "skip":
-      return setNewQuestion(state);
+      return setNewQuestion(state, random);
     case "add":
       return state.modal?.type !== "search"
         ? state
@@ -240,9 +250,7 @@ export function applyAction(state: State, action: Action): State {
 export interface InitialStateArgs {
   settings: Settings;
   words: Word[];
-  weights: Weights;
   progress: LearningProgress;
-  question: Question | null;
   sessionId: string;
 }
 
@@ -250,14 +258,15 @@ export function getInitialState({
   sessionId,
   settings,
   words,
-  weights,
   progress,
-  question,
 }: InitialStateArgs): State {
+  const random = createRandomGenerator(progress.count);
+  const [question, weights] = createQuestion(progress, words, random);
+
   return {
     done: false,
     history:
-      question === null
+      question === undefined
         ? []
         : [{ missResponses: [], question, hintUsed: false }],
     historyCursor: 0,
@@ -266,6 +275,7 @@ export function getInitialState({
     weights,
     words,
     sessionId,
+    randomSeed: random(),
   };
 }
 
@@ -300,4 +310,11 @@ export function isNewerQuestion(state: State): boolean {
     (state.prevHistoryCursor !== undefined &&
       state.prevHistoryCursor > state.historyCursor)
   );
+}
+
+export function applyAction(state: State, action: Action): State {
+  const random = createRandomGenerator(state.randomSeed);
+  const newState = applyActionWithRandom(state, action, random);
+
+  return { ...newState, randomSeed: random() };
 }

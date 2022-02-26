@@ -1,3 +1,4 @@
+import { Random } from "./Random";
 import {
   isEasyMastered,
   isHardMastered,
@@ -139,11 +140,12 @@ function getWeights(words: Word[], progress: LearningProgress): Weights {
 
 function getQuestionParams(
   words: Word[],
-  progress: LearningProgress
+  progress: LearningProgress,
+  random: Random
 ): [Word, number, Question["type"], Weights] {
   const empty = { value: 0, values: {} };
   const weights = getWeights(words, progress);
-  let cursor = weights.value * Math.random();
+  let cursor = weights.value * random();
 
   for (const word of words) {
     const wordWeight = weights.values[word.german] ?? empty;
@@ -179,26 +181,40 @@ function getQuestionParams(
 
 export function createQuestion(
   progress: LearningProgress,
-  words: Word[]
+  words: Word[],
+  random: Random
 ): [Question | undefined, Weights] {
   const [word, definitionIndex, questionType, weights] = getQuestionParams(
     words,
-    progress
+    progress,
+    random
   );
 
   switch (questionType) {
     case "define":
-      return [createDefineQuestion(word, definitionIndex, words), weights];
+      return [
+        createDefineQuestion(word, definitionIndex, words, random),
+        weights,
+      ];
     case "fill-blank":
-      return [createFillBlankQuestion(word, definitionIndex, words), weights];
+      return [
+        createFillBlankQuestion(word, definitionIndex, words, random),
+        weights,
+      ];
     case "translate-from":
       return [
-        createTranslateFromQuestion(word, definitionIndex, words),
+        createTranslateFromQuestion(word, definitionIndex, words, random),
         weights,
       ];
     case "translate-to":
-      return [createTranslateToQuestion(word, definitionIndex, words), weights];
+      return [
+        createTranslateToQuestion(word, definitionIndex, words, random),
+        weights,
+      ];
     case "photo":
-      return [createPhotoQuestion(word, definitionIndex, words), weights];
+      return [
+        createPhotoQuestion(word, definitionIndex, words, random),
+        weights,
+      ];
   }
 }

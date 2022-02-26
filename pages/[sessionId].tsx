@@ -187,15 +187,11 @@ export async function getServerSideProps(
   );
   ctx.res.setHeader("Set-Cookie", `sessionId=${sessionId}`);
 
-  const [question, weights] = createQuestion(progress, words);
-
   return {
     props: {
       settings,
       words,
-      weights,
       progress,
-      question: question ?? null,
       sessionId,
     },
   };
