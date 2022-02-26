@@ -87,12 +87,31 @@ export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
     );
 }
 
+function isMasteredTypes(
+  questionTypes: Question["type"][],
+  progress: DefinitionLearningProgress
+): boolean {
+  let hasMaxCertainty = false;
+
+  for (const q of questionTypes) {
+    const certainty = progress.table?.[q]?.certainty;
+
+    if (certainty !== undefined && certainty < 3) {
+      return false;
+    }
+
+    hasMaxCertainty = hasMaxCertainty || certainty === 3;
+  }
+
+  return hasMaxCertainty;
+}
+
 export function isEasyMastered(progress: DefinitionLearningProgress): boolean {
-  return EASY_QUESTIONS.some((q) => progress.table?.[q]?.certainty === 3);
+  return isMasteredTypes(EASY_QUESTIONS, progress);
 }
 
 export function isHardMastered(progress: DefinitionLearningProgress): boolean {
-  return HARD_QUESTIONS.some((q) => progress.table?.[q]?.certainty === 3);
+  return isMasteredTypes(HARD_QUESTIONS, progress);
 }
 
 export function isMastered(progress: DefinitionLearningProgress): boolean {

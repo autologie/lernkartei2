@@ -222,3 +222,18 @@ export function createPhotoQuestion(
     answerIndex: 0,
   });
 }
+
+export function isAvailable(
+  word: Word,
+  t: Question["type"],
+  i: number
+): boolean {
+  const def = word.definitions[i];
+
+  return !(
+    (t === "photo" && (def.photos ?? []).length === 0) ||
+    (t === "fill-blank" && def.examples.length === 0) ||
+    ((t === "translate-from" || t === "translate-to") &&
+      def.english.length === 0)
+  );
+}

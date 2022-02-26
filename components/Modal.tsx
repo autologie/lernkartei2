@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useEffect, useState } from "react";
+import { Dispatch, useCallback, useEffect, useState, useRef } from "react";
 import Confetti from "react-confetti";
 import useRefreshWord from "../hooks/useRefreshWord";
 import useRemoveWord from "../hooks/useRemoveWord";
@@ -20,8 +20,15 @@ export default function Modal({
 }) {
   const modal = state.modal;
   const [size, setSize] = useState<{ width: number; height: number }>();
-  const [isAnimationDone, setAnimationDone] = useState(false);
-  const handleAnimationEnd = useCallback(() => setAnimationDone(true), []);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const handleAnimationEnd = useCallback(
+    () =>
+      setSize({
+        width: ref.current?.offsetWidth ?? 0,
+        height: ref.current?.offsetHeight ?? 0,
+      }),
+    []
+  );
   const handleRefresh = useRefreshWord(
     dispatch,
     modal?.type === "word" ? modal.word : undefined
@@ -38,18 +45,6 @@ export default function Modal({
     (word: WordModel) => dispatch({ type: "configure-word", payload: word }),
     [dispatch]
   );
-  const handleRef = useCallback(
-    (e: HTMLDivElement) =>
-      setSize((v) =>
-        v === undefined
-          ? {
-              width: e?.offsetWidth ?? 0,
-              height: e?.offsetHeight ?? 0,
-            }
-          : v
-      ),
-    []
-  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -58,6 +53,10 @@ export default function Modal({
 
     window.document.body.style.overflow =
       modal === undefined ? "auto" : "hidden";
+
+    return () => {
+      window.document.body.style.overflow = "auto";
+    };
   }, [modal]);
 
   if (modal === undefined) {
@@ -66,7 +65,7 @@ export default function Modal({
 
   return (
     <ModalTemplate
-      ref={handleRef}
+      ref={(e) => (ref.current = e)}
       onClose={handleCloseModal}
       onAnimationEnd={handleAnimationEnd}
     >
@@ -136,7 +135,7 @@ export default function Modal({
       )}
       {modal.type === "mastered" && (
         <>
-          {size !== undefined && isAnimationDone && <Confetti {...size} />}
+          {size !== undefined && <Confetti {...size} />}
           <h1 className="text-2xl font-semibold text-center">
             Congratulations!
           </h1>

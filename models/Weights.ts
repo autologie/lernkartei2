@@ -11,6 +11,7 @@ import {
   createTranslateFromQuestion,
   createTranslateToQuestion,
   HARD_QUESTIONS,
+  isAvailable,
   Question,
   questionTypes,
 } from "./Question";
@@ -48,20 +49,13 @@ function getWordWeight(
       table: {},
       lastTick: 0,
     };
-
-    const def = word.definitions[i];
     const easyMastered = isEasyMastered(progressForDefinition);
     const hardMastered = isHardMastered(progressForDefinition);
 
     ret.values[i] = { value: 0, values: {} };
 
     for (const t of questionTypes) {
-      if (
-        (t === "photo" && (def.photos ?? []).length === 0) ||
-        (t === "fill-blank" && def.examples.length === 0) ||
-        ((t === "translate-from" || t === "translate-to") &&
-          def.english.length === 0)
-      ) {
+      if (!isAvailable(word, t, i)) {
         ret.values[i]!.values[t] = 0;
         continue;
       }
@@ -109,9 +103,9 @@ function getWordWeight(
         wordTimePassedFactor *
         definitionTimePassedFactor *
         typeTimePassedFactor *
-        (progressForType?.certainty === 3
+        (progressForType === undefined || progressForType.certainty === 3
           ? 1
-          : totalWordCount / Math.pow(2, progressForType?.certainty ?? 0)) *
+          : totalWordCount / Math.pow(2, progressForType.certainty ?? 0) / 2) *
         hardnessFactor *
         definitionIndexFactor;
 
