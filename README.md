@@ -4,14 +4,14 @@
 
 ```mermaid
 
-flowchart LR
+flowchart TB
   subgraph Fauna["Fauna DB"]
   LearningLog
   Dictionary
   end
 
   LearningLog --->|aggregation| LearningProgress ---> Weights
-  w["Wiktionary (external source)"] --->|scraping| Dictionary
+  Wiktionary --->|scraping| Dictionary
   Dictionary ---> Weights
   r["Random number"] ---> Question
   Weights ---> Question
