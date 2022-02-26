@@ -5,7 +5,6 @@ import { Photo, WordData } from "./models/Word";
 function findIndices(text: string | null): number[] {
   return (text ?? "").split(/[\[,\]]/).flatMap((segment) => {
     const n = Number.parseInt(segment.trim(), 10);
-    console.log("---", segment, n);
 
     return Number.isNaN(n) ? [] : [n];
   });
@@ -43,7 +42,6 @@ function extractExamples(dom: JSDOM): Map<number, string[]> {
       ?.querySelectorAll("dd") ?? []),
   ].reduce((passed, e) => {
     const indices = findIndices(e.textContent);
-    console.log(indices, e.textContent);
 
     indices.forEach((index) => {
       passed.set(

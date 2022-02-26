@@ -59,16 +59,6 @@ export const EASY_QUESTIONS: Question["type"][] = [
   "photo",
 ];
 
-export interface QuestionTable<T> {
-  [word: string]:
-    | {
-        [definitionIndex: number]:
-          | { [key in Question["type"]]?: T }
-          | undefined;
-      }
-    | undefined;
-}
-
 export const questionTypes: Question["type"][] = [
   "define",
   "fill-blank",

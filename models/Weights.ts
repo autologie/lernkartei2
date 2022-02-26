@@ -2,6 +2,7 @@ import {
   isEasyMastered,
   isHardMastered,
   LearningProgress,
+  WordLearningProgress,
 } from "./LearningProgress";
 import {
   createDefineQuestion,
@@ -15,12 +16,12 @@ import {
 } from "./Question";
 import { Word } from "./Word";
 
-interface DefinitionWeights {
+export interface DefinitionWeights {
   value: number;
   values: { [key in Question["type"]]?: number };
 }
 
-interface WordWeights {
+export interface WordWeights {
   value: number;
   values: {
     [definitionIndex: number]: DefinitionWeights | undefined;
@@ -38,24 +39,15 @@ function getWordWeight(
   currentTick: number,
   totalWordCount: number,
   word: Word,
-  progress: LearningProgress["table"][string] = {}
+  progress: WordLearningProgress
 ): WordWeights {
   const ret: WordWeights = { value: 0, values: {} };
-  const wordLastTick = Math.max(
-    0,
-    ...Object.values(progress).flatMap((p) =>
-      Object.values(p ?? {}).map((pp) => pp.lastEncounteredTick ?? 0)
-    )
-  );
 
   for (let i = 0; i < word.definitions.length; i++) {
-    const progressForDefinition = progress[i] ?? {};
-    const definitionLastTick = Math.max(
-      0,
-      ...Object.values(progressForDefinition).map(
-        (pp) => pp.lastEncounteredTick ?? 0
-      )
-    );
+    const progressForDefinition = progress.table[i] ?? {
+      table: {},
+      lastTick: 0,
+    };
 
     const def = word.definitions[i];
     const easyMastered = isEasyMastered(progressForDefinition);
@@ -74,8 +66,8 @@ function getWordWeight(
         continue;
       }
 
-      const progressForType = progressForDefinition[t];
-      const typeLastTick = progressForType?.lastEncounteredTick ?? 0;
+      const progressForType = progressForDefinition.table[t];
+      const typeLastTick = progressForType?.lastTick ?? 0;
       const definitionIndexFactor =
         i === 0
           ? 1
@@ -83,7 +75,7 @@ function getWordWeight(
               (a, _, ii) =>
                 a *
                 questionTypes.reduce<number>(
-                  (a, k) => a * (progress[ii]?.[k]?.certainty ?? 0),
+                  (a, k) => a * (progress.table[ii]?.table[k]?.certainty ?? 0),
                   1
                 ),
               1
@@ -104,18 +96,22 @@ function getWordWeight(
         ? 0.3
         : 0.5;
       const wordTimePassedFactor =
-        hardMastered || wordLastTick === 0 ? 1 : currentTick - wordLastTick;
-      const definitionTimePassedFactor =
-        hardMastered || definitionLastTick === 0
+        hardMastered || progress.lastTick === 0
           ? 1
-          : currentTick - definitionLastTick;
+          : currentTick - progress.lastTick;
+      const definitionTimePassedFactor =
+        hardMastered || progressForDefinition.lastTick === 0
+          ? 1
+          : currentTick - progressForDefinition.lastTick;
       const typeTimePassedFactor =
         hardMastered || typeLastTick === 0 ? 1 : currentTick - typeLastTick;
       const value =
         wordTimePassedFactor *
         definitionTimePassedFactor *
         typeTimePassedFactor *
-        (progressForType?.certainty === 3 ? 1 : totalWordCount) *
+        (progressForType?.certainty === 3
+          ? 1
+          : totalWordCount / Math.pow(2, progressForType?.certainty ?? 0)) *
         hardnessFactor *
         definitionIndexFactor;
 
@@ -135,7 +131,7 @@ function getWeights(words: Word[], progress: LearningProgress): Weights {
         progress.count,
         words.length,
         word,
-        progress.table[word.german]
+        progress.table[word.german] ?? { table: {}, lastTick: 0 }
       );
 
       passed.values[word.german] = weight;

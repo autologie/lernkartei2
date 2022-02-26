@@ -1,10 +1,10 @@
 import { Question, questionTypes } from "../models/Question";
 import { Word } from "../models/Word";
-import { Weights } from "../models/Weights";
+import { DefinitionWeights, Weights } from "../models/Weights";
 import React, { useMemo } from "react";
 import {
   LearningProgress,
-  LearningProgressEntry,
+  TypeLearningProgress,
 } from "../models/LearningProgress";
 
 export default function Debugger({
@@ -66,13 +66,9 @@ export default function Debugger({
         <tbody>
           {[...words]
             .flatMap((w) =>
-              w.definitions.map<
-                [
-                  Word,
-                  number,
-                  NonNullable<Weights["values"][string]>["values"][number]
-                ]
-              >((_, i) => [w, i, weights.values[w.german]?.values[i]])
+              w.definitions.map<[Word, number, DefinitionWeights | undefined]>(
+                (_, i) => [w, i, weights.values[w.german]?.values[i]]
+              )
             )
             .sort(
               ([, , a], [, , b]) =>
@@ -89,7 +85,7 @@ export default function Debugger({
                     <Tile
                       weight={(myWeight?.values[t] ?? 0) / maxWeight}
                       sumWeight={sumWeight}
-                      progress={progress.table[w.german]?.[i]?.[t]}
+                      progress={progress.table[w.german]?.table[i]?.table[t]}
                       bottom={j >= maxCount - 4}
                       isCurrent={
                         currentQuestion?.word === w.german &&
@@ -118,7 +114,7 @@ const Tile = React.memo(function Title_({
   sumWeight: number;
   bottom: boolean;
   isCurrent: boolean;
-  progress?: LearningProgressEntry;
+  progress?: TypeLearningProgress;
 }) {
   return (
     <div
@@ -148,9 +144,7 @@ const Tile = React.memo(function Title_({
         </div>
         <div className="whitespace-pre">
           Last encountered:{" "}
-          {progress?.lastEncounteredTick === undefined
-            ? "-"
-            : `#${progress.lastEncounteredTick}`}
+          {progress?.lastTick === undefined ? "-" : `#${progress.lastTick}`}
         </div>
       </div>
     </div>

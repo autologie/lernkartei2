@@ -90,7 +90,9 @@ export function applyAction(state: State, action: Action): State {
           item.missResponses.length > 0
         );
         const masteredWord = isMastered(
-          progress.table[item.question.word]?.[item.question.definitionIndex]
+          progress.table[item.question.word]?.table[
+            item.question.definitionIndex
+          ] ?? { table: {}, lastTick: 0 }
         )
           ? state.words.find((w) => w.german === item.question.word)
           : undefined;
