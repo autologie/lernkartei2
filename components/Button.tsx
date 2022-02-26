@@ -20,7 +20,7 @@ export default function Button({
 }) {
   return (
     <button
-      className={`${fixedWidth ? "" : "px-24"} relative ${
+      className={`${fixedWidth ? "" : "px-12 md:px-24"} relative ${
         color === "blue"
           ? "bg-blue-500 text-white"
           : "bg-gray-200 hover:bg-gray-300"

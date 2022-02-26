@@ -76,19 +76,22 @@ export function Search({
       ) : keyword === "" ? null : (
         <div className="flex flex-col gap-2 items-center">
           <p className="text-gray-500 py-8">Nothing matched</p>
-          <Button
-            color="blue"
-            className="break-all relative"
-            disabled={adding}
-            onClick={() => dispatch({ type: "add" })}
-          >
-            {adding && (
-              <AiOutlineLoading3Quarters className="align-text-bottom inline mr-2 w-5 h-5 animate-spin" />
-            )}
-            {adding ? "Adding" : "Add"} &quot;<i>{keyword}</i>&quot; to
-            dictionary{adding ? "..." : ""}
-          </Button>
         </div>
+      )}
+      {keyword === "" ||
+      matchedWords.some((w) => w.german === keyword) ? null : (
+        <Button
+          color={matchedWords.length === 0 ? "blue" : "gray"}
+          className="break-all relative truncate mx-auto max-w-full"
+          disabled={adding}
+          onClick={() => dispatch({ type: "add" })}
+        >
+          {adding && (
+            <AiOutlineLoading3Quarters className="align-text-bottom inline mr-2 w-5 h-5 animate-spin" />
+          )}
+          {adding ? "Adding" : "Add"} &quot;<i>{keyword}</i>&quot; to dictionary
+          {adding ? "..." : ""}
+        </Button>
       )}
     </div>
   );

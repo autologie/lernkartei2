@@ -18,7 +18,8 @@ export default function useAddNewWord(
 
         if (res.status === 200) {
           dispatch({ type: "added", payload: await res.json() });
-          window.alert("Added!");
+          // let rendering happen before showing alert
+          window.setTimeout(() => window.alert("Added!"), 10);
         } else {
           dispatch({ type: "add-failed" });
           window.alert(`Failed (status: ${res.status})`);
