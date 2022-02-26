@@ -1,22 +1,12 @@
 import { encode, Settings } from "../models/Settings";
 
-export default function NothingToShow({
-  settings,
-  onAdd,
-}: {
-  settings: Settings;
-  onAdd: () => void;
-}) {
+export default function NothingToShow({ settings }: { settings: Settings }) {
   return (
     <p className="text-center">
-      <button className="text-blue-500 underline" onClick={onAdd}>
-        Add a few words
-      </button>{" "}
       {settings.wordFilter === undefined ? (
-        ""
+        "Word not registered"
       ) : (
         <>
-          or{" "}
           <a
             className="text-blue-500 underline"
             href={`?${encode({
@@ -25,10 +15,10 @@ export default function NothingToShow({
             })}`}
           >
             clear filter
-          </a>
+          </a>{" "}
+          to get started!
         </>
-      )}{" "}
-      to get started!
+      )}
     </p>
   );
 }

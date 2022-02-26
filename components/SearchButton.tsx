@@ -9,13 +9,13 @@ export default function SearchButton({
 }) {
   return (
     <button
-      className={`flex items-center justify-center bg-blue-500 rounded-full w-8 h-8 md:w-12 md:h-12 text-white font-extralight ${
+      className={`flex items-center justify-center bg-blue-500 rounded-full w-12 h-12 md:w-16 md:h-16 text-white font-extralight ${
         className ?? ""
       }`}
       onClick={onClick}
     >
       <span className="sr-only">Search word</span>
-      <AiOutlineSearch className="w-5 h-5 md:w-7 md:h-7" />
+      <AiOutlineSearch className="w-6 h-6 md:w-8 md:h-8" />
     </button>
   );
 }

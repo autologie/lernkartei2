@@ -1,31 +1,32 @@
-import { Dispatch, useCallback } from "react";
+import { Dispatch, useCallback, useEffect } from "react";
 import { Action } from "../models/State";
 
 export default function useAddNewWord(
   dispatch: Dispatch<Action>,
-  disabled: boolean
+  word?: string
 ) {
-  return useCallback(async () => {
-    if (disabled) {
+  useEffect(() => {
+    if (word === undefined) {
       return;
     }
 
-    const word = window.prompt("Word to add");
-
-    if (word !== null) {
+    (async () => {
       try {
         const res = await fetch(`${window.location.origin}/api/words/${word}`, {
           method: "POST",
         });
 
         if (res.status === 200) {
-          dispatch({ type: "add", payload: await res.json() });
+          dispatch({ type: "added", payload: await res.json() });
+          window.alert("Added!");
         } else {
+          dispatch({ type: "add-failed" });
           window.alert(`Failed (status: ${res.status})`);
         }
       } catch (e) {
+        dispatch({ type: "add-failed" });
         window.alert(`Failed (${(e as any).message})`);
       }
-    }
-  }, [dispatch, disabled]);
+    })();
+  }, [dispatch, word]);
 }

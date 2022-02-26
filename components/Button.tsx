@@ -7,6 +7,7 @@ export default function Button({
   color,
   standout,
   fixedWidth,
+  disabled,
   onClick,
 }: {
   children: ReactNode;
@@ -14,6 +15,7 @@ export default function Button({
   color: "gray" | "blue";
   standout?: boolean;
   fixedWidth?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -24,7 +26,8 @@ export default function Button({
           : "bg-gray-200 hover:bg-gray-300"
       } block transition-colors rounded-xl p-2 text-base font-light ${
         className ?? ""
-      }`}
+      } ${disabled ? "opacity-50" : ""}`}
+      disabled={disabled}
       onClick={onClick}
     >
       {standout && (

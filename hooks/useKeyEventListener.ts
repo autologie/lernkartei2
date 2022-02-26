@@ -3,8 +3,7 @@ import { Action, State } from "../models/State";
 
 export default function useKeyEventListener(
   state: State,
-  dispatch: Dispatch<Action>,
-  onAddNew: () => void
+  dispatch: Dispatch<Action>
 ) {
   const choiceCount = state.history[0]?.question.choices.length;
 
@@ -44,11 +43,6 @@ export default function useKeyEventListener(
         return;
       }
 
-      if (e.key === "n") {
-        onAddNew();
-        return;
-      }
-
       if (choices.includes(e.key)) {
         dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
       }
@@ -59,5 +53,5 @@ export default function useKeyEventListener(
     return () => {
       window.removeEventListener("keydown", handleEvent);
     };
-  }, [choiceCount, dispatch, onAddNew, state.modal]);
+  }, [choiceCount, dispatch, state.modal]);
 }

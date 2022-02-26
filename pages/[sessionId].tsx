@@ -1,7 +1,6 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import dynamic from "next/dynamic";
 import { Suspense, useCallback, useEffect, useReducer, useState } from "react";
-import AddButton from "../components/AddButton";
 import Button from "../components/Button";
 import NavButton from "../components/NavButton";
 import NothingToShow from "../components/NothingToShow";
@@ -54,16 +53,21 @@ export default function Session(props: InitialStateArgs) {
     () => dispatch({ type: "show-hint" }),
     []
   );
-  const handleAdd = useAddNewWord(dispatch, state.modal !== undefined);
   const handleSearch = useCallback(
     () => dispatch({ type: "search", payload: "" }),
     []
   );
 
   useNextAutomatically(500, state, dispatch);
-  useKeyEventListener(state, dispatch, handleAdd);
+  useKeyEventListener(state, dispatch);
   useSwipeNavigation(dispatch);
   useLogSync(state);
+  useAddNewWord(
+    dispatch,
+    state.modal?.type === "search" && state.modal.adding
+      ? state.modal.word
+      : undefined
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -74,7 +78,7 @@ export default function Session(props: InitialStateArgs) {
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
       {state.words.length === 0 ? (
-        <NothingToShow settings={state.settings} onAdd={handleAdd} />
+        <NothingToShow settings={state.settings} />
       ) : item === undefined ? (
         <p className="text-center">Loading...</p>
       ) : word === undefined ? (
@@ -133,7 +137,6 @@ export default function Session(props: InitialStateArgs) {
       )}
       <div className="fixed z-10 right-0 bottom-0 p-3 md:p-4 flex flex-col items-center gap-2">
         <SearchButton onClick={handleSearch} />
-        <AddButton onClick={handleAdd} />
       </div>
       {state.modal !== undefined && (
         <Suspense fallback={null}>

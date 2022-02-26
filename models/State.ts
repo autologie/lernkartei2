@@ -16,7 +16,7 @@ export interface State {
   settings: Settings;
   sessionId: string;
   modal?:
-    | { type: "search"; word: string; detailExpand?: string }
+    | { type: "search"; word: string; detailExpand?: string; adding: boolean }
     | { type: "qr-code" }
     | { type: "mastered"; word: Word; definitionIndex: number }
     | { type: "word"; word: Word; message?: string; configure: boolean }
@@ -34,7 +34,9 @@ export type Action =
   | { type: "show-hint" }
   | { type: "show-qr-code" }
   | { type: "close-modal" }
-  | { type: "add"; payload: Word }
+  | { type: "add" }
+  | { type: "added"; payload: Word }
+  | { type: "add-failed" }
   | { type: "replace"; payload: Word }
   | { type: "remove"; payload: string }
   | { type: "configure-word"; payload: Word };
@@ -153,17 +155,29 @@ export function applyAction(state: State, action: Action): State {
     case "skip":
       return setNewQuestion(state);
     case "add":
-      return state.words === undefined || !test(state.settings, action.payload)
+      return state.modal?.type !== "search"
+        ? state
+        : { ...state, modal: { ...state.modal, adding: true } };
+    case "added":
+      return state.words === undefined ||
+        !test(state.settings, action.payload) ||
+        state.modal?.type !== "search"
         ? state
         : {
             ...state,
             words: state.words.concat([action.payload]),
             modal: {
-              type: "word",
-              word: action.payload,
-              message: "Word added",
-              configure: false,
+              ...state.modal,
+              adding: false,
+              detailExpand: action.payload.german,
             },
+          };
+    case "add-failed":
+      return state.words === undefined || state.modal?.type !== "search"
+        ? state
+        : {
+            ...state,
+            modal: { ...state.modal, adding: false },
           };
     case "view-word":
       return {
@@ -178,7 +192,7 @@ export function applyAction(state: State, action: Action): State {
     case "search":
       return {
         ...state,
-        modal: { type: "search", word: action.payload },
+        modal: { type: "search", word: action.payload, adding: false },
       };
     case "remove":
       return {

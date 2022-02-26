@@ -107,6 +107,7 @@ export default function Modal({
           dispatch={dispatch}
           keyword={modal.word}
           detailExpand={modal.detailExpand}
+          adding={modal.adding}
         />
       )}
       {modal.type === "qr-code" && (
