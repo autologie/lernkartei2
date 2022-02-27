@@ -39,7 +39,7 @@ export function Search({
       <input
         type="text"
         disabled={adding}
-        className="outline-none p-2 text-xl bg-gray-100 w-full rounded-lg flex-grow-0 flex-shrink-0 disabled:opacity-50"
+        className="outline-none p-2 text-xl bg-gray-100 dark:bg-gray-800 w-full rounded-lg flex-grow-0 flex-shrink-0 disabled:opacity-50 dark:placeholder:text-gray-600"
         placeholder="📕 Search dictionary"
         autoFocus={true}
         onChange={(e) => dispatch({ type: "search", payload: e.target.value })}
@@ -56,7 +56,7 @@ export function Search({
                 />
               ) : (
                 <button
-                  className="p-2 w-full transition-colors flex flex-col md:flex-row items-start gap-0 md:gap-2 bg-transparent hover:bg-gray-100 rounded-lg"
+                  className="p-2 w-full transition-colors flex flex-col md:flex-row items-start gap-0 md:gap-2 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                   type="button"
                   onClick={() =>
                     dispatch({ type: "toggle-detail", payload: w.german })

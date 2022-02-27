@@ -27,7 +27,11 @@ export default function Word({
   const [openIndex, dispatch] = useReducer(applyState, highlightedIndex);
 
   return (
-    <div className={`relative bg-blue-100 rounded-lg py-4 ${className ?? ""}`}>
+    <div
+      className={`relative bg-blue-100 dark:bg-blue-900 dark:bg-opacity-30 rounded-lg py-4 ${
+        className ?? ""
+      }`}
+    >
       <h3 className="mb-3 text-xl font-semibold px-4">
         {word.german} <i className="text-base">({word.partOfSpeech})</i>
       </h3>
@@ -38,11 +42,11 @@ export default function Word({
             className={`transition-colors px-4 flex items-start gap-2 hover:bg-white hover:py-2 hover:-my-2 ${
               openIndex === i
                 ? "hover:bg-opacity-0"
-                : "cursor-pointer hover:bg-opacity-50"
+                : "cursor-pointer hover:bg-opacity-50 dark:hover:bg-opacity-10"
             }`}
             onClick={openIndex === i ? undefined : () => dispatch(i)}
           >
-            <span className="flex-shrink-0 text-center block text-xs text-black text-opacity-70 bg-blue-200 rounded-lg py-1 w-6">
+            <span className="flex-shrink-0 text-center block text-xs text-black text-opacity-70 dark:text-white dark:text-opacity-50 bg-blue-200 dark:bg-blue-800 dark:bg-opacity-50 rounded-lg py-1 w-6">
               {"abcdefghijklmnopqrstuvwxyz"[i]}
             </span>
             <div
@@ -83,8 +87,8 @@ export default function Word({
           </li>
         ))}
       </ul>
-      <p className="px-4 mt-4 text-opacity-70 text-black text-sm text-right">
-        From <WiktionaryLink entry={word.german} />{" "}
+      <p className="px-4 mt-4 text-gray-500 text-sm text-right">
+        From <WiktionaryLink entry={word.german} /> •{" "}
         {formatDistanceToNow(new Date(word._ts / 1000), { addSuffix: true })}
         {hideEdit ? (
           ""

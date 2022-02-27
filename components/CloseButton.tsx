@@ -7,7 +7,7 @@ export default function CloseButton({
 }) {
   return (
     <button
-      className={`shadow-lg transform rotate-45 flex items-center justify-center bg-white rounded-full w-8 h-8 ${
+      className={`shadow-lg transform rotate-45 flex items-center justify-center bg-white dark:bg-gray-900 rounded-full w-8 h-8 ${
         className ?? ""
       }`}
       onClick={onClick}

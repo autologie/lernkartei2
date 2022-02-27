@@ -10,7 +10,7 @@ export default function NavButton({
   return (
     <button
       title={direction}
-      className={`w-16 h-16 text-gray-500 rounded-full transition-colors hover:bg-black hover:bg-opacity-5 flex items-center justify-center ${
+      className={`w-16 h-16 text-gray-500 rounded-full transition-colors hover:bg-black hover:bg-opacity-5 dark:hover:bg-white dark:hover:bg-opacity-5 flex items-center justify-center ${
         className ?? ""
       }`}
       onClick={onClick}

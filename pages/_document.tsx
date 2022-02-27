@@ -24,7 +24,7 @@ export default function Document() {
           href="/favicon-16x16.png"
         />
       </Head>
-      <body>
+      <body className="dark:bg-gray-900 dark:text-gray-400">
         <Main />
         <NextScript />
       </body>

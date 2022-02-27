@@ -22,8 +22,8 @@ export default function Button({
     <button
       className={`${fixedWidth ? "" : "px-12 md:px-24"} relative ${
         color === "blue"
-          ? "bg-blue-500 text-white"
-          : "bg-gray-200 hover:bg-gray-300"
+          ? "bg-blue-500 text-white dark:bg-blue-800 dark:text-blue-200"
+          : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
       } block transition-colors rounded-xl p-2 text-base font-light ${
         className ?? ""
       } ${disabled ? "opacity-50" : ""}`}
@@ -33,7 +33,9 @@ export default function Button({
       {standout && (
         <span
           className={`absolute left-0 top-0 rounded-2xl ${
-            color === "blue" ? "bg-blue-500" : "bg-gray-200"
+            color === "blue"
+              ? "bg-blue-500 dark:bg-blue-900"
+              : "bg-gray-200 dark:bg-blue-800"
           } ${styles.button_ping}`}
         ></span>
       )}

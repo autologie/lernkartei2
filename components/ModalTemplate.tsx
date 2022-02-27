@@ -31,8 +31,8 @@ const ModalTemplate = React.forwardRef<
   return (
     <div
       className={`transform-colors duration-100 ${
-        animState ? "bg-black" : "bg-transparent"
-      } bg-opacity-30 fixed left-0 bottom-0 w-full h-full flex flex-col items-center justify-end md:justify-start z-10 p-0 md:p-12 md:pt-36 overflow-auto`}
+        animState ? "bg-black dark:bg-white" : "bg-transparent"
+      } bg-opacity-30 dark:bg-opacity-20 fixed left-0 bottom-0 w-full h-full flex flex-col items-center justify-end md:justify-start z-10 p-0 md:p-12 md:pt-36 overflow-auto`}
       onClick={(e) => {
         if (
           contentRef.current === null ||
@@ -46,8 +46,8 @@ const ModalTemplate = React.forwardRef<
         ref={contentRef}
         className={`relative duration-300 max-h-3/4 ${
           animState ? "opacity-100" : "opacity-0"
-        } md:max-h-unset w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible`}
-        style={{ transform: `translate(0,${animState ? 0 : 75}%)` }}
+        } md:max-h-unset w-full max-w-prose p-4 bg-white dark:bg-gray-900 shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible`}
+        style={{ transform: `translate(0,${animState ? 0 : 25}%)` }}
         onTransitionEnd={onAnimationEnd}
       >
         {children}

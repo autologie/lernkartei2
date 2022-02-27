@@ -57,17 +57,19 @@ export default function QuestionTemplate({
                   !done && isMiss ? styles.wrong_choice : ""
                 } border-2 border-solid border-transparent flex items-center w-full transition-colors rounded-xl py-2 px-4 text-left ${
                   isMiss
-                    ? "border-red-500 bg-gray-100"
+                    ? "border-red-500 bg-gray-100 dark:border-red-800 dark:bg-gray-800"
                     : isHit
-                    ? "bg-green-500 text-white"
-                    : `bg-gray-100 ${done ? "" : "hover:bg-gray-200"}`
+                    ? "bg-green-500 dark:bg-green-700 text-white dark:text-gray-300"
+                    : `bg-gray-100 dark:bg-gray-800 ${
+                        done ? "" : "hover:bg-gray-200 hover:dark:bg-gray-700"
+                      }`
                 } ${layout === "grid" ? "text-xl" : "text-base"}`}
                 onClick={() => onResponse(index)}
               >
                 <div
                   className={`w-8 flex-grow-0 flex-shrink-0 font-semibold ${
                     isMiss
-                      ? "text-red-500 text-2xl -mt-1"
+                      ? "text-red-500 dark:text-red-800 text-2xl -mt-1"
                       : isHit
                       ? "text-xl"
                       : "text-gray-500 text-lg"
