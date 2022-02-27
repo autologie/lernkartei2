@@ -42,3 +42,7 @@ export function chunk(
 
   return segments.filter((s) => s.segment.length > 0);
 }
+
+export function isValidSessionId(str: string): boolean {
+  return str.match(/^[\d]{8,8}$/) !== null;
+}

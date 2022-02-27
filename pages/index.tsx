@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { isValidSessionId } from "../models/String";
 
 export default function Index() {
   return <></>;
@@ -7,7 +8,7 @@ export default function Index() {
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<{}>> {
-  const sessionId = !(ctx.req.cookies.sessionId ?? "").match(/^[\d]{8,8}$/)
+  const sessionId = !isValidSessionId(ctx.req.cookies.sessionId ?? "")
     ? Math.random().toString().slice(2, 10)
     : ctx.req.cookies.sessionId;
 

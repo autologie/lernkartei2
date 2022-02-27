@@ -25,6 +25,7 @@ import {
   shouldShowNavNextButton,
   shouldShowNextButton,
 } from "../models/State";
+import { isValidSessionId } from "../models/String";
 import { createQuestion } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
 
@@ -163,11 +164,9 @@ export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<InitialStateArgs>> {
   const sessionId =
-    typeof ctx.params?.sessionId === "string"
-      ? ctx.params.sessionId
-      : undefined;
+    typeof ctx.params?.sessionId === "string" ? ctx.params.sessionId : "";
 
-  if (sessionId === undefined) {
+  if (!isValidSessionId(sessionId)) {
     return { redirect: { statusCode: 302, destination: "/" } };
   }
 
