@@ -8,10 +8,10 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <meta
           name="description"
-          content="Yet another flashcard app for building German language vocabulary"
+          content="A flashcard app for building German language vocabulary"
         />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <title>Lernkartei v2</title>
+        <title>Lernkartei</title>
       </Head>
       <Component {...pageProps} />
     </>

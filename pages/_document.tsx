@@ -23,6 +23,7 @@ export default function Document() {
           sizes="16x16"
           href="/favicon-16x16.png"
         />
+        <link rel="manifest" href="site.webmanifest"></link>
       </Head>
       <body className="dark:bg-gray-900 dark:text-gray-400">
         <Main />
