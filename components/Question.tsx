@@ -120,16 +120,21 @@ export default function Question({
                 }
               </ExampleText>
               <p className="text-base mt-2 text-gray-500">
-                Text Source: <WiktionaryLink entry={question.word} /> •{" "}
+                Text Source: <WiktionaryLink entry={question.word} />
                 {hintUsed ? (
                   <>
-                    Hint:{" "}
+                    {" "}
+                    • Hint:{" "}
                     {word.definitions[question.definitionIndex].definition}
                   </>
                 ) : done ? null : (
-                  <button className="underline" onClick={onRequestHint}>
-                    Show hint
-                  </button>
+                  <>
+                    {" "}
+                    •{" "}
+                    <button className="underline" onClick={onRequestHint}>
+                      Show hint
+                    </button>
+                  </>
                 )}
               </p>
             </>
