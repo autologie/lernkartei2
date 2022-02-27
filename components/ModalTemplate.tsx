@@ -44,9 +44,10 @@ const ModalTemplate = React.forwardRef<
     >
       <div
         ref={contentRef}
-        className={`relative duration-300 ${
-          animState ? "opacity-100 max-h-3/4" : "opacity-0 max-h-0"
+        className={`relative duration-300 max-h-3/4 ${
+          animState ? "opacity-100" : "opacity-0"
         } md:max-h-unset w-full max-w-prose p-4 bg-white shadow-xl rounded-b-none md:rounded-b-xl rounded-xl overflow-auto md:overflow-visible`}
+        style={{ transform: `translate(0,${animState ? 0 : 75}%)` }}
         onTransitionEnd={onAnimationEnd}
       >
         {children}
