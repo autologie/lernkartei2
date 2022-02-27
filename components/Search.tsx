@@ -40,7 +40,7 @@ export function Search({
         type="text"
         disabled={adding}
         className="outline-none p-2 text-xl bg-gray-100 dark:bg-gray-800 w-full rounded-lg flex-grow-0 flex-shrink-0 disabled:opacity-50 dark:placeholder:text-gray-600"
-        placeholder="📕 Search dictionary"
+        placeholder="📕 Type German word"
         autoFocus={true}
         onChange={(e) => dispatch({ type: "search", payload: e.target.value })}
       />
