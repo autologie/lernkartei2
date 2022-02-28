@@ -90,7 +90,7 @@ export default function Session(props: InitialStateArgs) {
       ) : (
         <div className="relative">
           <button
-            className="text-lg text-gray-500 font-light hover:underline"
+            className="mb-2 text-2xl text-gray-500 font-light hover:underline"
             onClick={() => dispatch({ type: "show-qr-code" })}
           >
             #{1 + state.progress.count - state.historyCursor}

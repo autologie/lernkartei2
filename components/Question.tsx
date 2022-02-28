@@ -119,7 +119,7 @@ export default function Question({
                   ]
                 }
               </ExampleText>
-              <p className="text-base mt-2 text-gray-500">
+              <p className="text-base mt-2 text-gray-500 font-light">
                 Text Source: <WiktionaryLink entry={question.word} />
                 {hintUsed ? (
                   <>
@@ -131,7 +131,10 @@ export default function Question({
                   <>
                     {" "}
                     •{" "}
-                    <button className="underline" onClick={onRequestHint}>
+                    <button
+                      className="underline font-light"
+                      onClick={onRequestHint}
+                    >
                       Show hint
                     </button>
                   </>
@@ -160,7 +163,7 @@ export default function Question({
                 className="block w-full mt-4 object-contain bg-gray-100 dark:bg-gray-800 rounded"
                 style={{ maxHeight: "50vh" }}
               />
-              <p className="my-1 text-center text-gray-500 text-base">
+              <p className="my-1 text-center text-gray-500 text-base font-light">
                 Image source: <WiktionaryLink entry={question.word} />
               </p>
             </>

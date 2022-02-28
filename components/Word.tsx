@@ -87,7 +87,7 @@ export default function Word({
           </li>
         ))}
       </ul>
-      <p className="px-4 mt-4 text-gray-500 text-sm text-right">
+      <p className="px-4 mt-4 text-gray-500 text-base text-right font-light">
         From <WiktionaryLink entry={word.german} /> •{" "}
         {formatDistanceToNow(new Date(word._ts / 1000), { addSuffix: true })}
         {hideEdit ? (
@@ -96,7 +96,10 @@ export default function Word({
           <>
             {" "}
             •{" "}
-            <button className="underline" onClick={() => onConfigure(word)}>
+            <button
+              className="underline font-light"
+              onClick={() => onConfigure(word)}
+            >
               Edit
             </button>
           </>
