@@ -9,7 +9,7 @@ export default function SearchButton({
 }) {
   return (
     <button
-      className={`flex items-center justify-center bg-blue-500 dark:bg-blue-900 rounded-full w-12 h-12 md:w-16 md:h-16 text-white dark:text-blue-200 font-extralight ${
+      className={`flex items-center justify-center bg-blue-500 dark:bg-blue-900 rounded-full w-12 h-12 md:w-16 md:h-16 text-white dark:text-white dark:text-opacity-80 font-extralight ${
         className ?? ""
       }`}
       onClick={onClick}

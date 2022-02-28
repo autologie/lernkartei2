@@ -142,7 +142,7 @@ export default function Modal({
           </h1>
           <p className="mt-2 mb-4 text-center">You have mastered a new word.</p>
 
-          <div className="bg-blue-100 rounded-lg p-4">
+          <div className="bg-blue-100 dark:bg-blue-900 dark:bg-opacity-20 rounded-lg p-4">
             <h3 className="mb-3 text-xl font-semibold">
               {modal.word.german}{" "}
               <i className="text-base">({modal.word.partOfSpeech})</i>

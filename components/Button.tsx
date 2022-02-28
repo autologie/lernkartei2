@@ -22,7 +22,7 @@ export default function Button({
     <button
       className={`${fixedWidth ? "" : "px-12 md:px-24"} relative ${
         color === "blue"
-          ? "bg-blue-500 text-white dark:bg-blue-800 dark:text-blue-200"
+          ? "bg-blue-500 text-white dark:bg-blue-900 dark:text-white dark:text-opacity-80"
           : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
       } block transition-colors rounded-xl p-2 text-base font-light ${
         className ?? ""

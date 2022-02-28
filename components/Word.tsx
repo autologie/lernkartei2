@@ -28,7 +28,7 @@ export default function Word({
 
   return (
     <div
-      className={`relative bg-blue-100 dark:bg-blue-900 dark:bg-opacity-30 rounded-lg py-4 ${
+      className={`relative bg-blue-100 dark:bg-blue-900 dark:bg-opacity-20 rounded-lg py-4 ${
         className ?? ""
       }`}
     >
