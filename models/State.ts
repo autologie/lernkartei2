@@ -16,7 +16,6 @@ export interface State {
   prevHistoryCursor?: number;
   settings: Settings;
   sessionId: string;
-  randomSeed: number;
   modal?:
     | { type: "search"; word: string; detailExpand?: string; adding: boolean }
     | { type: "qr-code" }
@@ -275,7 +274,6 @@ export function getInitialState({
     weights,
     words,
     sessionId,
-    randomSeed: random(),
   };
 }
 
@@ -313,8 +311,7 @@ export function isNewerQuestion(state: State): boolean {
 }
 
 export function applyAction(state: State, action: Action): State {
-  const random = createRandomGenerator(state.randomSeed);
-  const newState = applyActionWithRandom(state, action, random);
+  const random = createRandomGenerator(state.progress.count);
 
-  return { ...newState, randomSeed: random() };
+  return applyActionWithRandom(state, action, random);
 }

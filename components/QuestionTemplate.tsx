@@ -55,7 +55,7 @@ export default function QuestionTemplate({
               <button
                 className={`relative ${
                   !done && isMiss ? styles.wrong_choice : ""
-                } border-2 border-solid border-transparent flex items-center w-full transition-colors rounded-xl py-2 px-4 text-left ${
+                } border-2 border-solid border-transparent flex items-center h-full w-full transition-colors rounded-xl py-2 px-4 text-left ${
                   isMiss
                     ? "border-red-500 bg-gray-100 dark:border-red-900 dark:bg-gray-800"
                     : isHit

@@ -29,7 +29,11 @@ export default function ExampleText({
         isMatch ? (
           <i
             key={index}
-            className={mode === "italic-green" ? "text-green-600" : ""}
+            className={
+              mode === "italic-green"
+                ? "text-green-600 dark:text-green-700"
+                : ""
+            }
           >
             {segment}
           </i>

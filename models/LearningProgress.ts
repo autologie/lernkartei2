@@ -1,6 +1,11 @@
 import { Certainty, fromNumber } from "./Certainty";
 import { LearningLog } from "./LearningLog";
-import { EASY_QUESTIONS, HARD_QUESTIONS, Question } from "./Question";
+import {
+  EASY_QUESTIONS,
+  HARD_QUESTIONS,
+  Question,
+  questionTypes,
+} from "./Question";
 
 export interface TypeLearningProgress {
   miss: boolean;
@@ -36,7 +41,6 @@ export function addResult(
 ): LearningProgress {
   const empty = { table: {}, lastTick: 0 };
   const entry = progress.table[word] ?? empty;
-  const subEntry = entry.table[definitionIndex]?.table[questionType];
 
   return {
     ...progress,
@@ -47,21 +51,35 @@ export function addResult(
         lastTick: progress.count,
         table: {
           ...entry.table,
-          [definitionIndex]: {
-            lastTick: progress.count,
-            table: {
-              ...entry.table[definitionIndex]?.table,
-              [questionType]: {
-                miss: (subEntry?.miss ?? false) || miss,
-                lastTick: progress.count,
-                certainty: miss
-                  ? 0
-                  : subEntry?.miss ?? false
-                  ? fromNumber((subEntry?.certainty ?? 0) + 1)
-                  : 3,
-              },
+          [definitionIndex]: questionTypes.reduce<DefinitionLearningProgress>(
+            (passed, t) => {
+              const subEntry = passed.table[t];
+
+              if (t === questionType) {
+                passed.table[t] = {
+                  miss: (subEntry?.miss ?? false) || miss,
+                  lastTick: progress.count,
+                  certainty: miss
+                    ? 0
+                    : subEntry?.miss ?? false
+                    ? fromNumber((subEntry?.certainty ?? 0) + 1)
+                    : 3,
+                };
+              } else if (miss && subEntry?.certainty !== undefined) {
+                passed.table[t] = {
+                  ...subEntry,
+                  certainty: fromNumber(subEntry.certainty - 1),
+                };
+              }
+
+              return passed;
             },
-          },
+            {
+              table: {},
+              ...entry.table[definitionIndex],
+              lastTick: progress.count,
+            }
+          ),
         },
       },
     },
