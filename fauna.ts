@@ -167,32 +167,63 @@ export async function addLearningLog(data: LearningLogData) {
 
 async function aggregateLearningProgress(
   sessionId: string
-): Promise<[LearningProgress, number]> {
-  const snapshot = await findSnapshot(sessionId);
-  const logs = await listLearningLogs(sessionId, snapshot?._ts);
+): Promise<
+  [
+    progress: LearningProgress,
+    lastLogTimestamp: number | undefined,
+    count: number
+  ]
+> {
+  const [snapshot, logs] = await Promise.all([
+    findSnapshot(sessionId),
+    listLearningLogsAfterSnapshot(sessionId),
+  ]);
   const progress = restoreFromLogs(logs, snapshot);
 
   if (logs.length > 0) {
     console.log(`Replayed ${logs.length} log(s) for sessionId ${sessionId}`);
   }
 
-  return [progress, logs.length];
+  return [
+    progress,
+    logs.length > 0 ? logs[logs.length - 1]._ts : undefined,
+    logs.length,
+  ];
 }
 
-async function listLearningLogs(
-  sessionId: string,
-  after?: number
+async function listLearningLogsAfterSnapshot(
+  sessionId: string
 ): Promise<LearningLog[]> {
   q.Ref;
   const res = await getClient().query<{
     data: { ts: number; ref: { id: string }; data: LearningLogData }[];
   }>(
-    q.Map(
-      q.Paginate(
-        q.Match(INDEX_LEARNING_LOGS_PER_SESSION_SORTED_BY_TS, sessionId),
-        { after: after ?? 0, size: 10000 }
-      ),
-      q.Lambda("log", q.Get(q.Select([1], q.Var("log"))))
+    q.Let(
+      {
+        after: q.Let(
+          {
+            snapshots: q.Paginate(q.Match(INDEX_LEARNING_PROGRESS, sessionId)),
+          },
+          q.If(
+            q.IsEmpty(q.Var("snapshots")),
+            0,
+            q.Add(
+              q.Select(
+                ["data", "lastLogTimestamp"],
+                q.Get(q.Select(["data", 0], q.Var("snapshots")))
+              ),
+              1
+            )
+          )
+        ),
+      },
+      q.Map(
+        q.Paginate(
+          q.Match(INDEX_LEARNING_LOGS_PER_SESSION_SORTED_BY_TS, sessionId),
+          { after: q.Var("after"), size: 10000 }
+        ),
+        q.Lambda("log", q.Get(q.Select([1], q.Var("log"))))
+      )
     )
   );
 
@@ -210,7 +241,7 @@ async function findSnapshot(
     | {
         ref: { id: string };
         ts: number;
-        data: { data: string; sessionId: string };
+        data: { data: string; sessionId: string; lastLogTimestamp: number };
       }
     | 0
   >(
@@ -228,10 +259,8 @@ async function findSnapshot(
 
 async function upsertLearningProgressSnapshot(
   sessionId: string,
-  progress: LearningProgress
+  snapshot: LearningProgressSnapshotData
 ) {
-  const snapshot = encode(sessionId, progress);
-
   await getClient().query(
     q.Let(
       {
@@ -254,10 +283,15 @@ async function upsertLearningProgressSnapshot(
 export async function getLearningProgress(
   sessionId: string
 ): Promise<LearningProgress> {
-  const [progress, count] = await aggregateLearningProgress(sessionId);
+  const [progress, lastLogTimestamp, count] = await aggregateLearningProgress(
+    sessionId
+  );
 
-  if (count >= 2000) {
-    await upsertLearningProgressSnapshot(sessionId, progress);
+  if (count >= 500) {
+    await upsertLearningProgressSnapshot(
+      sessionId,
+      encode(sessionId, lastLogTimestamp ?? 0, progress)
+    );
     console.log(`Snapshot created/updated for sessionId ${sessionId}`);
   }
 
