@@ -86,7 +86,10 @@ export function addResult(
   };
 }
 
-export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
+export function restoreFromLogs(
+  logs: LearningLog[],
+  initial?: LearningProgress
+): LearningProgress {
   return [...logs]
     .sort((a, b) => a._ts - b._ts)
     .reduce(
@@ -98,7 +101,7 @@ export function restoreFromLogs(logs: LearningLog[]): LearningProgress {
           log.questionType,
           log.miss
         ),
-      {
+      initial ?? {
         count: 0,
         table: {},
       }

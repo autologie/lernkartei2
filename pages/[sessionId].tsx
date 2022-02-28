@@ -7,13 +7,12 @@ import NothingToShow from "../components/NothingToShow";
 import Question from "../components/Question";
 import SearchButton from "../components/SearchButton";
 import WordNotFound from "../components/WordNotFound";
-import { listLearningLogs, listWords } from "../fauna";
+import { getLearningProgress, listWords } from "../fauna";
 import useAddNewWord from "../hooks/useAddNewWord";
 import useKeyEventListener from "../hooks/useKeyEventListener";
 import useLogSync from "../hooks/useLogSync";
 import useNextAutomatically from "../hooks/useNextAutomatically";
 import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
-import { restoreFromLogs } from "../models/LearningProgress";
 import { decode } from "../models/Settings";
 import {
   applyAction,
@@ -26,7 +25,6 @@ import {
   shouldShowNextButton,
 } from "../models/State";
 import { isValidSessionId } from "../models/String";
-import { createQuestion } from "../models/Weights";
 import { Word as WordModel } from "../models/Word";
 
 const Modal = dynamic(() => import("../components/Modal"), {
@@ -172,17 +170,16 @@ export async function getServerSideProps(
 
   const settings = decode(ctx.query);
   const time0 = process.uptime() * 1000;
-  const [words, logs] = await Promise.all([
-    listWords(settings),
-    listLearningLogs(sessionId),
+  const [[words, wordsTime], [progress, progressTime]] = await Promise.all([
+    listWords(settings).then(pairWithTime),
+    getLearningProgress(sessionId).then(pairWithTime),
   ]);
-  const time1 = process.uptime() * 1000;
-  const progress = restoreFromLogs(logs);
-  const time2 = process.uptime() * 1000;
 
   ctx.res.setHeader(
     "Server-Timing",
-    `db;dur=${Math.ceil(time1 - time0)}, app;dur=${Math.ceil(time2 - time1)}`
+    `words;dur=${Math.ceil(wordsTime - time0)}, progress;dur=${Math.ceil(
+      progressTime - time0
+    )}`
   );
   ctx.res.setHeader("Set-Cookie", `sessionId=${sessionId}`);
 
@@ -194,4 +191,8 @@ export async function getServerSideProps(
       sessionId,
     },
   };
+}
+
+function pairWithTime<T>(value: T): [T, number] {
+  return [value, process.uptime() * 1000];
 }
