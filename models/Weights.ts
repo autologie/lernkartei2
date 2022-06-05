@@ -70,7 +70,8 @@ function getWordWeight(
               (a, _, ii) =>
                 a *
                 questionTypes.reduce<number>(
-                  (a, k) => a * (progress.table[ii]?.table[k]?.certainty ?? 0),
+                  (a, k) =>
+                    a * ((progress.table[ii]?.table[k]?.certainty ?? 0) / 3),
                   1
                 ),
               1
