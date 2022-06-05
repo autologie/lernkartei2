@@ -26,6 +26,8 @@ import {
 } from "../models/State";
 import { isValidSessionId } from "../models/String";
 import { Word as WordModel } from "../models/Word";
+import hash from "object-hash";
+import { useWordBookCache } from "../hooks/useWordBookCache";
 
 const Modal = dynamic(() => import("../components/Modal"), {
   suspense: true,
@@ -39,7 +41,7 @@ export default function Session(initialState: State) {
   const [isMounted, setMounted] = useState(false);
   const item =
     state.history.length === 0 ? undefined : state.history[state.historyCursor];
-  const word = state.words.find((w) => w.german === item?.question.word);
+  const word = state.words.words.find((w) => w.german === item?.question.word);
   const handleResponse = useCallback(
     (chosen: number) => dispatch({ type: "respond", payload: chosen }),
     []
@@ -67,6 +69,7 @@ export default function Session(initialState: State) {
       ? state.modal.word
       : undefined
   );
+  useWordBookCache(state.words, dispatch);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -76,7 +79,7 @@ export default function Session(initialState: State) {
 
   return (
     <div className="p-4 pb-24 max-w-prose mx-auto relative overflow-hidden md:overflow-visible">
-      {state.words.length === 0 ? (
+      {state.words.words.length === 0 ? (
         <NothingToShow settings={state.settings} />
       ) : item === undefined ? (
         <p className="text-center">Loading...</p>
@@ -146,7 +149,7 @@ export default function Session(initialState: State) {
         isMounted /* NOTE: rendering Suspense on server side doesn't work */ && (
           <Suspense fallback={null}>
             <Debugger
-              words={state.words}
+              words={state.words.words}
               weights={state.weights}
               maxCount={20}
               progress={state.progress}
@@ -163,6 +166,7 @@ export async function getServerSideProps(
 ): Promise<GetServerSidePropsResult<State>> {
   const sessionId =
     typeof ctx.params?.sessionId === "string" ? ctx.params.sessionId : "";
+  const clientWordBookHash = ctx.req.cookies.wordBookHash;
 
   if (!isValidSessionId(sessionId)) {
     return { redirect: { statusCode: 302, destination: "/" } };
@@ -174,6 +178,7 @@ export async function getServerSideProps(
     listWords(settings).then(pairWithTime),
     getLearningProgress(sessionId).then(pairWithTime),
   ]);
+  const wordBookHash = hash(words);
 
   ctx.res.setHeader(
     "Server-Timing",
@@ -181,13 +186,22 @@ export async function getServerSideProps(
       .map(([name, time]) => `${name};dur=${Math.ceil(time - time0)}`)
       .join(", ")
   );
-  ctx.res.setHeader(
-    "Set-Cookie",
-    `sessionId=${sessionId}; HttpOnly; SameSite=None; Secure`
+
+  Object.entries({ sessionId, wordBookHash }).forEach(([name, value]) =>
+    ctx.res.setHeader(
+      "Set-Cookie",
+      `${name}=${value}; HttpOnly; SameSite=None; Secure`
+    )
   );
 
   return {
-    props: getInitialState(settings, words, progress, sessionId),
+    props: getInitialState(
+      settings,
+      words,
+      progress,
+      sessionId,
+      clientWordBookHash === wordBookHash
+    ),
   };
 }
 

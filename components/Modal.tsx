@@ -97,13 +97,13 @@ export default function Modal({
         <Explanation
           question={modal.item.question}
           choiceIndex={modal.choiceIndex}
-          words={state.words}
+          words={state.words.words}
           onConfigure={handleConfigure}
         />
       )}
       {modal.type === "search" && (
         <Search
-          words={state.words}
+          words={state.words.words}
           dispatch={dispatch}
           keyword={modal.word}
           detailExpand={modal.detailExpand}

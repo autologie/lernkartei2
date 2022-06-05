@@ -11,7 +11,7 @@ import { createQuestion, Weights } from "./Weights";
 import { Word } from "./Word";
 
 export interface State {
-  words: Word[];
+  words: { complete: true; words: Word[] } | { complete: false; words: Word[] };
   done: boolean;
   history: HistoryItem[];
   progress: LearningProgress;
@@ -29,6 +29,7 @@ export interface State {
 }
 
 export type Action =
+  | { type: "restore-word-book"; payload: Word[] }
   | { type: "respond"; payload: number }
   | { type: "skip" }
   | { type: "search"; payload: string }
@@ -47,9 +48,13 @@ export type Action =
   | { type: "configure-word"; payload: Word };
 
 function setNewQuestion(state: State, random: Random): State {
+  if (!state.words.complete) {
+    return state;
+  }
+
   const [nextQuestion, weights] = createQuestion(
     state.progress,
-    state.words,
+    state.words.words,
     random
   );
 
@@ -77,7 +82,17 @@ function applyActionWithRandom(
   action: Action,
   random: Random
 ): State {
+  if (!state.words.complete) {
+    if (action.type === "restore-word-book") {
+      return { ...state, words: { complete: true, words: action.payload } };
+    }
+
+    return state;
+  }
+
   switch (action.type) {
+    case "restore-word-book":
+      return state;
     case "respond": {
       if (state.done || state.historyCursor > 0) {
         return {
@@ -109,7 +124,7 @@ function applyActionWithRandom(
         ] ?? { table: {}, lastTick: 0 };
         const masteredWord =
           isMastered(defProgress) && hasMissedAtLeastOnce(defProgress)
-            ? state.words.find((w) => w.german === item.question.word)
+            ? state.words.words.find((w) => w.german === item.question.word)
             : undefined;
 
         return {
@@ -178,7 +193,10 @@ function applyActionWithRandom(
         ? state
         : {
             ...state,
-            words: state.words.concat([action.payload]),
+            words: {
+              complete: true,
+              words: state.words.words.concat([action.payload]),
+            },
             modal: {
               ...state.modal,
               adding: false,
@@ -211,15 +229,21 @@ function applyActionWithRandom(
       return {
         ...state,
         modal: undefined,
-        words: state.words.filter((w) => w.german !== action.payload),
+        words: {
+          complete: true,
+          words: state.words.words.filter((w) => w.german !== action.payload),
+        },
       };
     case "replace":
       return {
         ...state,
         modal: undefined,
-        words: state.words.map((w) =>
-          w.german === action.payload.german ? action.payload : w
-        ),
+        words: {
+          complete: true,
+          words: state.words.words.map((w) =>
+            w.german === action.payload.german ? action.payload : w
+          ),
+        },
       };
     case "close-modal":
       return { ...state, modal: undefined };
@@ -254,7 +278,8 @@ export function getInitialState(
   settings: Settings,
   words: Word[],
   progress: LearningProgress,
-  sessionId: string
+  sessionId: string,
+  isWordBookStored: boolean
 ): State {
   const random = createRandomGenerator(progress.count);
   const [question, weights] = createQuestion(progress, words, random);
@@ -269,7 +294,12 @@ export function getInitialState(
     settings,
     progress,
     weights,
-    words,
+    words: isWordBookStored
+      ? {
+          complete: false,
+          words: words.filter((w) => w.german === question?.word),
+        }
+      : { complete: true, words },
     sessionId,
   };
 }
