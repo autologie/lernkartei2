@@ -17,7 +17,7 @@ import { decode } from "../models/Settings";
 import {
   applyAction,
   getInitialState,
-  InitialStateArgs,
+  State,
   isNewerQuestion,
   shouldShowExplanation,
   shouldShowNavBackButton,
@@ -34,8 +34,8 @@ const Debugger = dynamic(() => import("../components/Debugger"), {
   suspense: true,
 });
 
-export default function Session(props: InitialStateArgs) {
-  const [state, dispatch] = useReducer(applyAction, props, getInitialState);
+export default function Session(initialState: State) {
+  const [state, dispatch] = useReducer(applyAction, initialState);
   const [isMounted, setMounted] = useState(false);
   const item =
     state.history.length === 0 ? undefined : state.history[state.historyCursor];
@@ -160,7 +160,7 @@ export default function Session(props: InitialStateArgs) {
 
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
-): Promise<GetServerSidePropsResult<InitialStateArgs>> {
+): Promise<GetServerSidePropsResult<State>> {
   const sessionId =
     typeof ctx.params?.sessionId === "string" ? ctx.params.sessionId : "";
 
@@ -177,9 +177,9 @@ export async function getServerSideProps(
 
   ctx.res.setHeader(
     "Server-Timing",
-    `words;dur=${Math.ceil(wordsTime - time0)}, progress;dur=${Math.ceil(
-      progressTime - time0
-    )}`
+    Object.entries({ words: wordsTime, progress: progressTime })
+      .map(([name, time]) => `${name};dur=${Math.ceil(time - time0)}`)
+      .join(", ")
   );
   ctx.res.setHeader(
     "Set-Cookie",
@@ -187,12 +187,7 @@ export async function getServerSideProps(
   );
 
   return {
-    props: {
-      settings,
-      words,
-      progress,
-      sessionId,
-    },
+    props: getInitialState(settings, words, progress, sessionId),
   };
 }
 

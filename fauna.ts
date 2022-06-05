@@ -287,7 +287,7 @@ export async function getLearningProgress(
     sessionId
   );
 
-  if (count >= 500) {
+  if (count >= 200) {
     await upsertLearningProgressSnapshot(
       sessionId,
       encode(sessionId, lastLogTimestamp ?? 0, progress)

@@ -6,7 +6,6 @@ import {
   isMastered,
   LearningProgress,
 } from "./LearningProgress";
-import { Question } from "./Question";
 import { Settings, test } from "./Settings";
 import { createQuestion, Weights } from "./Weights";
 import { Word } from "./Word";
@@ -251,19 +250,12 @@ function applyActionWithRandom(
   }
 }
 
-export interface InitialStateArgs {
-  settings: Settings;
-  words: Word[];
-  progress: LearningProgress;
-  sessionId: string;
-}
-
-export function getInitialState({
-  sessionId,
-  settings,
-  words,
-  progress,
-}: InitialStateArgs): State {
+export function getInitialState(
+  settings: Settings,
+  words: Word[],
+  progress: LearningProgress,
+  sessionId: string
+): State {
   const random = createRandomGenerator(progress.count);
   const [question, weights] = createQuestion(progress, words, random);
 
