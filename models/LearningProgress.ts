@@ -138,3 +138,11 @@ export function isHardMastered(progress: DefinitionLearningProgress): boolean {
 export function isMastered(progress: DefinitionLearningProgress): boolean {
   return isHardMastered(progress) && isEasyMastered(progress);
 }
+
+export function hasMissedAtLeastOnce(
+  progress: DefinitionLearningProgress
+): boolean {
+  return Object.values(progress.table).some(
+    (typeProgress) => typeProgress.miss
+  );
+}

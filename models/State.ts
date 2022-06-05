@@ -1,6 +1,11 @@
 import { createRandomGenerator, Random } from "./Random";
 import { HistoryItem } from "./HistoryItem";
-import { addResult, isMastered, LearningProgress } from "./LearningProgress";
+import {
+  addResult,
+  hasMissedAtLeastOnce,
+  isMastered,
+  LearningProgress,
+} from "./LearningProgress";
 import { Question } from "./Question";
 import { Settings, test } from "./Settings";
 import { createQuestion, Weights } from "./Weights";
@@ -100,13 +105,13 @@ function applyActionWithRandom(
           item.question.type,
           item.missResponses.length > 0
         );
-        const masteredWord = isMastered(
-          progress.table[item.question.word]?.table[
-            item.question.definitionIndex
-          ] ?? { table: {}, lastTick: 0 }
-        )
-          ? state.words.find((w) => w.german === item.question.word)
-          : undefined;
+        const defProgress = progress.table[item.question.word]?.table[
+          item.question.definitionIndex
+        ] ?? { table: {}, lastTick: 0 };
+        const masteredWord =
+          isMastered(defProgress) && hasMissedAtLeastOnce(defProgress)
+            ? state.words.find((w) => w.german === item.question.word)
+            : undefined;
 
         return {
           ...state,
