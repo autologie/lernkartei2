@@ -1,5 +1,5 @@
-import { Dispatch, useCallback, useMemo } from "react";
-import { AiOutlineLoading, AiOutlineLoading3Quarters } from "react-icons/ai";
+import { Dispatch, useCallback, useMemo, useRef } from "react";
+import { AiOutlineLoading3Quarters, AiOutlineClose } from "react-icons/ai";
 import { Action } from "../models/State";
 import { Word as WordModel } from "../models/Word";
 import Button from "./Button";
@@ -18,6 +18,7 @@ export function Search({
   adding: boolean;
   dispatch: Dispatch<Action>;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const matchedWords = useMemo(() => {
     if (keyword === "") {
       return [];
@@ -36,14 +37,32 @@ export function Search({
 
   return (
     <div className="flex flex-col items-stretch overflow-hidden">
-      <input
-        type="text"
-        disabled={adding}
-        className="outline-none p-2 text-xl bg-gray-100 dark:bg-gray-800 w-full rounded-lg flex-grow-0 flex-shrink-0 disabled:opacity-50 dark:placeholder:text-gray-600"
-        placeholder="📕 Type German word"
-        autoFocus={true}
-        onChange={(e) => dispatch({ type: "search", payload: e.target.value })}
-      />
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={keyword}
+          disabled={adding}
+          className="outline-none p-2 text-xl bg-gray-100 dark:bg-gray-800 w-full rounded-lg flex-grow-0 flex-shrink-0 disabled:opacity-50 dark:placeholder:text-gray-600"
+          placeholder="📕 Type German word"
+          autoFocus={true}
+          onChange={(e) =>
+            dispatch({ type: "search", payload: e.target.value })
+          }
+        />
+        {keyword.length > 0 && (
+          <button
+            className="absolute right-0 h-full px-2"
+            onClick={() => {
+              dispatch({ type: "search", payload: "" });
+              inputRef.current?.focus();
+            }}
+          >
+            <span className="sr-only">Close</span>
+            <AiOutlineClose />
+          </button>
+        )}
+      </div>
       {matchedWords.length > 0 ? (
         <ul className="flex flex-col items-stretch py-4 flex-grow flex-shrink">
           {matchedWords.map((w) => (
