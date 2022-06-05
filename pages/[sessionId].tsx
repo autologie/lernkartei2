@@ -181,7 +181,10 @@ export async function getServerSideProps(
       progressTime - time0
     )}`
   );
-  ctx.res.setHeader("Set-Cookie", `sessionId=${sessionId}`);
+  ctx.res.setHeader(
+    "Set-Cookie",
+    `sessionId=${sessionId}; HttpOnly; SameSite=None; Secure`
+  );
 
   return {
     props: {
