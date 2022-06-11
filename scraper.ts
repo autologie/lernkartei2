@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import jsdom, { JSDOM } from "jsdom";
-import { Photo, WordData } from "./models/Word";
+import { Photo, WordData, WordDefinition } from "./models/Word";
 
 function findIndices(text: string | null): number[] {
   return (text ?? "").split(/[\[,\]]/).flatMap((segment) => {
@@ -116,6 +116,28 @@ function extractDefinitions(dom: JSDOM): Map<number, string> {
   }, new Map<number, string>());
 }
 
+function extractRelatedWords(dom: JSDOM, title: string): Map<number, string[]> {
+  return Array.from(
+    dom.window.document
+      .querySelector(`[title='${title}'] ~ dl`)
+      ?.querySelectorAll("dd") ?? []
+  ).reduce((map, dd) => {
+    const matched = dd.textContent?.match(/^\[(\d)+[a-z]*\](.*)$/);
+    const definitionIndex = Number.parseInt(matched?.[1] ?? "", 10);
+
+    if (!Number.isNaN(definitionIndex)) {
+      map.set(
+        definitionIndex,
+        (map.get(definitionIndex) ?? []).concat(
+          matched?.[2].split(",").map((word) => word.trim()) ?? []
+        )
+      );
+    }
+
+    return map;
+  }, new Map<number, string[]>());
+}
+
 function extractPartOfSpeech(dom: JSDOM): string | undefined {
   return dom.window.document
     .querySelector("[title='Hilfe:Wortart']")
@@ -138,6 +160,13 @@ function extractWiktionaryContent(
   const exampleMap = extractExamples(dom);
   const photosMap = extractPhotos(dom);
   const definitions = extractDefinitions(dom);
+  const synonymMap = extractRelatedWords(
+    dom,
+    "bedeutungsgleich gebrauchte Wörter"
+  );
+  const antonymMap = extractRelatedWords(dom, "Antonyme");
+  const genericTermMap = extractRelatedWords(dom, "Hyperonyme");
+  const subTermMap = extractRelatedWords(dom, "Hyponyme");
 
   if (!isGerman(dom) || partOfSpeech === undefined || definitions.size === 0) {
     return undefined;
@@ -146,12 +175,18 @@ function extractWiktionaryContent(
   const word: WordData = {
     partOfSpeech,
     german: entry,
-    definitions: [...definitions].map(([index, definition]) => ({
-      definition,
-      examples: exampleMap.get(index) ?? [],
-      english: englishMap.get(index) ?? [],
-      photos: photosMap.get(index) ?? [],
-    })),
+    definitions: [...definitions].map(
+      ([index, definition]): WordDefinition => ({
+        definition,
+        examples: exampleMap.get(index) ?? [],
+        english: englishMap.get(index) ?? [],
+        photos: photosMap.get(index) ?? [],
+        synonyms: synonymMap.get(index) ?? [],
+        antonyms: antonymMap.get(index) ?? [],
+        genericTerms: genericTermMap.get(index) ?? [],
+        subTerms: subTermMap.get(index) ?? [],
+      })
+    ),
   };
 
   return word;

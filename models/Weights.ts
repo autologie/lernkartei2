@@ -9,6 +9,7 @@ import {
   createDefineQuestion,
   createFillBlankQuestion,
   createPhotoQuestion,
+  createSynonymQuestion,
   createTranslateFromQuestion,
   createTranslateToQuestion,
   HARD_QUESTIONS,
@@ -56,7 +57,7 @@ function getWordWeight(
     ret.values[i] = { value: 0, values: {} };
 
     for (const t of questionTypes) {
-      if (!isAvailable(word, t, i)) {
+      if (!isAvailable(word, i, t)) {
         ret.values[i]!.values[t] = 0;
         continue;
       }
@@ -189,32 +190,14 @@ export function createQuestion(
     progress,
     random
   );
+  const createQuestion = {
+    define: createDefineQuestion,
+    "fill-blank": createFillBlankQuestion,
+    "translate-from": createTranslateFromQuestion,
+    "translate-to": createTranslateToQuestion,
+    photo: createPhotoQuestion,
+    synonym: createSynonymQuestion,
+  }[questionType];
 
-  switch (questionType) {
-    case "define":
-      return [
-        createDefineQuestion(word, definitionIndex, words, random),
-        weights,
-      ];
-    case "fill-blank":
-      return [
-        createFillBlankQuestion(word, definitionIndex, words, random),
-        weights,
-      ];
-    case "translate-from":
-      return [
-        createTranslateFromQuestion(word, definitionIndex, words, random),
-        weights,
-      ];
-    case "translate-to":
-      return [
-        createTranslateToQuestion(word, definitionIndex, words, random),
-        weights,
-      ];
-    case "photo":
-      return [
-        createPhotoQuestion(word, definitionIndex, words, random),
-        weights,
-      ];
-  }
+  return [createQuestion(word, definitionIndex, words, random), weights];
 }

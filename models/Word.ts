@@ -3,7 +3,7 @@ import { Fauna } from "./Fauna";
 export interface WordData {
   partOfSpeech: string;
   german: string;
-  definitions: WordMeaning[];
+  definitions: WordDefinition[];
 }
 
 export type Word = Fauna<WordData>;
@@ -13,11 +13,15 @@ export interface Photo {
   caption: string;
 }
 
-export interface WordMeaning {
+export interface WordDefinition {
   definition: string;
   english: string[];
   examples: string[];
   photos?: Photo[];
+  synonyms?: string[];
+  antonyms?: string[];
+  genericTerms?: string[];
+  subTerms?: string[];
 }
 
 export function modify(word: Word): Word {

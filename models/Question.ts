@@ -50,7 +50,21 @@ export interface Photo {
   answerIndex: number;
 }
 
-export type Question = FillBlank | Define | TranslateTo | TranslateFrom | Photo;
+export interface Synonym {
+  type: "synonym";
+  word: string;
+  definitionIndex: number;
+  choices: string[];
+  answerIndex: number;
+}
+
+export type Question =
+  | FillBlank
+  | Define
+  | TranslateTo
+  | TranslateFrom
+  | Photo
+  | Synonym;
 
 export const HARD_QUESTIONS: Question["type"][] = ["define", "fill-blank"];
 
@@ -58,6 +72,7 @@ export const EASY_QUESTIONS: Question["type"][] = [
   "translate-to",
   "translate-from",
   "photo",
+  "synonym",
 ];
 
 export const questionTypes: Question["type"][] = [
@@ -257,14 +272,57 @@ export function createPhotoQuestion(
   );
 }
 
+export function createSynonymQuestion(
+  word: Word,
+  definitionIndex: number,
+  words: Word[],
+  random: Random
+): Question {
+  const def = word.definitions[definitionIndex];
+  const synonymIndex = getRandomIndex(def.synonyms ?? [], random);
+  const synonym = def.synonyms?.[synonymIndex];
+
+  if (synonym === undefined) {
+    throw Error();
+  }
+
+  const choices = [
+    synonym,
+    ...shuffle(
+      words.filter(
+        (w) =>
+          w.partOfSpeech === word.partOfSpeech &&
+          w.definitions.every(
+            (d) => !(d.synonyms?.includes(word.german) ?? false)
+          )
+      ),
+      random
+    )
+      .map((word) => word.german)
+      .slice(0, 4),
+  ];
+
+  return shuffleChoices(
+    {
+      type: "synonym",
+      word: word.german,
+      definitionIndex,
+      choices,
+      answerIndex: 0,
+    },
+    random
+  );
+}
+
 export function isAvailable(
   word: Word,
-  t: Question["type"],
-  i: number
+  definitionIndex: number,
+  t: Question["type"]
 ): boolean {
-  const def = word.definitions[i];
+  const def = word.definitions[definitionIndex];
 
   return !(
+    (t === "synonym" && (def.synonyms ?? []).length === 0) ||
     (t === "photo" && (def.photos ?? []).length === 0) ||
     (t === "fill-blank" && def.examples.length === 0) ||
     ((t === "translate-from" || t === "translate-to") &&

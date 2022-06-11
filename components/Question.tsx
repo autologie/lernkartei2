@@ -27,7 +27,7 @@ export default function Question({
   onResponse: (responses: number) => void;
   onConfigureWord: (word: Word) => void;
   onRequestHint: () => void;
-}) {
+}): JSX.Element {
   const commonProps = {
     isNewer,
     word,
@@ -168,6 +168,15 @@ export default function Question({
               </p>
             </>
           }
+          choices={question.choices}
+        />
+      );
+    case "synonym":
+      return (
+        <QuestionTemplate
+          {...commonProps}
+          layout="grid"
+          question={`Welches Wort ist ein Synonym für ${question.word}?`}
           choices={question.choices}
         />
       );

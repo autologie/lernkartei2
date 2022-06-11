@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { Fragment, useReducer } from "react";
 import { Word as WordModel } from "../models/Word";
 import ExampleText from "./ExampleText";
 import { formatDistanceToNow } from "date-fns";
@@ -73,14 +73,27 @@ export default function Word({
                       </ul>
                     </>
                   )}
-                  {def.english.length > 0 && (
-                    <>
-                      <h4 className="my-2 text-gray-500 uppercase text-sm font-semibold">
-                        In English
-                      </h4>
-                      {def.english.join(", ")}
-                    </>
-                  )}
+                  {[
+                    { title: "In English", content: def.english.join(", ") },
+                    { title: "Synonyms", content: def.synonyms?.join(", ") },
+                    { title: "Antonyms", content: def.antonyms?.join(", ") },
+                    {
+                      title: "Generic Terms",
+                      content: def.genericTerms?.join(", "),
+                    },
+                    { title: "Sub Terms", content: def.subTerms?.join(", ") },
+                  ].map(({ title, content = "" }) => (
+                    <Fragment key={title}>
+                      {content !== "" && (
+                        <>
+                          <h4 className="my-2 text-gray-500 uppercase text-sm font-semibold">
+                            {title}
+                          </h4>
+                          {content}
+                        </>
+                      )}
+                    </Fragment>
+                  ))}
                 </>
               )}
             </div>

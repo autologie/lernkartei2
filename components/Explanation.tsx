@@ -12,7 +12,7 @@ export default function Explanation({
   choiceIndex: number;
   words: WordModel[];
   onConfigure: (word: WordModel) => void;
-}) {
+}): JSX.Element {
   const german: string =
     question.type === "define" || question.type === "translate-to"
       ? question.choices[choiceIndex].word
@@ -27,6 +27,7 @@ export default function Explanation({
     case "translate-from":
     case "photo":
     case "fill-blank":
+    case "synonym":
       return <Word word={word} onConfigure={onConfigure} />;
     case "translate-to":
       return (

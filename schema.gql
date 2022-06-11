@@ -8,6 +8,10 @@ type WordMeaning @embedded {
   english: [String]
   examples: [String]!
   photos: [Photo]
+  synonyms: [String]!
+  antonyms: [String]!
+  genericTerms: [String]!
+  subTerms: [String]!
 }
 
 type Word {
