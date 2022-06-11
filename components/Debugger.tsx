@@ -1,11 +1,12 @@
 import { Question, questionTypes } from "../models/Question";
 import { Word } from "../models/Word";
 import { DefinitionWeights, Weights } from "../models/Weights";
-import React, { useMemo } from "react";
+import React, { Dispatch, useMemo } from "react";
 import {
   LearningProgress,
   TypeLearningProgress,
 } from "../models/LearningProgress";
+import { Action } from "../models/State";
 
 export default function Debugger({
   words,
@@ -13,12 +14,14 @@ export default function Debugger({
   maxCount,
   progress,
   currentQuestion,
+  dispatch,
 }: {
   currentQuestion?: Question;
   words: Word[];
   weights: Weights;
   maxCount: number;
   progress: LearningProgress;
+  dispatch: Dispatch<Action>;
 }) {
   const weightList = Object.values(weights.values).flatMap((b) =>
     Object.values(b?.values ?? {}).flatMap((c) =>
@@ -78,7 +81,13 @@ export default function Debugger({
             .slice(0, maxCount)
             .map(([w, i, myWeight], j) => (
               <tr key={`${w.german}-${i}`}>
-                <td className="pr-2 text-right">{w.german}</td>
+                <td className="pr-2 text-right">
+                  <button
+                    onClick={() => dispatch({ type: "view-word", payload: w })}
+                  >
+                    {w.german}
+                  </button>
+                </td>
                 <td className="w-4">{i}</td>
                 {questionTypes.map((t) => (
                   <td key={t} className={`p-0`}>

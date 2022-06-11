@@ -154,6 +154,7 @@ export default function Session(initialState: State) {
               maxCount={20}
               progress={state.progress}
               currentQuestion={state.history[0]?.question}
+              dispatch={dispatch}
             />
           </Suspense>
         )}

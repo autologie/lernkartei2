@@ -102,24 +102,7 @@ export async function updateWord(
 }
 
 export async function listWords(settings: Settings): Promise<Word[]> {
-  const res = await request<{
-    data: {
-      words: {
-        data: {
-          _id: string;
-          _ts: number;
-          german: string;
-          partOfSpeech: string;
-          definitions: {
-            definition: string;
-            english: string[];
-            examples: [];
-            photos: { url: string; caption: string }[];
-          }[];
-        }[];
-      };
-    };
-  }>(
+  const res = await request<{ data: { words: { data: Word[] } } }>(
     // TODO: paginate properly
     `query {
        words(_size: ${settings.size ?? 1000}) {
@@ -135,7 +118,11 @@ export async function listWords(settings: Settings): Promise<Word[]> {
              photos {
                url,
                caption
-             }
+             },
+             synonyms,
+             antonyms,
+             genericTerms,
+             subTerms
            }
          }
        }

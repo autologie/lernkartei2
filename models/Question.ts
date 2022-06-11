@@ -76,11 +76,8 @@ export const EASY_QUESTIONS: Question["type"][] = [
 ];
 
 export const questionTypes: Question["type"][] = [
-  "define",
-  "fill-blank",
-  "translate-from",
-  "translate-to",
-  "photo",
+  ...EASY_QUESTIONS,
+  ...HARD_QUESTIONS,
 ];
 
 export function shuffleChoices(question: Question, random: Random): Question {
