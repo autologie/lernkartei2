@@ -9,7 +9,7 @@ import {
   createDefineQuestion,
   createFillBlankQuestion,
   createPhotoQuestion,
-  createSynonymQuestion,
+  createRelatedWordQuestion,
   createTranslateFromQuestion,
   createTranslateToQuestion,
   HARD_QUESTIONS,
@@ -196,7 +196,10 @@ export function createQuestion(
     "translate-from": createTranslateFromQuestion,
     "translate-to": createTranslateToQuestion,
     photo: createPhotoQuestion,
-    synonym: createSynonymQuestion,
+    synonym: createRelatedWordQuestion("synonym"),
+    antonym: createRelatedWordQuestion("antonym"),
+    "generic-term": createRelatedWordQuestion("genericTerm"),
+    "sub-term": createRelatedWordQuestion("subTerm"),
   }[questionType];
 
   return [createQuestion(word, definitionIndex, words, random), weights];

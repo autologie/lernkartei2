@@ -50,12 +50,27 @@ export interface Photo {
   answerIndex: number;
 }
 
-export interface Synonym {
-  type: "synonym";
+interface RelatedWord {
   word: string;
   definitionIndex: number;
   choices: string[];
   answerIndex: number;
+}
+
+export interface Synonym extends RelatedWord {
+  type: "synonym";
+}
+
+export interface Antonym extends RelatedWord {
+  type: "antonym";
+}
+
+export interface GenericTerm extends RelatedWord {
+  type: "generic-term";
+}
+
+export interface SubTerm extends RelatedWord {
+  type: "sub-term";
 }
 
 export type Question =
@@ -64,7 +79,10 @@ export type Question =
   | TranslateTo
   | TranslateFrom
   | Photo
-  | Synonym;
+  | Synonym
+  | Antonym
+  | GenericTerm
+  | SubTerm;
 
 export const HARD_QUESTIONS: Question["type"][] = ["define", "fill-blank"];
 
@@ -73,6 +91,9 @@ export const EASY_QUESTIONS: Question["type"][] = [
   "translate-from",
   "photo",
   "synonym",
+  "antonym",
+  "generic-term",
+  "sub-term",
 ];
 
 export const questionTypes: Question["type"][] = [
@@ -269,46 +290,58 @@ export function createPhotoQuestion(
   );
 }
 
-export function createSynonymQuestion(
-  word: Word,
-  definitionIndex: number,
-  words: Word[],
-  random: Random
-): Question {
-  const def = word.definitions[definitionIndex];
-  const synonymIndex = getRandomIndex(def.synonyms ?? [], random);
-  const synonym = def.synonyms?.[synonymIndex];
+export function createRelatedWordQuestion(
+  relationType: "synonym" | "antonym" | "genericTerm" | "subTerm"
+) {
+  return (
+    word: Word,
+    definitionIndex: number,
+    words: Word[],
+    random: Random
+  ): Question => {
+    const key = `${relationType}s` as const;
+    const def = word.definitions[definitionIndex];
+    const index = getRandomIndex(def[key] ?? [], random);
+    const relatedWord = def[key]?.[index];
 
-  if (synonym === undefined) {
-    throw Error();
-  }
+    if (relatedWord === undefined) {
+      throw Error();
+    }
 
-  const choices = [
-    synonym,
-    ...shuffle(
-      words.filter(
-        (w) =>
-          w.partOfSpeech === word.partOfSpeech &&
-          w.definitions.every(
-            (d) => !(d.synonyms?.includes(word.german) ?? false)
-          )
-      ),
+    const choices = [
+      relatedWord,
+      ...shuffle(
+        words.filter(
+          (w) =>
+            w.partOfSpeech === word.partOfSpeech &&
+            w.definitions.every(
+              (d) => !(d[key]?.includes(word.german) ?? false)
+            )
+        ),
+        random
+      )
+        .map((word) => word.german)
+        .slice(0, 4),
+    ];
+
+    return shuffleChoices(
+      {
+        type: (
+          {
+            synonym: "synonym",
+            antonym: "antonym",
+            genericTerm: "generic-term",
+            subTerm: "sub-term",
+          } as const
+        )[relationType],
+        word: word.german,
+        definitionIndex,
+        choices,
+        answerIndex: 0,
+      },
       random
-    )
-      .map((word) => word.german)
-      .slice(0, 4),
-  ];
-
-  return shuffleChoices(
-    {
-      type: "synonym",
-      word: word.german,
-      definitionIndex,
-      choices,
-      answerIndex: 0,
-    },
-    random
-  );
+    );
+  };
 }
 
 export function isAvailable(
@@ -319,6 +352,9 @@ export function isAvailable(
   const def = word.definitions[definitionIndex];
 
   return !(
+    (t === "generic-term" && (def.genericTerms ?? []).length === 0) ||
+    (t === "sub-term" && (def.subTerms ?? []).length === 0) ||
+    (t === "antonym" && (def.antonyms ?? []).length === 0) ||
     (t === "synonym" && (def.synonyms ?? []).length === 0) ||
     (t === "photo" && (def.photos ?? []).length === 0) ||
     (t === "fill-blank" && def.examples.length === 0) ||

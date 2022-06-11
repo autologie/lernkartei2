@@ -172,11 +172,21 @@ export default function Question({
         />
       );
     case "synonym":
+    case "antonym":
+    case "generic-term":
+    case "sub-term":
       return (
         <QuestionTemplate
           {...commonProps}
           layout="grid"
-          question={`Welches Wort ist ein Synonym für ${question.word}?`}
+          question={`Welches Wort ist ein ${
+            {
+              synonym: "Synonym",
+              antonym: "Antonym",
+              "generic-term": "Oberbegriff",
+              "sub-term": "Unterbegriff",
+            }[question.type]
+          } für ${question.word}?`}
           choices={question.choices}
         />
       );

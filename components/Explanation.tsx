@@ -28,6 +28,9 @@ export default function Explanation({
     case "photo":
     case "fill-blank":
     case "synonym":
+    case "antonym":
+    case "generic-term":
+    case "sub-term":
       return <Word word={word} onConfigure={onConfigure} />;
     case "translate-to":
       return (
