@@ -24,13 +24,20 @@ export default function Explanation({
   }
 
   switch (question.type) {
-    case "translate-from":
-    case "photo":
-    case "fill-blank":
     case "synonym":
     case "antonym":
     case "generic-term":
     case "sub-term":
+      const w = words.find((ww) => ww.german === question.choices[choiceIndex]);
+
+      return w === undefined ? (
+        <p className="text-center my-8">No explanation available.</p>
+      ) : (
+        <Word word={w} onConfigure={onConfigure} />
+      );
+    case "translate-from":
+    case "photo":
+    case "fill-blank":
       return <Word word={word} onConfigure={onConfigure} />;
     case "translate-to":
       return (

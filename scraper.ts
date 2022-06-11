@@ -116,26 +116,33 @@ function extractDefinitions(dom: JSDOM): Map<number, string> {
   }, new Map<number, string>());
 }
 
-function extractRelatedWords(dom: JSDOM, title: string): Map<number, string[]> {
-  return Array.from(
-    dom.window.document
-      .querySelector(`[title='${title}'] ~ dl`)
-      ?.querySelectorAll("dd") ?? []
-  ).reduce((map, dd) => {
-    const matched = dd.textContent?.match(/^\[(\d)+[a-z]*\](.*)$/);
-    const definitionIndex = Number.parseInt(matched?.[1] ?? "", 10);
+function extractRelatedWords(
+  dom: JSDOM,
+  ...titles: string[]
+): Map<number, string[]> {
+  return titles
+    .flatMap((title) =>
+      Array.from(
+        dom.window.document
+          .querySelector(`[title='${title}'] ~ dl`)
+          ?.querySelectorAll("dd") ?? []
+      )
+    )
+    .reduce((map, dd) => {
+      const matched = dd.textContent?.match(/^\[(\d)+[a-z]*\](.*)$/);
+      const definitionIndex = Number.parseInt(matched?.[1] ?? "", 10);
 
-    if (!Number.isNaN(definitionIndex)) {
-      map.set(
-        definitionIndex,
-        (map.get(definitionIndex) ?? []).concat(
-          matched?.[2].split(",").map((word) => word.trim()) ?? []
-        )
-      );
-    }
+      if (!Number.isNaN(definitionIndex)) {
+        map.set(
+          definitionIndex,
+          (map.get(definitionIndex) ?? []).concat(
+            matched?.[2].split(",").map((word) => word.trim()) ?? []
+          )
+        );
+      }
 
-    return map;
-  }, new Map<number, string[]>());
+      return map;
+    }, new Map<number, string[]>());
 }
 
 function extractPartOfSpeech(dom: JSDOM): string | undefined {
@@ -162,7 +169,8 @@ function extractWiktionaryContent(
   const definitions = extractDefinitions(dom);
   const synonymMap = extractRelatedWords(
     dom,
-    "bedeutungsgleich gebrauchte Wörter"
+    "bedeutungsgleich gebrauchte Wörter",
+    "Sinnverwandte Wörter"
   );
   const antonymMap = extractRelatedWords(dom, "Antonyme");
   const genericTermMap = extractRelatedWords(dom, "Hyperonyme");

@@ -179,14 +179,20 @@ export default function Question({
         <QuestionTemplate
           {...commonProps}
           layout="grid"
-          question={`Welches Wort ist ein ${
-            {
-              synonym: "Synonym",
-              antonym: "Antonym",
-              "generic-term": "Oberbegriff",
-              "sub-term": "Unterbegriff",
-            }[question.type]
-          } für ${question.word}?`}
+          question={
+            <>
+              Welches Wort ist ein{" "}
+              {
+                {
+                  synonym: "Synonym",
+                  antonym: "Antonym",
+                  "generic-term": "Oberbegriff",
+                  "sub-term": "Unterbegriff",
+                }[question.type]
+              }{" "}
+              für <i className="font-semibold">{question.word}</i>?
+            </>
+          }
           choices={question.choices}
         />
       );
