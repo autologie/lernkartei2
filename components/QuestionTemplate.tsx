@@ -2,11 +2,11 @@ import { ReactNode, useRef } from "react";
 import Word from "./Word";
 import { Word as WordModel } from "../models/Word";
 import styles from "./QuestionTemplate.module.css";
+import { Response } from "../models/Response";
 
 export default function QuestionTemplate({
   question,
-  choices,
-  answerIndex,
+  chooseFrom,
   definitionIndex,
   missResponses,
   done,
@@ -19,15 +19,14 @@ export default function QuestionTemplate({
 }: {
   question: ReactNode;
   layout: "grid" | "list";
-  answerIndex: number;
   definitionIndex: number;
-  choices: string[];
-  missResponses: number[];
+  chooseFrom: { choices: string[]; answerIndex: number } | null;
+  missResponses: Response[];
   done: boolean;
   word: WordModel;
   isNewer: boolean;
   showExplanation: boolean;
-  onResponse: (response: number) => void;
+  onResponse: (response: Response) => void;
   onConfigureWord: (word: WordModel) => void;
 }) {
   const wasDone = useRef(done);
@@ -46,9 +45,11 @@ export default function QuestionTemplate({
             : "flex flex-col items-stretch"
         }`}
       >
-        {choices.map((c, index) => {
-          const isMiss = missResponses.includes(index);
-          const isHit = done && answerIndex === index;
+        {chooseFrom?.choices.map((c, index) => {
+          const isMiss = missResponses.some(
+            (miss) => miss.type === "choice" && miss.value === index
+          );
+          const isHit = done && chooseFrom.answerIndex === index;
 
           return (
             <li key={index}>
@@ -64,7 +65,7 @@ export default function QuestionTemplate({
                         done ? "" : "hover:bg-gray-200 hover:dark:bg-gray-700"
                       }`
                 } ${layout === "grid" ? "text-xl" : "text-base"}`}
-                onClick={() => onResponse(index)}
+                onClick={() => onResponse({ type: "choice", value: index })}
               >
                 <div
                   className={`w-8 flex-grow-0 flex-shrink-0 font-semibold ${

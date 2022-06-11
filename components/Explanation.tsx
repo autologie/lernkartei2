@@ -13,13 +13,17 @@ export default function Explanation({
   words: WordModel[];
   onConfigure: (word: WordModel) => void;
 }): JSX.Element {
-  const german: string =
+  if (question.chooseFrom === null) {
+    return <></>;
+  }
+
+  const german: string | undefined =
     question.type === "define" || question.type === "translate-to"
-      ? question.choices[choiceIndex].word
-      : question.choices[choiceIndex];
+      ? question.chooseFrom.choices[choiceIndex].word
+      : question.chooseFrom.choices[choiceIndex];
   const word = words.find((w) => w.german === german);
 
-  if (word === undefined) {
+  if (word === undefined || german === undefined) {
     return <></>;
   }
 
@@ -28,7 +32,9 @@ export default function Explanation({
     case "antonym":
     case "generic-term":
     case "sub-term":
-      const w = words.find((ww) => ww.german === question.choices[choiceIndex]);
+      const w = words.find(
+        (ww) => ww.german === question.chooseFrom.choices[choiceIndex]
+      );
 
       return w === undefined ? (
         <p className="text-center my-8">No explanation available.</p>
@@ -48,7 +54,9 @@ export default function Explanation({
           </p>
           <Word
             word={word}
-            highlightedIndex={question.choices[choiceIndex].definitionIndex}
+            highlightedIndex={
+              question.chooseFrom.choices[choiceIndex].definitionIndex
+            }
             onConfigure={onConfigure}
           />
         </>
@@ -61,7 +69,9 @@ export default function Explanation({
           </p>
           <Word
             word={word}
-            highlightedIndex={question.choices[choiceIndex].definitionIndex}
+            highlightedIndex={
+              question.chooseFrom.choices[choiceIndex].definitionIndex
+            }
             onConfigure={onConfigure}
           />
         </>

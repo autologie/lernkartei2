@@ -5,7 +5,7 @@ export default function useKeyEventListener(
   state: State,
   dispatch: Dispatch<Action>
 ) {
-  const choiceCount = state.history[0]?.question.choices.length;
+  const choiceCount = state.history[0]?.question.chooseFrom?.choices.length;
 
   useEffect(() => {
     if (choiceCount === undefined) {
@@ -44,7 +44,10 @@ export default function useKeyEventListener(
       }
 
       if (choices.includes(e.key)) {
-        dispatch({ type: "respond", payload: Number.parseInt(e.key, 10) - 1 });
+        dispatch({
+          type: "respond",
+          payload: { type: "choice", value: Number.parseInt(e.key, 10) - 1 },
+        });
       }
     }
 

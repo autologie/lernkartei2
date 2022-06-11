@@ -1,7 +1,8 @@
 import { Question } from "./Question";
+import { Response } from "./Response";
 
 export interface HistoryItem {
   question: Question;
-  missResponses: number[];
+  missResponses: Response[];
   hintUsed: boolean;
 }

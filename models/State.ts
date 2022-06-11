@@ -9,6 +9,7 @@ import {
 import { Settings, test } from "./Settings";
 import { createQuestion, Weights } from "./Weights";
 import { Word } from "./Word";
+import { isCorrect, Response } from "./Response";
 
 export interface State {
   words: { complete: true; words: Word[] } | { complete: false; words: Word[] };
@@ -30,7 +31,7 @@ export interface State {
 
 export type Action =
   | { type: "restore-word-book"; payload: Word[] }
-  | { type: "respond"; payload: number }
+  | { type: "respond"; payload: Response }
   | { type: "skip" }
   | { type: "search"; payload: string }
   | { type: "toggle-detail"; payload: string }
@@ -69,7 +70,7 @@ function setNewQuestion(state: State, random: Random): State {
     weights,
     history: [
       {
-        missResponses: [] as number[],
+        missResponses: [] as Response[],
         question: nextQuestion,
         hintUsed: false,
       },
@@ -95,14 +96,16 @@ function applyActionWithRandom(
       return state;
     case "respond": {
       if (state.done || state.historyCursor > 0) {
-        return {
-          ...state,
-          modal: {
-            type: "explain-choice",
-            item: state.history[state.historyCursor],
-            choiceIndex: action.payload,
-          },
-        };
+        return action.payload.type === "choice"
+          ? {
+              ...state,
+              modal: {
+                type: "explain-choice",
+                item: state.history[state.historyCursor],
+                choiceIndex: action.payload.value,
+              },
+            }
+          : state;
       }
 
       if (state.historyCursor !== 0 || state.history.length === 0) {
@@ -111,7 +114,7 @@ function applyActionWithRandom(
 
       const item = state.history[0];
 
-      if (item.question.answerIndex === action.payload) {
+      if (isCorrect(item.question, action.payload)) {
         const progress = addResult(
           state.progress,
           item.question.word,

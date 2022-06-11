@@ -1,9 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
-import ExampleText from "./ExampleText";
 import QuestionTemplate from "./QuestionTemplate";
-import WiktionaryLink from "./WiktionaryLink";
+import { Response } from "../models/Response";
+import FillBlankQuestion from "./FillBlankQuestion";
+import TranslateFromQuestion from "./TranslateFromQuestion";
+import PhotoQuestion from "./PhotoQuestion";
 
 export default function Question({
   question,
@@ -20,11 +21,11 @@ export default function Question({
   question: Model;
   word: Word;
   done: boolean;
-  missResponses: number[];
+  missResponses: Response[];
   showExplanation: boolean;
   hintUsed: boolean;
   isNewer: boolean;
-  onResponse: (responses: number) => void;
+  onResponse: (responses: Response) => void;
   onConfigureWord: (word: Word) => void;
   onRequestHint: () => void;
 }): JSX.Element {
@@ -33,7 +34,6 @@ export default function Question({
     word,
     missResponses,
     done,
-    answerIndex: question.answerIndex,
     definitionIndex: question.definitionIndex,
     showExplanation,
     onResponse,
@@ -58,9 +58,12 @@ export default function Question({
               )}
             </>
           }
-          choices={question.choices.map((c, i) =>
-            c.definition.replace(word.german, "———")
-          )}
+          chooseFrom={{
+            ...question.chooseFrom,
+            choices: question.chooseFrom.choices.map((c, i) =>
+              c.definition.replace(word.german, "———")
+            ),
+          }}
         />
       );
     case "translate-from":
@@ -69,19 +72,15 @@ export default function Question({
           {...commonProps}
           layout="grid"
           question={
-            <>
-              Wie heißt das englische Wort{" "}
-              <i className="font-semibold">
-                {
-                  word.definitions[question.definitionIndex].english[
-                    question.englishIndex
-                  ]
-                }
-              </i>{" "}
-              auf Deutsch?
-            </>
+            <TranslateFromQuestion
+              question={question}
+              word={word}
+              missResponses={missResponses}
+              done={done}
+              onResponse={onResponse}
+            />
           }
-          choices={question.choices}
+          chooseFrom={question.chooseFrom}
         />
       );
     case "translate-to":
@@ -102,75 +101,50 @@ export default function Question({
               )}
             </>
           }
-          choices={question.choices.map((c) => c.english)}
+          chooseFrom={{
+            ...question.chooseFrom,
+            choices: question.chooseFrom.choices.map((c) => c.english),
+          }}
         />
       );
-    case "fill-blank":
+    case "fill-blank": {
       return (
         <QuestionTemplate
           {...commonProps}
           layout="grid"
           question={
-            <>
-              <ExampleText mode={done ? "italic-green" : "mask"}>
-                {
-                  word.definitions[question.definitionIndex].examples[
-                    question.exampleIndex
-                  ]
-                }
-              </ExampleText>
-              <p className="text-base mt-2 text-gray-500 font-light">
-                Text Source: <WiktionaryLink entry={question.word} />
-                {hintUsed ? (
-                  <>
-                    {" "}
-                    • Hint:{" "}
-                    {word.definitions[question.definitionIndex].definition}
-                  </>
-                ) : done ? null : (
-                  <>
-                    {" "}
-                    •{" "}
-                    <button
-                      className="underline font-light"
-                      onClick={onRequestHint}
-                    >
-                      Show hint
-                    </button>
-                  </>
-                )}
-              </p>
-            </>
+            <FillBlankQuestion
+              question={question}
+              word={word}
+              hintUsed={hintUsed}
+              missResponses={missResponses}
+              done={done}
+              onRequestHint={onRequestHint}
+              onResponse={onResponse}
+            />
           }
-          choices={question.choices}
+          chooseFrom={question.chooseFrom}
         />
       );
-    case "photo":
-      const photo = (word.definitions[question.definitionIndex].photos ?? [])[
-        question.photoIndex
-      ];
-
+    }
+    case "photo": {
       return (
         <QuestionTemplate
           {...commonProps}
           layout="grid"
           question={
-            <>
-              Welches Wort passt zum Bild an?
-              <img
-                src={photo.url}
-                alt={photo.caption}
-                className="block w-full mt-4 object-contain bg-gray-100 dark:bg-gray-800 rounded"
-                style={{ maxHeight: "50vh" }}
-              />
-              <p className="my-1 text-center text-gray-500 text-base font-light">
-                Image source: <WiktionaryLink entry={question.word} />
-              </p>
-            </>
+            <PhotoQuestion
+              question={question}
+              word={word}
+              done={done}
+              missResponses={missResponses}
+              onResponse={onResponse}
+            />
           }
-          choices={question.choices}
+          chooseFrom={question.chooseFrom}
         />
       );
+    }
     case "synonym":
     case "antonym":
     case "generic-term":
@@ -193,7 +167,7 @@ export default function Question({
               für <i className="font-semibold">{question.word}</i>?
             </>
           }
-          choices={question.choices}
+          chooseFrom={question.chooseFrom}
         />
       );
   }

@@ -143,7 +143,7 @@ function getQuestionParams(
   words: Word[],
   progress: LearningProgress,
   random: Random
-): [Word, number, Question["type"], Weights] {
+): [Word, number, Question["type"], boolean, Weights] {
   const empty = { value: 0, values: {} };
   const weights = getWeights(words, progress);
   let cursor = weights.value * random();
@@ -172,7 +172,13 @@ function getQuestionParams(
           continue;
         }
 
-        return [word, i, type, weights];
+        const shouldShowChoices = HARD_QUESTIONS.every(
+          (t) =>
+            (progress.table[word.german]?.table[i]?.table[t]?.certainty ?? 0) <
+            2
+        );
+
+        return [word, i, type, shouldShowChoices, weights];
       }
     }
   }
@@ -185,22 +191,29 @@ export function createQuestion(
   words: Word[],
   random: Random
 ): [Question | undefined, Weights] {
-  const [word, definitionIndex, questionType, weights] = getQuestionParams(
-    words,
-    progress,
-    random
-  );
-  const createQuestion = {
-    define: createDefineQuestion,
-    "fill-blank": createFillBlankQuestion,
-    "translate-from": createTranslateFromQuestion,
-    "translate-to": createTranslateToQuestion,
-    photo: createPhotoQuestion,
-    synonym: createRelatedWordQuestion("synonym"),
-    antonym: createRelatedWordQuestion("antonym"),
-    "generic-term": createRelatedWordQuestion("generic-term"),
-    "sub-term": createRelatedWordQuestion("sub-term"),
-  }[questionType];
+  const [word, definitionIndex, questionType, chooseFrom, weights] =
+    getQuestionParams(words, progress, random);
+  const commonArgs = [word, definitionIndex, words, random] as const;
 
-  return [createQuestion(word, definitionIndex, words, random), weights];
+  function createQuestion() {
+    switch (questionType) {
+      case "synonym":
+      case "antonym":
+      case "generic-term":
+      case "sub-term":
+        return createRelatedWordQuestion(...commonArgs, questionType);
+      case "photo":
+        return createPhotoQuestion(...commonArgs, chooseFrom);
+      case "fill-blank":
+        return createFillBlankQuestion(...commonArgs, chooseFrom);
+      case "define":
+        return createDefineQuestion(...commonArgs);
+      case "translate-to":
+        return createTranslateToQuestion(...commonArgs);
+      case "translate-from":
+        return createTranslateFromQuestion(...commonArgs, chooseFrom);
+    }
+  }
+
+  return [createQuestion(), weights];
 }

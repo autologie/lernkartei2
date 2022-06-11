@@ -28,6 +28,7 @@ import { isValidSessionId } from "../models/String";
 import { Word as WordModel } from "../models/Word";
 import hash from "object-hash";
 import { useWordBookCache } from "../hooks/useWordBookCache";
+import { Response } from "../models/Response";
 
 const Modal = dynamic(() => import("../components/Modal"), {
   suspense: true,
@@ -43,7 +44,7 @@ export default function Session(initialState: State) {
     state.history.length === 0 ? undefined : state.history[state.historyCursor];
   const word = state.words.words.find((w) => w.german === item?.question.word);
   const handleResponse = useCallback(
-    (chosen: number) => dispatch({ type: "respond", payload: chosen }),
+    (response: Response) => dispatch({ type: "respond", payload: response }),
     []
   );
   const handleConfigureWord = useCallback(
