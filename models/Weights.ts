@@ -198,8 +198,8 @@ export function createQuestion(
     photo: createPhotoQuestion,
     synonym: createRelatedWordQuestion("synonym"),
     antonym: createRelatedWordQuestion("antonym"),
-    "generic-term": createRelatedWordQuestion("genericTerm"),
-    "sub-term": createRelatedWordQuestion("subTerm"),
+    "generic-term": createRelatedWordQuestion("generic-term"),
+    "sub-term": createRelatedWordQuestion("sub-term"),
   }[questionType];
 
   return [createQuestion(word, definitionIndex, words, random), weights];

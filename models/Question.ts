@@ -101,6 +101,13 @@ export const questionTypes: Question["type"][] = [
   ...HARD_QUESTIONS,
 ];
 
+const keyMapping = {
+  synonym: "synonyms",
+  antonym: "antonyms",
+  "generic-term": "genericTerms",
+  "sub-term": "subTerms",
+} as const;
+
 export function shuffleChoices(question: Question, random: Random): Question {
   const choices = shuffle(question.choices as any, random) as any; // TODO
 
@@ -291,52 +298,36 @@ export function createPhotoQuestion(
 }
 
 export function createRelatedWordQuestion(
-  relationType: "synonym" | "antonym" | "genericTerm" | "subTerm"
+  relationType: "synonym" | "antonym" | "generic-term" | "sub-term"
 ) {
+  const key = keyMapping[relationType];
+
   return (
     word: Word,
     definitionIndex: number,
     words: Word[],
     random: Random
   ): Question => {
-    const key = `${relationType}s` as const;
     const def = word.definitions[definitionIndex];
     const index = getRandomIndex(def[key] ?? [], random);
     const relatedWord = def[key]?.[index];
+    const relatedWords = words.flatMap((w) => {
+      return w.partOfSpeech === word.partOfSpeech &&
+        w.definitions.every((d) => !(d[key]?.includes(word.german) ?? false))
+        ? [word.german]
+        : [];
+    });
 
     if (relatedWord === undefined) {
       throw Error();
     }
 
-    const choices = [
-      relatedWord,
-      ...shuffle(
-        words.filter(
-          (w) =>
-            w.partOfSpeech === word.partOfSpeech &&
-            w.definitions.every(
-              (d) => !(d[key]?.includes(word.german) ?? false)
-            )
-        ),
-        random
-      )
-        .map((word) => word.german)
-        .slice(0, 4),
-    ];
-
     return shuffleChoices(
       {
-        type: (
-          {
-            synonym: "synonym",
-            antonym: "antonym",
-            genericTerm: "generic-term",
-            subTerm: "sub-term",
-          } as const
-        )[relationType],
+        type: relationType,
         word: word.german,
         definitionIndex,
-        choices,
+        choices: [relatedWord, ...shuffle(relatedWords, random).slice(0, 4)],
         answerIndex: 0,
       },
       random
