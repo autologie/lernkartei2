@@ -3,6 +3,7 @@ import Word from "./Word";
 import { Word as WordModel } from "../models/Word";
 import styles from "./QuestionTemplate.module.css";
 import { Response } from "../models/Response";
+import Button from "./Button";
 
 export default function QuestionTemplate({
   question,
@@ -33,9 +34,9 @@ export default function QuestionTemplate({
 
   return (
     <div
-      className={
+      className={`${
         isNewer ? styles.question_from_right : styles.question_from_left
-      }
+      } flex flex-col`}
     >
       <h2 className="text-2xl pb-6">{question}</h2>
       <ol
@@ -89,6 +90,15 @@ export default function QuestionTemplate({
           );
         })}
       </ol>
+      {!done && chooseFrom === null && (
+        <Button
+          className="w-full"
+          color="gray"
+          onClick={() => onResponse({ type: "give-up" })}
+        >
+          Give up
+        </Button>
+      )}
       {showExplanation && (
         <Word
           word={word}

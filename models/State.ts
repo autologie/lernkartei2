@@ -114,6 +114,27 @@ function applyActionWithRandom(
 
       const item = state.history[0];
 
+      if (action.payload.type === "give-up") {
+        const updatedItem = {
+          ...item,
+          missResponses: item.missResponses.concat(action.payload),
+        };
+        const progress = addResult(
+          state.progress,
+          updatedItem.question.word,
+          updatedItem.question.definitionIndex,
+          updatedItem.question.type,
+          updatedItem.missResponses.length > 0
+        );
+
+        return {
+          ...state,
+          progress,
+          done: true,
+          history: [updatedItem].concat(state.history.slice(1)),
+        };
+      }
+
       if (isCorrect(item.question, action.payload)) {
         const progress = addResult(
           state.progress,

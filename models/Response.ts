@@ -1,6 +1,7 @@
 import { Question } from "./Question";
 
 export type Response =
+  | { type: "give-up" }
   | { type: "choice"; value: number }
   | { type: "input"; value: string[] };
 
