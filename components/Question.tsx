@@ -2,9 +2,9 @@ import { Question as Model } from "../models/Question";
 import { Word } from "../models/Word";
 import QuestionTemplate from "./QuestionTemplate";
 import { Response } from "../models/Response";
-import FillBlankQuestion from "./FillBlankQuestion";
-import TranslateFromQuestion from "./TranslateFromQuestion";
-import PhotoQuestion from "./PhotoQuestion";
+import QuestionTypeFillBlank from "./QuestionTypeFillBlank";
+import QuestionTypeTranslateFrom from "./QuestionTypeTranslateFrom";
+import PhotoQuestion from "./QuestionTypePhoto";
 
 export default function Question({
   question,
@@ -72,7 +72,7 @@ export default function Question({
           {...commonProps}
           layout="grid"
           question={
-            <TranslateFromQuestion
+            <QuestionTypeTranslateFrom
               question={question}
               word={word}
               missResponses={missResponses}
@@ -113,7 +113,7 @@ export default function Question({
           {...commonProps}
           layout="grid"
           question={
-            <FillBlankQuestion
+            <QuestionTypeFillBlank
               question={question}
               word={word}
               hintUsed={hintUsed}

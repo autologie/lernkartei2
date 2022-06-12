@@ -3,7 +3,7 @@ import { Response } from "../models/Response";
 import { Word } from "../models/Word";
 import WordGuessInput from "./WordGuessInput";
 
-export default function TranslateFromQuestion({
+export default function QuestionTypeTranslateFrom({
   done,
   question,
   word,

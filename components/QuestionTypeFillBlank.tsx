@@ -5,7 +5,7 @@ import ExampleText from "./ExampleText";
 import WiktionaryLink from "./WiktionaryLink";
 import WordGuessInput from "./WordGuessInput";
 
-export default function FillBlankQuestion({
+export default function QuestionTypeFillBlank({
   done,
   question,
   hintUsed,
