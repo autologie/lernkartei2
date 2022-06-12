@@ -44,10 +44,10 @@ export default function WordGuessInput({
           size === "lg" ? "px-4 py-2 w-64" : "px-2 w-48"
         } ${
           missResponses.length > 0
-            ? "ring ring-red-500 text-red-500"
+            ? "bg-transparent ring ring-red-500 text-red-500"
             : done
-            ? "ring ring-green-600 text-green-600 dark:text-green-700"
-            : "bg-gray-100"
+            ? "bg-transparent ring ring-green-600 dark:ring-green-700 text-green-600 dark:text-green-700"
+            : "bg-gray-100 dark:bg-gray-800"
         } ${shouldTriggerWrongAnimation ? styles.wrong : ""}`}
         value={done ? answer : value}
         readOnly={done}
