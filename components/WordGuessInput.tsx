@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { Response } from "../models/Response";
+import styles from "./WordGuessInput.module.css";
 
 export default function WordGuessInput({
   answer,
@@ -17,23 +19,46 @@ export default function WordGuessInput({
   done: boolean;
   onChange?: (response: string) => void;
 }) {
+  const wasDone = useRef(done);
+  const [shouldTriggerWrongAnimation, setTriggerWrongAnimation] =
+    useState(false);
+  const [shouldTriggerHitAnimation, setTriggerHitAnimation] = useState(false);
+
+  useEffect(() => {
+    setTriggerWrongAnimation(!done && missResponses.length > 0);
+  }, [done, missResponses.length]);
+
+  useEffect(() => {
+    setTriggerHitAnimation(
+      !wasDone.current && done && missResponses.length === 0
+    );
+  }, [done, missResponses.length]);
+
   return (
-    <input
-      type="text"
-      autoFocus={!done}
-      tabIndex={done ? undefined : 0}
-      className={`${className ?? ""} focus:ring outline-none rounded ${
-        size === "lg" ? "px-4 py-2 w-64" : "px-2 w-48"
-      } ${
-        done
-          ? "ring ring-green-600 text-green-600 dark:text-green-700"
-          : missResponses.length > 0
-          ? "ring ring-red-500"
-          : "bg-gray-100"
-      }`}
-      value={done ? answer : value}
-      readOnly={done}
-      onChange={(e) => onChange?.(e.target.value)}
-    />
+    <span className={`${className ?? ""} relative`}>
+      <input
+        type="text"
+        autoFocus={!done}
+        tabIndex={done ? undefined : 0}
+        className={`focus:ring outline-none rounded ${
+          size === "lg" ? "px-4 py-2 w-64" : "px-2 w-48"
+        } ${
+          missResponses.length > 0
+            ? "ring ring-red-500 text-red-500"
+            : done
+            ? "ring ring-green-600 text-green-600 dark:text-green-700"
+            : "bg-gray-100"
+        } ${shouldTriggerWrongAnimation ? styles.wrong : ""}`}
+        value={done ? answer : value}
+        readOnly={done}
+        onChange={(e) => onChange?.(e.target.value)}
+        onAnimationEnd={() => setTriggerWrongAnimation(false)}
+      />
+      <div
+        className={`${
+          shouldTriggerHitAnimation ? styles.hit : ""
+        } pointer-events-none absolute left-0 top-0  bg-green-500 dark:bg-gray-800 rounded-2xl z-10`}
+      />
+    </span>
   );
 }

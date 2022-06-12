@@ -1,4 +1,4 @@
-.wrong_choice {
+.wrong {
   animation: linear shake .15s 3;
 }
 
@@ -12,10 +12,10 @@
 
 @keyframes shake {
   0% {
-    margin-left: 8px;
+    transform: translateX(8px);
   }
   50% {
-    margin-left: -8px;
+    transform: translateX(-8px);
   }
 }
 
