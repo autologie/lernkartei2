@@ -9,10 +9,12 @@ export default function WordGuessInput({
   missResponses,
   done,
   size = "md",
+  placeholder,
   onChange,
 }: {
   answer: string;
   className?: string;
+  placeholder?: string;
   value: string;
   size?: "md" | "lg";
   missResponses: Response[];
@@ -40,7 +42,7 @@ export default function WordGuessInput({
         type="text"
         autoFocus={!done}
         tabIndex={done ? undefined : 0}
-        className={`focus:ring outline-none rounded ${
+        className={`placeholder:opacity-50 placeholder:italic focus:ring outline-none rounded ${
           size === "lg" ? "px-4 py-2 w-64" : "px-2 w-48"
         } ${
           missResponses.length > 0
@@ -51,6 +53,7 @@ export default function WordGuessInput({
         } ${shouldTriggerWrongAnimation ? styles.wrong : ""}`}
         value={done ? answer : value}
         readOnly={done}
+        placeholder={placeholder}
         onChange={(e) => onChange?.(e.target.value)}
         onAnimationEnd={() => setTriggerWrongAnimation(false)}
       />

@@ -55,6 +55,11 @@ export default function QuestionTypeFillBlank({
               answer={question.chunks[i].text ?? ""}
               missResponses={missResponses}
               done={done}
+              placeholder={
+                { Substantiv: "Sub.", Adjektiv: "Adj.", Adverb: "Adv." }[
+                  word.partOfSpeech
+                ] ?? word.partOfSpeech
+              }
               onChange={(guess) =>
                 setRes((current) => ({ ...current, [i]: guess }))
               }
