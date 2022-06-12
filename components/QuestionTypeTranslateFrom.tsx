@@ -1,4 +1,4 @@
-import { Question } from "../models/Question";
+import { TranslateFrom } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
 import WordGuessInput from "./WordGuessInput";
@@ -11,7 +11,7 @@ export default function QuestionTypeTranslateFrom({
   onResponse,
 }: {
   done: boolean;
-  question: Question & { type: "translate-from" };
+  question: TranslateFrom;
   missResponses: Response[];
   word: Word;
   onResponse: (res: Response) => void;

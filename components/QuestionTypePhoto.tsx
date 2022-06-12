@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { Question } from "../models/Question";
+import { Photo } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
 import WiktionaryLink from "./WiktionaryLink";
@@ -13,7 +13,7 @@ export default function PhotoQuestion({
   onResponse,
 }: {
   done: boolean;
-  question: Question & { type: "photo" };
+  question: Photo;
   missResponses: Response[];
   word: Word;
   onResponse: (res: Response) => void;

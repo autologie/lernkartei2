@@ -1,4 +1,4 @@
-import { Question } from "../models/Question";
+import { FillBlank } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
 import ExampleText from "./ExampleText";
@@ -16,7 +16,7 @@ export default function QuestionTypeFillBlank({
 }: {
   done: boolean;
   hintUsed: boolean;
-  question: Question & { type: "fill-blank" };
+  question: FillBlank;
   missResponses: Response[];
   word: Word;
   onRequestHint: () => void;
