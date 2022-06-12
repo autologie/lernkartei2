@@ -3,6 +3,7 @@ import { Word as WordModel } from "../models/Word";
 import ExampleText from "./ExampleText";
 import { formatDistanceToNow } from "date-fns";
 import WiktionaryLink from "./WiktionaryLink";
+import { createChunks } from "../models/ExampleTextChunk";
 
 function applyState(
   openIndex: number | undefined,
@@ -67,7 +68,9 @@ export default function Word({
                       <ul className="ml-4 list-disc flex flex-col gap-1">
                         {def.examples.map((e, j) => (
                           <li key={j}>
-                            <ExampleText mode="italic">{e}</ExampleText>
+                            <ExampleText mode="italic">
+                              {createChunks(e)}
+                            </ExampleText>
                           </li>
                         ))}
                       </ul>

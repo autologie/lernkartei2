@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
+import { useState } from "react";
 import { Photo } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
 import WiktionaryLink from "./WiktionaryLink";
 import WordGuessInput from "./WordGuessInput";
 
-export default function PhotoQuestion({
+export default function QuestionTypePhoto({
   done,
   question,
   word,
@@ -18,12 +19,19 @@ export default function PhotoQuestion({
   word: Word;
   onResponse: (res: Response) => void;
 }) {
+  const [res, setRes] = useState("");
   const photo = (word.definitions[question.definitionIndex].photos ?? [])[
     question.definitionIndex
   ];
 
   return (
-    <>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onResponse({ type: "input", value: [res] });
+      }}
+    >
       Welches Wort beschreibt das Bild?
       <img
         src={photo.url}
@@ -35,13 +43,18 @@ export default function PhotoQuestion({
         Image source: <WiktionaryLink entry={question.word} />
       </p>
       {question.chooseFrom === null && (
-        <WordGuessInput
-          answer={question.word}
-          missResponses={missResponses}
-          done={done}
-          onSubmit={(guess) => onResponse({ type: "input", value: guess })}
-        />
+        <div className="flex justify-center">
+          <WordGuessInput
+            className="mt-8"
+            size="lg"
+            value={res}
+            answer={question.word}
+            missResponses={missResponses}
+            done={done}
+            onChange={setRes}
+          />
+        </div>
       )}
-    </>
+    </form>
   );
 }

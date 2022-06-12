@@ -1,26 +1,21 @@
-import { Fragment, useState } from "react";
-import { chunk } from "../models/String";
+import { Fragment } from "react";
+import { ExampleTextChunk } from "../models/ExampleTextChunk";
 
 export default function ExampleText({
-  children: children_,
+  children,
   mode,
   wordInput,
 }: {
-  children: string;
+  children: ExampleTextChunk[];
   mode: "mask" | "italic" | "input" | "italic-green";
-  wordInput?: JSX.Element;
+  wordInput?: (index: number) => JSX.Element;
 }) {
-  const children = children_
-    .replace(/{[^}]*}/, "")
-    .replace(/\[\[mit (Genitiv|Dativ|Akkusativ|Nominativ):\]\]/, "")
-    .trim(); // remove math equation notation
-
   if (mode === "mask" || mode === "input") {
     return (
       <>
-        {chunk(children).map(({ segment, isMatch }, i) => (
+        {children.map(({ text, isMatch }, i) => (
           <Fragment key={i}>
-            {isMatch ? (mode === "mask" ? "_____" : wordInput) : segment}
+            {isMatch ? (mode === "mask" ? "_____" : wordInput?.(i)) : text}
           </Fragment>
         ))}
       </>
@@ -29,7 +24,7 @@ export default function ExampleText({
 
   return (
     <>
-      {chunk(children).map(({ segment, isMatch }, index) =>
+      {children.map(({ text: segment, isMatch }, index) =>
         isMatch ? (
           <i
             key={index}

@@ -1,4 +1,4 @@
-import { chunk } from "./String";
+import { chunk } from "./ExampleTextChunk";
 
 describe(chunk, () => {
   it("chunks an exact match", () => {

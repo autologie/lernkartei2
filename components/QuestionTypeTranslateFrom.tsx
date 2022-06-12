@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { TranslateFrom } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
@@ -16,22 +17,31 @@ export default function QuestionTypeTranslateFrom({
   word: Word;
   onResponse: (res: Response) => void;
 }) {
+  const [res, setRes] = useState("");
   const eng =
     word.definitions[question.definitionIndex].english[question.englishIndex];
 
   if (question.chooseFrom === null) {
     return (
-      <div className="leading-relaxed">
+      <form
+        className="leading-relaxed"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onResponse({ type: "input", value: [res] });
+        }}
+      >
         Das englische Wort <i className="font-semibold">{eng}</i> heißt{" "}
         <WordGuessInput
+          value={res}
           className="inline mx-2"
           answer={question.word}
           missResponses={missResponses}
           done={done}
-          onSubmit={(guess) => onResponse({ type: "input", value: guess })}
+          onChange={setRes}
         />
         auf Deutsch.
-      </div>
+      </form>
     );
   }
 

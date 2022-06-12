@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FillBlank } from "../models/Question";
 import { Response } from "../models/Response";
 import { Word } from "../models/Word";
@@ -22,9 +23,23 @@ export default function QuestionTypeFillBlank({
   onRequestHint: () => void;
   onResponse: (res: Response) => void;
 }) {
+  const [res, setRes] = useState({} as { [index: number]: string });
+
   return (
     <>
-      <div className="leading-relaxed">
+      <form
+        className="leading-relaxed"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onResponse({
+            type: "input",
+            value: question.chunks.flatMap(({ isMatch }, i) =>
+              isMatch ? [res[i] ?? ""] : []
+            ),
+          });
+        }}
+      >
         <ExampleText
           mode={
             question.chooseFrom === null
@@ -33,23 +48,22 @@ export default function QuestionTypeFillBlank({
               ? "italic-green"
               : "mask"
           }
-          wordInput={
+          wordInput={(i) => (
             <WordGuessInput
+              value={res[i] ?? ""}
               className="inline mx-2"
-              answer={question.word}
+              answer={question.chunks[i].text ?? ""}
               missResponses={missResponses}
               done={done}
-              onSubmit={(guess) => onResponse({ type: "input", value: guess })}
+              onChange={(guess) =>
+                setRes((current) => ({ ...current, [i]: guess }))
+              }
             />
-          }
+          )}
         >
-          {
-            word.definitions[question.definitionIndex].examples[
-              question.exampleIndex
-            ]
-          }
+          {question.chunks}
         </ExampleText>
-      </div>
+      </form>
       <p className="text-base mt-2 text-gray-500 font-light">
         Text Source: <WiktionaryLink entry={question.word} />
         {hintUsed ? (

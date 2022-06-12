@@ -1,12 +1,14 @@
 import { Word } from "./Word";
 import { getRandomIndex, shuffle } from "./Array";
 import { Random } from "./Random";
+import { createChunks, ExampleTextChunk } from "./ExampleTextChunk";
 
 export interface FillBlank {
   type: "fill-blank";
   word: string;
   definitionIndex: number;
   exampleIndex: number;
+  chunks: ExampleTextChunk[];
   chooseFrom: {
     choices: string[];
     answerIndex: number;
@@ -210,6 +212,9 @@ export function createFillBlankQuestion(
             answerIndex: 0,
           }
         : null,
+      chunks: createChunks(
+        word.definitions[definitionIndex].examples[exampleIndex]
+      ),
     },
     random
   );

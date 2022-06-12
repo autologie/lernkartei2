@@ -4,7 +4,7 @@ import QuestionTemplate from "./QuestionTemplate";
 import { Response } from "../models/Response";
 import QuestionTypeFillBlank from "./QuestionTypeFillBlank";
 import QuestionTypeTranslateFrom from "./QuestionTypeTranslateFrom";
-import PhotoQuestion from "./QuestionTypePhoto";
+import QuestionTypePhoto from "./QuestionTypePhoto";
 
 export default function Question({
   question,
@@ -133,7 +133,7 @@ export default function Question({
           {...commonProps}
           layout="grid"
           question={
-            <PhotoQuestion
+            <QuestionTypePhoto
               question={question}
               word={word}
               done={done}
