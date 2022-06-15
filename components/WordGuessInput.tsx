@@ -40,10 +40,11 @@ export default function WordGuessInput({
     <span className={`${className ?? ""} relative`}>
       <input
         type="text"
+        size={answer.length}
         autoFocus={!done}
         tabIndex={done ? undefined : 0}
         className={`placeholder:opacity-50 placeholder:italic focus:ring outline-none rounded ${
-          size === "lg" ? "px-4 py-2 w-64" : "px-2 w-48"
+          size === "lg" ? "px-4 py-2" : "px-2"
         } ${
           missResponses.length > 0
             ? "bg-transparent ring ring-red-500 text-red-500"
