@@ -68,6 +68,7 @@ export default function QuestionTypeFillBlank({
         >
           {question.chunks}
         </ExampleText>
+        <input type="submit" hidden />
       </form>
       <p className="text-base mt-2 text-gray-500 font-light">
         Text Source: <WiktionaryLink entry={question.word} />

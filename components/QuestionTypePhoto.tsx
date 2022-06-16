@@ -51,6 +51,11 @@ export default function QuestionTypePhoto({
             answer={question.word}
             missResponses={missResponses}
             done={done}
+            placeholder={
+              { Substantiv: "Sub.", Adjektiv: "Adj.", Adverb: "Adv." }[
+                word.partOfSpeech
+              ] ?? word.partOfSpeech
+            }
             onChange={setRes}
           />
         </div>
