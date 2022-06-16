@@ -107,7 +107,9 @@ function getWordWeight(
         progressForType?.certainty === 3 ||
         currentTick - progress.lastTick < 3
           ? 1
-          : totalWordCount / Math.pow(2, progressForType?.certainty ?? 0) / 2) *
+          : totalWordCount /
+            Math.pow(10, progressForType?.certainty ?? 0) /
+            2) *
         hardnessFactor *
         definitionIndexFactor;
 
