@@ -19,6 +19,7 @@ export default function App({ Component, pageProps }: AppProps) {
         src="https://www.googletagmanager.com/gtag/js?id=G-4V62MH7H80"
       ></Script>
       <Script
+        id="GoogleAnalytics"
         dangerouslySetInnerHTML={{
           __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
